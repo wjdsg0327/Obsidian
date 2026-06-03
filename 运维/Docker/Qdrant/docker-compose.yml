@@ -1,0 +1,14 @@
+services:
+  qdrant:
+    container_name: qdrant
+    image: docker.1panel.live/qdrant/qdrant:latest
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - /mnt/d/work/docker/qdrant/storage:/qdrant/storage
+
+networks:
+  default:
+    name: qdrant

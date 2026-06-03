@@ -1,0 +1,66 @@
+# Git failed-push backups / accidental repo internals
+.git.backup*/
+
+# Obsidian / system temp
+.trash/
+.DS_Store
+Thumbs.db
+
+# Obsidian workspace state / plugin code / plugin data
+.obsidian/workspace*.json
+.obsidian/cache/
+.obsidian/plugins/
+
+# Make.md / space transient data
+.space/
+.makemd/
+
+# Plugin/app generated databases
+**/.yolo_json_db/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Docker / database runtime data - do not sync to GitHub
+**/volumes/
+**/data/
+**/logs/
+**/wal/
+**/*.wal
+**/*.tmp
+
+# Large binary/archive/media; Obsidian notes are the main sync target
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.mp3
+*.wav
+*.flac
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.pdf
+*.exe
+*.dll
+*.so
+*.bin
+
+# Secrets
+.env
+.env.*
+*.key
+*.pem
+id_rsa*
+id_ed25519*
+
+# Logs
+*.log
