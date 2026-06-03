@@ -1,63 +1,92 @@
-# Docker 运维知识库
+# Qdrant 向量数据库部署
 
-本目录统一收纳 Docker / Docker Compose / 容器化部署相关内容。
+Qdrant 是一个轻量、稳定、易部署的向量数据库，适合个人知识库、RAG、语义搜索和中小型 AI 项目。
 
-## 目录结构
+## 文件
+
+- `docker-compose.yml`：Qdrant 可运行配置
+- `README.md`：部署说明
+
+## 数据目录
+
+按老王的 Docker 数据卷约定，持久化数据放在：
 
 ```text
-Docker/
-├── README.md
-├── 安装/
-│   ├── CentOS 7.9 安装 Docker.md
-│   └── Ubuntu 24.04 安装 Docker.md
-├── Compose/
-│   ├── MySQL.md
-│   ├── Nginx Proxy Manager.md
-│   └── Sub2API.md
-├── Qdrant/
-│   ├── README.md
-│   └── docker-compose.yml
-├── MinIO/
-│   ├── README.md
-│   └── docker-compose.yml
-├── Milvus项目/
-│   ├── README.md
-│   └── docker-compose.yml
-└── _原始归档/
+D:\work\docker\qdrant\storage
 ```
 
-## 安装指南
+WSL 路径：
 
-- [[安装/CentOS 7.9 安装 Docker]]
-- [[安装/Ubuntu 24.04 安装 Docker]]
+```text
+/mnt/d/work/docker/qdrant/storage
+```
 
-## Compose 模板
+## 端口
 
-- [[Compose/MySQL]]
-- [[Compose/Nginx Proxy Manager]]
-- [[Compose/Sub2API]]
+| 端口 | 用途 |
+|---|---|
+| `6333` | HTTP API / Dashboard |
+| `6334` | gRPC API |
 
-## 项目部署
+## 启动
 
-- [[运维/Docker/Compose/Qdrant/README|Qdrant 向量数据库部署]]
-- [[运维/Docker/Compose/MinIO/README|MinIO 对象存储部署]]
-- [[运维/Docker/Compose/Milvus项目/README|Milvus + Attu 单机部署]]
+```bash
+docker compose up -d
+```
 
-## 常用访问地址
+## 查看状态
 
-- Qdrant Dashboard：`http://192.168.1.139:6333/dashboard`
-- Qdrant API：`http://192.168.1.139:6333`
-- MinIO 控制台：`http://192.168.1.139:19001`
-- MinIO S3 API：`http://192.168.1.139:19000`
+```bash
+docker compose ps
+```
 
-## 维护规则
+## 停止
 
-- 新增 Docker 内容统一放到 `运维/Docker/`。
-- 安装教程放 `安装/`。
-- 通用服务模板放 `Compose/`。
-- 独立项目部署放项目目录。
-- Docker 持久化数据优先放到 `D:\work\docker`，WSL 路径是 `/mnt/d/work/docker`。
-- 真实账号、密码、Token 不写入知识库；统一使用占位符。
-- 可运行配置和解释文档分开保存：
-  - `docker-compose.yml` 保存可运行配置
-  - `README.md` 保存说明
+```bash
+docker compose down
+```
+
+## 访问 Dashboard
+
+本机访问：
+
+```text
+http://localhost:6333/dashboard
+```
+
+局域网访问：
+
+```text
+http://192.168.1.139:6333/dashboard
+```
+
+## API 地址
+
+```text
+http://192.168.1.139:6333
+```
+
+## 账号密码
+
+默认没有账号密码。
+
+如果要暴露到公网，必须配置 API Key、反向代理认证或防火墙限制。
+
+## Python 示例
+
+```bash
+pip install qdrant-client
+```
+
+```python
+from qdrant_client import QdrantClient
+
+client = QdrantClient(url="http://192.168.1.139:6333")
+print(client.get_collections())
+```
+
+## 注意事项
+
+- Qdrant 默认没有鉴权，只建议局域网使用。
+- 生产环境需要启用 API Key 或放到内网。
+- 数据目录不要随便删除，否则 collection 和向量数据会丢失。
