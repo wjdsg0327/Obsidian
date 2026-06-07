@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AI国际学校智能作业系统 - 数据库字段级关系图</title>
+<style>
+:root{--bg:#f6f8fb;--panel:#fff;--ink:#111827;--muted:#64748b;--line:#64748b;--border:#cbd5e1;--pk:#b45309;--fk:#2563eb}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif;color:var(--ink)}
+.wrap{max-width:1880px;margin:0 auto;padding:28px} h1{font-size:28px;margin:0 0 8px} .sub{color:var(--muted);line-height:1.7;margin-bottom:16px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0 20px;font-size:13px;color:var(--muted)} .chip{display:inline-flex;align-items:center;gap:6px} .sw{width:18px;height:12px;border:1px solid var(--border);border-radius:3px}
+.canvas{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 8px 24px rgba(15,23,42,.08);overflow:auto;padding:18px} svg{display:block;min-width:1800px;height:auto}
+.rel{stroke:var(--line);stroke-width:1.25;fill:none;opacity:.62;marker-end:url(#arrow)} .rel:hover{stroke:#ef4444;stroke-width:2.8;opacity:1}
+.table rect{filter:drop-shadow(0 4px 8px rgba(15,23,42,.10))} .title{font-weight:700;font-size:14px;fill:#111827} .field{font-size:12px;fill:#374151} .pk{fill:var(--pk);font-weight:700} .fk{fill:var(--fk);font-weight:700}
+.section{margin-top:18px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px} .section h2{font-size:20px;margin:0 0 10px} .cols{columns:2 520px;column-gap:36px} li{break-inside:avoid;margin:0 0 6px;line-height:1.55} code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.note{margin-top:16px;background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px 14px;color:#7c2d12;line-height:1.7}
+</style></head><body><div class="wrap">
+<h1>AI国际学校智能作业系统：数据库字段级关系图</h1>
+<div class="sub">依据当前《数据库建表 SQL 草案》重新整理，已纳入审查后补充的 <code>class_teachers</code>、<code>assignment_targets</code>、<code>files</code>、<code>notifications</code>、<code>teacher_quality_stats</code>、<code>class_compare_stats</code>、<code>ai_call_logs</code> 等表。关系以“来源字段 → 目标字段”的形式标注在表内和下方清单中。</div>
+<div class="legend">
+<span class="chip"><span class="sw" style="background:#dbeafe"></span>用户与组织</span>
+<span class="chip"><span class="sw" style="background:#dcfce7"></span>学校班级</span>
+<span class="chip"><span class="sw" style="background:#fce7f3"></span>题库知识</span>
+<span class="chip"><span class="sw" style="background:#fef3c7"></span>作业批改</span>
+<span class="chip"><span class="sw" style="background:#ede9fe"></span>学情统计</span>
+<span class="chip"><span class="sw" style="background:#e5e7eb"></span>系统文件</span>
+<span class="chip"><b style="color:#b45309">PK</b> 主键</span><span class="chip"><b style="color:#2563eb">FK</b> 外键</span></div>
+<div class="canvas"><svg width="1800" height="1320" viewBox="0 0 1800 1320" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#64748b"/></marker></defs>
+<path class="rel" d="M 170.0 206 C 230.0 206, 110.0 244, 170.0 244"><title>users.school_id → schools.id</title></path>
+<path class="rel" d="M 170.0 434 C 230.0 434, 110.0 426, 170.0 426"><title>teachers.user_id → users.id</title></path>
+<path class="rel" d="M 170.0 632 C 230.0 632, 110.0 418, 170.0 418"><title>students.user_id → users.id</title></path>
+<path class="rel" d="M 170.0 850 C 230.0 850, 110.0 410, 170.0 410"><title>parents.user_id → users.id</title></path>
+<path class="rel" d="M 390 258.0 C 330 258.0, 360 132.0, 300 132.0"><title>classes.school_id → schools.id</title></path>
+<path class="rel" d="M 390 266.0 C 330 266.0, 360 514.0, 300 514.0"><title>classes.head_teacher_id → teachers.id</title></path>
+<path class="rel" d="M 300 754.0 C 360 754.0, 330 226.0, 390 226.0"><title>students.class_id → classes.id</title></path>
+<path class="rel" d="M 170.0 986 C 230.0 986, 110.0 994, 170.0 994"><title>parent_students.parent_id → parents.id</title></path>
+<path class="rel" d="M 170.0 994 C 230.0 994, 110.0 836, 170.0 836"><title>parent_students.student_id → students.id</title></path>
+<path class="rel" d="M 520.0 382 C 580.0 382, 460.0 348, 520.0 348"><title>class_teachers.class_id → classes.id</title></path>
+<path class="rel" d="M 390 470.0 C 330 470.0, 360 530.0, 300 530.0"><title>class_teachers.teacher_id → teachers.id</title></path>
+<path class="rel" d="M 650 662 C 695 617, 695 707, 650 742"><title>knowledge_points.parent_id → knowledge_points.id</title></path>
+<path class="rel" d="M 760 556.0 C 700 556.0, 710 674.0, 650 674.0"><title>questions.knowledge_point_id → knowledge_points.id</title></path>
+<path class="rel" d="M 760 564.0 C 700 564.0, 710 846.0, 650 846.0"><title>questions.syllabus_id → syllabi.id</title></path>
+<path class="rel" d="M 760 516.0 C 700 516.0, 710 1044.0, 650 1044.0"><title>questions.textbook_id → textbooks.id</title></path>
+<path class="rel" d="M 760 524.0 C 700 524.0, 710 1186.0, 650 1186.0"><title>questions.workbook_id → workbooks.id</title></path>
+<path class="rel" d="M 760 532.0 C 530.0 532.0, 530.0 328.0, 300 328.0"><title>questions.created_by → users.id</title></path>
+<path class="rel" d="M 760 800.0 C 700 800.0, 710 690.0, 650 690.0"><title>words.knowledge_point_id → knowledge_points.id</title></path>
+<path class="rel" d="M 760 168.0 C 530.0 168.0, 530.0 522.0, 300 522.0"><title>assignments.teacher_id → teachers.id</title></path>
+<path class="rel" d="M 760 176.0 C 700 176.0, 710 234.0, 650 234.0"><title>assignments.class_id → classes.id</title></path>
+<path class="rel" d="M 890.0 274 C 950.0 274, 830.0 236, 890.0 236"><title>assignment_targets.assignment_id → assignments.id</title></path>
+<path class="rel" d="M 1130 116.0 C 1070 116.0, 1080 184.0, 1020 184.0"><title>assignment_items.assignment_id → assignments.id</title></path>
+<path class="rel" d="M 1130 124.0 C 1070 124.0, 1080 556.0, 1020 556.0"><title>assignment_items.question_id → questions.id</title></path>
+<path class="rel" d="M 1130 332.0 C 1070 332.0, 1080 168.0, 1020 168.0"><title>submissions.assignment_id → assignments.id</title></path>
+<path class="rel" d="M 1130 340.0 C 715.0 340.0, 715.0 730.0, 300 730.0"><title>submissions.student_id → students.id</title></path>
+<path class="rel" d="M 1260.0 458 C 1320.0 458, 1200.0 422, 1260.0 422"><title>grading_records.submission_id → submissions.id</title></path>
+<path class="rel" d="M 1130 556.0 C 1070 556.0, 1080 524.0, 1020 524.0"><title>grading_records.question_id → questions.id</title></path>
+<path class="rel" d="M 1130 564.0 C 715.0 564.0, 715.0 506.0, 300 506.0"><title>grading_records.teacher_id → teachers.id</title></path>
+<path class="rel" d="M 1130 746.0 C 715.0 746.0, 715.0 754.0, 300 754.0"><title>wrong_questions.student_id → students.id</title></path>
+<path class="rel" d="M 1130 754.0 C 1070 754.0, 1080 556.0, 1020 556.0"><title>wrong_questions.question_id → questions.id</title></path>
+<path class="rel" d="M 1260.0 672 C 1320.0 672, 1200.0 438, 1260.0 438"><title>wrong_questions.submission_id → submissions.id</title></path>
+<path class="rel" d="M 1480 320.0 C 890.0 320.0, 890.0 730.0, 300 730.0"><title>learning_stats.student_id → students.id</title></path>
+<path class="rel" d="M 1480 328.0 C 1065.0 328.0, 1065.0 242.0, 650 242.0"><title>learning_stats.class_id → classes.id</title></path>
+<path class="rel" d="M 1480 336.0 C 1065.0 336.0, 1065.0 674.0, 650 674.0"><title>learning_stats.knowledge_point_id → knowledge_points.id</title></path>
+<path class="rel" d="M 1480 584.0 C 890.0 584.0, 890.0 506.0, 300 506.0"><title>teacher_quality_stats.teacher_id → teachers.id</title></path>
+<path class="rel" d="M 1480 536.0 C 1065.0 536.0, 1065.0 274.0, 650 274.0"><title>teacher_quality_stats.class_id → classes.id</title></path>
+<path class="rel" d="M 1480 754.0 C 1065.0 754.0, 1065.0 266.0, 650 266.0"><title>class_compare_stats.class_id → classes.id</title></path>
+<path class="rel" d="M 1480 972.0 C 890.0 972.0, 890.0 538.0, 300 538.0"><title>teacher_quotas.teacher_id → teachers.id</title></path>
+<path class="rel" d="M 1480 1170.0 C 890.0 1170.0, 890.0 320.0, 300 320.0"><title>ai_call_logs.user_id → users.id</title></path>
+<path class="rel" d="M 1480 1178.0 C 890.0 1178.0, 890.0 132.0, 300 132.0"><title>ai_call_logs.school_id → schools.id</title></path>
+<path class="rel" d="M 1130 1006.0 C 715.0 1006.0, 715.0 124.0, 300 124.0"><title>files.school_id → schools.id</title></path>
+<path class="rel" d="M 1130 1014.0 C 715.0 1014.0, 715.0 296.0, 300 296.0"><title>files.owner_user_id → users.id</title></path>
+<path class="rel" d="M 1130 1156.0 C 715.0 1156.0, 715.0 164.0, 300 164.0"><title>notifications.school_id → schools.id</title></path>
+<path class="rel" d="M 1130 1164.0 C 715.0 1164.0, 715.0 336.0, 300 336.0"><title>notifications.user_id → users.id</title></path>
+<path class="rel" d="M 760 1062.0 C 530.0 1062.0, 530.0 328.0, 300 328.0"><title>operation_logs.user_id → users.id</title></path>
+<path class="rel" d="M 760 1070.0 C 530.0 1070.0, 530.0 140.0, 300 140.0"><title>operation_logs.school_id → schools.id</title></path>
+<g class="table" id="schools"><rect x="40" y="60" width="260" height="160" rx="12" fill="#dcfce7" stroke="#cbd5e1"/>
+<text class="title" x="56" y="84">schools｜学校表</text>
+<text class="field" x="56" y="114"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="56" y="134">name</text>
+<text class="field" x="56" y="154">course_systems</text>
+<text class="field" x="56" y="174">status</text>
+<text class="field" x="56" y="194">created_at</text>
+</g>
+<g class="table" id="users"><rect x="40" y="230" width="260" height="180" rx="12" fill="#dbeafe" stroke="#cbd5e1"/>
+<text class="title" x="56" y="254">users｜统一用户表</text>
+<text class="field" x="56" y="284"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="56" y="304"><tspan class="fk">FK</tspan> school_id → schools.id</text>
+<text class="field" x="56" y="324">username</text>
+<text class="field" x="56" y="344">password_hash</text>
+<text class="field" x="56" y="364">role</text>
+<text class="field" x="56" y="384">status</text>
+</g>
+<g class="table" id="teachers"><rect x="40" y="450" width="260" height="160" rx="12" fill="#dbeafe" stroke="#cbd5e1"/>
+<text class="title" x="56" y="474">teachers｜教师扩展表</text>
+<text class="field" x="56" y="504"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="56" y="524"><tspan class="fk">FK</tspan> user_id → users.id</text>
+<text class="field" x="56" y="544">teacher_no</text>
+<text class="field" x="56" y="564">subject</text>
+<text class="field" x="56" y="584">permission_profile</text>
+</g>
+<g class="table" id="students"><rect x="40" y="640" width="260" height="180" rx="12" fill="#dbeafe" stroke="#cbd5e1"/>
+<text class="title" x="56" y="664">students｜学生扩展表</text>
+<text class="field" x="56" y="694"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="56" y="714"><tspan class="fk">FK</tspan> user_id → users.id</text>
+<text class="field" x="56" y="734"><tspan class="fk">FK</tspan> class_id → classes.id</text>
+<text class="field" x="56" y="754">student_no</text>
+<text class="field" x="56" y="774">grade</text>
+<text class="field" x="56" y="794">status</text>
+</g>
+<g class="table" id="parents"><rect x="40" y="850" width="260" height="120" rx="12" fill="#dbeafe" stroke="#cbd5e1"/>
+<text class="title" x="56" y="874">parents｜家长扩展表</text>
+<text class="field" x="56" y="904"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="56" y="924"><tspan class="fk">FK</tspan> user_id → users.id</text>
+<text class="field" x="56" y="944">contact_phone</text>
+</g>
+<g class="table" id="parent_students"><rect x="40" y="1010" width="260" height="140" rx="12" fill="#dbeafe" stroke="#cbd5e1"/>
+<text class="title" x="56" y="1034">parent_students｜亲子绑定表</text>
+<text class="field" x="56" y="1064"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="56" y="1084"><tspan class="fk">FK</tspan> parent_id → parents.id</text>
+<text class="field" x="56" y="1104"><tspan class="fk">FK</tspan> student_id → students.id</text>
+<text class="field" x="56" y="1124">relation</text>
+</g>
+<g class="table" id="classes"><rect x="390" y="160" width="260" height="180" rx="12" fill="#dcfce7" stroke="#cbd5e1"/>
+<text class="title" x="406" y="184">classes｜班级表</text>
+<text class="field" x="406" y="214"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="406" y="234"><tspan class="fk">FK</tspan> school_id → schools.id</text>
+<text class="field" x="406" y="254"><tspan class="fk">FK</tspan> head_teacher_id → teachers.id</text>
+<text class="field" x="406" y="274">grade / subject</text>
+<text class="field" x="406" y="294">course_system / exam_board</text>
+<text class="field" x="406" y="314">status</text>
+</g>
+<g class="table" id="class_teachers"><rect x="390" y="390" width="260" height="160" rx="12" fill="#dcfce7" stroke="#cbd5e1"/>
+<text class="title" x="406" y="414">class_teachers｜班级任课教师</text>
+<text class="field" x="406" y="444"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="406" y="464"><tspan class="fk">FK</tspan> class_id → classes.id</text>
+<text class="field" x="406" y="484"><tspan class="fk">FK</tspan> teacher_id → teachers.id</text>
+<text class="field" x="406" y="504">subject</text>
+<text class="field" x="406" y="524">role</text>
+</g>
+<g class="table" id="knowledge_points"><rect x="390" y="610" width="260" height="160" rx="12" fill="#fce7f3" stroke="#cbd5e1"/>
+<text class="title" x="406" y="634">knowledge_points｜知识点表</text>
+<text class="field" x="406" y="664"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="406" y="684"><tspan class="fk">FK</tspan> parent_id → knowledge_points.id</text>
+<text class="field" x="406" y="704">course_system / subject</text>
+<text class="field" x="406" y="724">name</text>
+<text class="field" x="406" y="744">level / sort_no</text>
+</g>
+<g class="table" id="syllabi"><rect x="390" y="790" width="260" height="160" rx="12" fill="#fce7f3" stroke="#cbd5e1"/>
+<text class="title" x="406" y="814">syllabi｜考纲表</text>
+<text class="field" x="406" y="844"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="406" y="864">course_system</text>
+<text class="field" x="406" y="884">subject</text>
+<text class="field" x="406" y="904">exam_board</text>
+<text class="field" x="406" y="924">version</text>
+</g>
+<g class="table" id="textbooks"><rect x="390" y="940" width="260" height="160" rx="12" fill="#fce7f3" stroke="#cbd5e1"/>
+<text class="title" x="406" y="964">textbooks｜教材表</text>
+<text class="field" x="406" y="994"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="406" y="1014">course_system / subject</text>
+<text class="field" x="406" y="1034">name / version</text>
+<text class="field" x="406" y="1054">chapter</text>
+<text class="field" x="406" y="1074">page_start / page_end</text>
+</g>
+<g class="table" id="workbooks"><rect x="390" y="1090" width="260" height="160" rx="12" fill="#fce7f3" stroke="#cbd5e1"/>
+<text class="title" x="406" y="1114">workbooks｜教辅表</text>
+<text class="field" x="406" y="1144"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="406" y="1164">course_system / subject</text>
+<text class="field" x="406" y="1184">name / version</text>
+<text class="field" x="406" y="1204">chapter</text>
+<text class="field" x="406" y="1224">page_start / page_end</text>
+</g>
+<g class="table" id="questions"><rect x="760" y="430" width="260" height="220" rx="12" fill="#fce7f3" stroke="#cbd5e1"/>
+<text class="title" x="776" y="454">questions｜题目表</text>
+<text class="field" x="776" y="484"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="776" y="504"><tspan class="fk">FK</tspan> knowledge_point_id → knowledge_points.id</text>
+<text class="field" x="776" y="524"><tspan class="fk">FK</tspan> syllabus_id → syllabi.id</text>
+<text class="field" x="776" y="544"><tspan class="fk">FK</tspan> textbook_id → textbooks.id</text>
+<text class="field" x="776" y="564"><tspan class="fk">FK</tspan> workbook_id → workbooks.id</text>
+<text class="field" x="776" y="584"><tspan class="fk">FK</tspan> created_by → users.id</text>
+<text class="field" x="776" y="604">question_type / difficulty</text>
+<text class="field" x="776" y="624">review_status</text>
+</g>
+<g class="table" id="words"><rect x="760" y="720" width="260" height="160" rx="12" fill="#fce7f3" stroke="#cbd5e1"/>
+<text class="title" x="776" y="744">words｜单词表</text>
+<text class="field" x="776" y="774"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="776" y="794"><tspan class="fk">FK</tspan> knowledge_point_id → knowledge_points.id</text>
+<text class="field" x="776" y="814">word</text>
+<text class="field" x="776" y="834">meaning_zh</text>
+<text class="field" x="776" y="854">example_en</text>
+</g>
+<g class="table" id="assignments"><rect x="760" y="60" width="260" height="200" rx="12" fill="#fef3c7" stroke="#cbd5e1"/>
+<text class="title" x="776" y="84">assignments｜作业表</text>
+<text class="field" x="776" y="114"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="776" y="134"><tspan class="fk">FK</tspan> teacher_id → teachers.id</text>
+<text class="field" x="776" y="154"><tspan class="fk">FK</tspan> class_id → classes.id</text>
+<text class="field" x="776" y="174">title</text>
+<text class="field" x="776" y="194">publish_scope</text>
+<text class="field" x="776" y="214">status</text>
+<text class="field" x="776" y="234">due_at</text>
+</g>
+<g class="table" id="assignment_targets"><rect x="760" y="250" width="260" height="140" rx="12" fill="#fef3c7" stroke="#cbd5e1"/>
+<text class="title" x="776" y="274">assignment_targets｜作业发布对象</text>
+<text class="field" x="776" y="304"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="776" y="324"><tspan class="fk">FK</tspan> assignment_id → assignments.id</text>
+<text class="field" x="776" y="344">target_type: class/group/student</text>
+<text class="field" x="776" y="364">target_id: 业务目标ID</text>
+</g>
+<g class="table" id="assignment_items"><rect x="1130" y="60" width="260" height="160" rx="12" fill="#fef3c7" stroke="#cbd5e1"/>
+<text class="title" x="1146" y="84">assignment_items｜作业题目表</text>
+<text class="field" x="1146" y="114"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="1146" y="134"><tspan class="fk">FK</tspan> assignment_id → assignments.id</text>
+<text class="field" x="1146" y="154"><tspan class="fk">FK</tspan> question_id → questions.id</text>
+<text class="field" x="1146" y="174">sort_no</text>
+<text class="field" x="1146" y="194">score</text>
+</g>
+<g class="table" id="submissions"><rect x="1130" y="250" width="260" height="180" rx="12" fill="#fef3c7" stroke="#cbd5e1"/>
+<text class="title" x="1146" y="274">submissions｜提交记录表</text>
+<text class="field" x="1146" y="304"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="1146" y="324"><tspan class="fk">FK</tspan> assignment_id → assignments.id</text>
+<text class="field" x="1146" y="344"><tspan class="fk">FK</tspan> student_id → students.id</text>
+<text class="field" x="1146" y="364">file_urls</text>
+<text class="field" x="1146" y="384">status</text>
+<text class="field" x="1146" y="404">submitted_at</text>
+</g>
+<g class="table" id="grading_records"><rect x="1130" y="450" width="260" height="180" rx="12" fill="#fef3c7" stroke="#cbd5e1"/>
+<text class="title" x="1146" y="474">grading_records｜批改记录表</text>
+<text class="field" x="1146" y="504"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="1146" y="524"><tspan class="fk">FK</tspan> submission_id → submissions.id</text>
+<text class="field" x="1146" y="544"><tspan class="fk">FK</tspan> question_id → questions.id</text>
+<text class="field" x="1146" y="564"><tspan class="fk">FK</tspan> teacher_id → teachers.id</text>
+<text class="field" x="1146" y="584">ai_score / final_score</text>
+<text class="field" x="1146" y="604">needs_manual_review</text>
+</g>
+<g class="table" id="wrong_questions"><rect x="1130" y="680" width="260" height="180" rx="12" fill="#ede9fe" stroke="#cbd5e1"/>
+<text class="title" x="1146" y="704">wrong_questions｜错题表</text>
+<text class="field" x="1146" y="734"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="1146" y="754"><tspan class="fk">FK</tspan> student_id → students.id</text>
+<text class="field" x="1146" y="774"><tspan class="fk">FK</tspan> question_id → questions.id</text>
+<text class="field" x="1146" y="794"><tspan class="fk">FK</tspan> submission_id → submissions.id</text>
+<text class="field" x="1146" y="814">note</text>
+<text class="field" x="1146" y="834">mastered_at</text>
+</g>
+<g class="table" id="learning_stats"><rect x="1480" y="230" width="260" height="180" rx="12" fill="#ede9fe" stroke="#cbd5e1"/>
+<text class="title" x="1496" y="254">learning_stats｜学情统计表</text>
+<text class="field" x="1496" y="284"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="1496" y="304"><tspan class="fk">FK</tspan> student_id → students.id</text>
+<text class="field" x="1496" y="324"><tspan class="fk">FK</tspan> class_id → classes.id</text>
+<text class="field" x="1496" y="344"><tspan class="fk">FK</tspan> knowledge_point_id → knowledge_points.id</text>
+<text class="field" x="1496" y="364">stat_date</text>
+<text class="field" x="1496" y="384">score_rate / mastery_rate</text>
+</g>
+<g class="table" id="teacher_quality_stats"><rect x="1480" y="470" width="260" height="180" rx="12" fill="#ede9fe" stroke="#cbd5e1"/>
+<text class="title" x="1496" y="494">teacher_quality_stats｜教师质量统计</text>
+<text class="field" x="1496" y="524"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="1496" y="544"><tspan class="fk">FK</tspan> teacher_id → teachers.id</text>
+<text class="field" x="1496" y="564"><tspan class="fk">FK</tspan> class_id → classes.id</text>
+<text class="field" x="1496" y="584">stat_date</text>
+<text class="field" x="1496" y="604">grading_timely_rate</text>
+<text class="field" x="1496" y="624">ai_teaching_score</text>
+</g>
+<g class="table" id="class_compare_stats"><rect x="1480" y="690" width="260" height="160" rx="12" fill="#ede9fe" stroke="#cbd5e1"/>
+<text class="title" x="1496" y="714">class_compare_stats｜班级横向对比</text>
+<text class="field" x="1496" y="744"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="1496" y="764"><tspan class="fk">FK</tspan> class_id → classes.id</text>
+<text class="field" x="1496" y="784">stat_date</text>
+<text class="field" x="1496" y="804">grade / subject / exam_board</text>
+<text class="field" x="1496" y="824">avg_score / rank_no</text>
+</g>
+<g class="table" id="teacher_quotas"><rect x="1480" y="890" width="260" height="180" rx="12" fill="#e5e7eb" stroke="#cbd5e1"/>
+<text class="title" x="1496" y="914">teacher_quotas｜教师限额表</text>
+<text class="field" x="1496" y="944"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="1496" y="964"><tspan class="fk">FK</tspan> teacher_id → teachers.id</text>
+<text class="field" x="1496" y="984">period_type</text>
+<text class="field" x="1496" y="1004">ai_calls_limit / used</text>
+<text class="field" x="1496" y="1024">assignment_limit / used</text>
+<text class="field" x="1496" y="1044">pdf_limit / used</text>
+</g>
+<g class="table" id="ai_call_logs"><rect x="1480" y="1080" width="260" height="180" rx="12" fill="#e5e7eb" stroke="#cbd5e1"/>
+<text class="title" x="1496" y="1104">ai_call_logs｜AI调用日志</text>
+<text class="field" x="1496" y="1134"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="1496" y="1154"><tspan class="fk">FK</tspan> user_id → users.id</text>
+<text class="field" x="1496" y="1174"><tspan class="fk">FK</tspan> school_id → schools.id</text>
+<text class="field" x="1496" y="1194">task_type / provider / model</text>
+<text class="field" x="1496" y="1214">tokens / cost_amount</text>
+<text class="field" x="1496" y="1234">status / latency_ms</text>
+</g>
+<g class="table" id="files"><rect x="1130" y="890" width="260" height="200" rx="12" fill="#e5e7eb" stroke="#cbd5e1"/>
+<text class="title" x="1146" y="914">files｜文件元数据表</text>
+<text class="field" x="1146" y="944"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="1146" y="964"><tspan class="fk">FK</tspan> school_id → schools.id</text>
+<text class="field" x="1146" y="984"><tspan class="fk">FK</tspan> owner_user_id → users.id</text>
+<text class="field" x="1146" y="1004">biz_type</text>
+<text class="field" x="1146" y="1024">biz_id</text>
+<text class="field" x="1146" y="1044">storage_key / file_url</text>
+<text class="field" x="1146" y="1064">status</text>
+</g>
+<g class="table" id="notifications"><rect x="1130" y="1090" width="260" height="180" rx="12" fill="#e5e7eb" stroke="#cbd5e1"/>
+<text class="title" x="1146" y="1114">notifications｜站内通知表</text>
+<text class="field" x="1146" y="1144"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="1146" y="1164"><tspan class="fk">FK</tspan> school_id → schools.id</text>
+<text class="field" x="1146" y="1184"><tspan class="fk">FK</tspan> user_id → users.id</text>
+<text class="field" x="1146" y="1204">type / title</text>
+<text class="field" x="1146" y="1224">biz_type / biz_id</text>
+<text class="field" x="1146" y="1244">status / read_at</text>
+</g>
+<g class="table" id="operation_logs"><rect x="760" y="980" width="260" height="180" rx="12" fill="#e5e7eb" stroke="#cbd5e1"/>
+<text class="title" x="776" y="1004">operation_logs｜操作日志表</text>
+<text class="field" x="776" y="1034"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="776" y="1054"><tspan class="fk">FK</tspan> user_id → users.id</text>
+<text class="field" x="776" y="1074"><tspan class="fk">FK</tspan> school_id → schools.id</text>
+<text class="field" x="776" y="1094">action</text>
+<text class="field" x="776" y="1114">target_type / target_id</text>
+<text class="field" x="776" y="1134">detail</text>
+</g>
+<g class="table" id="system_logs"><rect x="760" y="1160" width="260" height="160" rx="12" fill="#e5e7eb" stroke="#cbd5e1"/>
+<text class="title" x="776" y="1184">system_logs｜系统日志表</text>
+<text class="field" x="776" y="1214"><tspan class="pk">PK</tspan> id</text>
+<text class="field" x="776" y="1234">level</text>
+<text class="field" x="776" y="1254">module</text>
+<text class="field" x="776" y="1274">message</text>
+<text class="field" x="776" y="1294">detail</text>
+</g>
+</svg></div>
+<div class="note"><strong>读图说明：</strong>箭头方向为外键表指向被引用主表；鼠标悬停在连线上可看到字段级关系。<code>assignment_targets.target_id</code> 与 <code>files.biz_id</code>、<code>notifications.biz_id</code> 属于多态业务关联，SQL 中不设置单一外键，需由 <code>target_type/biz_type</code> 在业务层约束。</div>
+<div class="section"><h2>字段级关联清单</h2><ul class="cols">
+<li><code>users.school_id → schools.id</code></li>
+<li><code>teachers.user_id → users.id</code></li>
+<li><code>students.user_id → users.id</code></li>
+<li><code>parents.user_id → users.id</code></li>
+<li><code>classes.school_id → schools.id</code></li>
+<li><code>classes.head_teacher_id → teachers.id</code></li>
+<li><code>students.class_id → classes.id</code></li>
+<li><code>parent_students.parent_id → parents.id</code></li>
+<li><code>parent_students.student_id → students.id</code></li>
+<li><code>class_teachers.class_id → classes.id</code></li>
+<li><code>class_teachers.teacher_id → teachers.id</code></li>
+<li><code>knowledge_points.parent_id → knowledge_points.id</code></li>
+<li><code>questions.knowledge_point_id → knowledge_points.id</code></li>
+<li><code>questions.syllabus_id → syllabi.id</code></li>
+<li><code>questions.textbook_id → textbooks.id</code></li>
+<li><code>questions.workbook_id → workbooks.id</code></li>
+<li><code>questions.created_by → users.id</code></li>
+<li><code>words.knowledge_point_id → knowledge_points.id</code></li>
+<li><code>assignments.teacher_id → teachers.id</code></li>
+<li><code>assignments.class_id → classes.id</code></li>
+<li><code>assignment_targets.assignment_id → assignments.id</code></li>
+<li><code>assignment_items.assignment_id → assignments.id</code></li>
+<li><code>assignment_items.question_id → questions.id</code></li>
+<li><code>submissions.assignment_id → assignments.id</code></li>
+<li><code>submissions.student_id → students.id</code></li>
+<li><code>grading_records.submission_id → submissions.id</code></li>
+<li><code>grading_records.question_id → questions.id</code></li>
+<li><code>grading_records.teacher_id → teachers.id</code></li>
+<li><code>wrong_questions.student_id → students.id</code></li>
+<li><code>wrong_questions.question_id → questions.id</code></li>
+<li><code>wrong_questions.submission_id → submissions.id</code></li>
+<li><code>learning_stats.student_id → students.id</code></li>
+<li><code>learning_stats.class_id → classes.id</code></li>
+<li><code>learning_stats.knowledge_point_id → knowledge_points.id</code></li>
+<li><code>teacher_quality_stats.teacher_id → teachers.id</code></li>
+<li><code>teacher_quality_stats.class_id → classes.id</code></li>
+<li><code>class_compare_stats.class_id → classes.id</code></li>
+<li><code>teacher_quotas.teacher_id → teachers.id</code></li>
+<li><code>ai_call_logs.user_id → users.id</code></li>
+<li><code>ai_call_logs.school_id → schools.id</code></li>
+<li><code>files.school_id → schools.id</code></li>
+<li><code>files.owner_user_id → users.id</code></li>
+<li><code>notifications.school_id → schools.id</code></li>
+<li><code>notifications.user_id → users.id</code></li>
+<li><code>operation_logs.user_id → users.id</code></li>
+<li><code>operation_logs.school_id → schools.id</code></li>
+</ul></div>
+<div class="section"><h2>多态/业务约束说明</h2><ul>
+<li><code>assignment_targets.target_type = class</code> 时，<code>target_id</code> 对应 <code>classes.id</code>；为 <code>student</code> 时对应 <code>students.id</code>；若后续引入分组表，则 <code>group</code> 对应分组表主键。</li>
+<li><code>files.biz_type + biz_id</code> 可关联提交、题库导入、PDF、课件、录音等业务对象；建议在服务层校验业务对象存在性。</li>
+<li><code>notifications.biz_type + biz_id</code> 可关联作业、提交、批改、限额、系统公告等业务对象；通知的接收人固定由 <code>user_id</code> 约束。</li>
+<li><code>wrong_questions</code> 同时保留 <code>student_id</code>、<code>question_id</code>、<code>submission_id</code>，是为了错题集查询效率和批改来源追溯。</li>
+</ul></div>
+</div></body></html>
