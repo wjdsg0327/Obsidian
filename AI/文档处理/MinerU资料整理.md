@@ -977,3 +977,20 @@ MinerU + PDF 真题导入 PoC
 - MinerU 快速入门：<https://opendatalab.github.io/MinerU/quick_start>
 - MinerU 命令行工具：<https://opendatalab.github.io/MinerU/usage/cli_tools>
 - MinerU-Ecosystem：<https://github.com/opendatalab/MinerU-Ecosystem>
+
+---
+
+## 补充：物理公式需要二次清洗（2026-06-08）
+
+在物理试卷、讲义、答案解析等场景中，MinerU / marker 的输出不应直接作为最终稿。推荐流程是：
+
+1. 先用 MinerU / marker 抽取文本、图片、表格和基础 Markdown。
+2. 再用脚本规则或人工规则把常见物理公式重写成 LaTeX。
+3. 最后按题号整理 Markdown，统一题干、选项、答案、解析、分值结构。
+
+核心原则：**PDF 转换工具只负责初稿抽取，物理公式必须二次清洗，不能完全指望自动识别。**
+
+详见：
+
+- [[PDF物理题转Markdown二次清洗流程]]
+- [[物理公式LaTeX二次清洗规则]]
