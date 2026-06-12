@@ -1449,7 +1449,8 @@
 }
 
 /* ----- 16. OBSIDIAN (黑曜) — Always-dark violet glass ----- */
-.apex-dashboard-root[data-theme="obsidian"] {
+.apex-dashboard-root[data-theme="obsidian"],
+[data-theme="obsidian"].modal-container {
 	--db-bg: #09080d;
 	--db-bg-section: rgba(20, 17, 28, 0.44);
 	--db-bg-card: rgba(28, 24, 38, 0.72);
@@ -1492,12 +1493,15 @@
 	--db-checkbox: #a78bfa;
 	--db-quote-border: #8b5cf6;
 	--db-link: #c4b5fd;
+	color-scheme: dark;
+	transition: color 0.3s ease;
+}
+
+.apex-dashboard-root[data-theme="obsidian"] {
 	background:
 		radial-gradient(circle at 18% 0%, rgba(124, 58, 237, 0.19), transparent 38%),
 		radial-gradient(circle at 88% 22%, rgba(168, 85, 247, 0.10), transparent 34%),
 		linear-gradient(155deg, #111016 0%, #09080d 54%, #060508 100%);
-	color-scheme: dark;
-	transition: color 0.3s ease;
 }
 
 /* =================================================================
@@ -7450,7 +7454,7 @@
 	box-shadow: var(--db-shadow-card-hover);
 }
 .apex-dashboard-root[data-theme="obsidian"] .dashboard-memo-textarea:focus,
-.apex-dashboard-root[data-theme="obsidian"] .dashboard-modal-input:focus {
+[data-theme="obsidian"] .dashboard-modal-input:focus {
 	border-color: var(--db-border-input-focus);
 	box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.14);
 }
@@ -7463,7 +7467,7 @@
 	border-color: rgba(196, 181, 253, 0.32);
 }
 [data-theme="obsidian"] .dashboard-modal {
-	background: rgba(17, 14, 24, 0.96);
+	background: rgba(17, 14, 24, 0.96) !important;
 	border: 1px solid var(--db-border-card);
 	box-shadow: 0 24px 64px rgba(0, 0, 0, 0.52), 0 0 28px rgba(124, 58, 237, 0.10);
 	color: var(--db-text);
