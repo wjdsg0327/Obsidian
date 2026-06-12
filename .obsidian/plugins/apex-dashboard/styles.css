@@ -7472,12 +7472,12 @@
 	box-shadow: 0 24px 64px rgba(0, 0, 0, 0.52), 0 0 28px rgba(124, 58, 237, 0.10);
 	color: var(--db-text);
 }
-[data-theme="obsidian"] .dashboard-modal-actions .mod-cta {
+[data-theme="obsidian"] .dashboard-modal .mod-cta {
 	background: linear-gradient(135deg, #7c3aed, #a78bfa);
 	border-color: rgba(216, 180, 254, 0.28);
 	color: #ffffff;
 }
-[data-theme="obsidian"] .dashboard-modal-actions .mod-cta:hover {
+[data-theme="obsidian"] .dashboard-modal .mod-cta:hover {
 	background: linear-gradient(135deg, #8b5cf6, #c084fc);
 	box-shadow: 0 8px 24px rgba(124, 58, 237, 0.28);
 }
