@@ -1,0 +1,249 @@
+<style>
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 24px;
+  }
+  .theme-choice {
+    overflow: hidden;
+    padding: 0;
+    border-radius: 18px;
+    cursor: pointer;
+  }
+  .theme-preview {
+    min-height: 390px;
+    padding: 18px;
+    color: #e5e7eb;
+    font-family: Inter, "Noto Sans SC", sans-serif;
+  }
+  .theme-preview h4 {
+    margin: 0;
+    color: inherit;
+    font-size: 18px;
+  }
+  .preview-subtitle {
+    margin: 4px 0 16px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .preview-banner {
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  .preview-progress {
+    height: 5px;
+    margin-top: 13px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--track);
+  }
+  .preview-progress span {
+    display: block;
+    width: 68%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .preview-columns {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .preview-card {
+    min-height: 86px;
+    padding: 13px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--card);
+    box-shadow: var(--shadow);
+  }
+  .preview-card strong {
+    display: block;
+    margin-bottom: 9px;
+    color: var(--text);
+    font-size: 13px;
+  }
+  .preview-line {
+    height: 5px;
+    margin: 7px 0;
+    border-radius: 6px;
+    background: var(--line);
+  }
+  .preview-line.short { width: 62%; }
+  .preview-tag {
+    display: inline-block;
+    margin-top: 9px;
+    padding: 3px 7px;
+    border-radius: 12px;
+    color: var(--accent2);
+    background: var(--tag);
+    font-size: 10px;
+  }
+  .midnight {
+    --muted: #8d98a9;
+    --surface: rgba(18, 24, 36, .86);
+    --card: rgba(24, 32, 47, .82);
+    --border: rgba(111, 146, 194, .17);
+    --track: #172033;
+    --accent: #4f8cff;
+    --accent2: #7dd3fc;
+    --text: #e8f0ff;
+    --line: #2a3548;
+    --tag: rgba(79, 140, 255, .14);
+    --shadow: 0 10px 28px rgba(0, 0, 0, .24);
+    background:
+      radial-gradient(circle at 85% 0%, rgba(45, 96, 170, .22), transparent 38%),
+      linear-gradient(155deg, #0d111a, #080b12);
+  }
+  .obsidian {
+    --muted: #a1a1aa;
+    --surface: rgba(18, 18, 22, .92);
+    --card: rgba(28, 28, 34, .82);
+    --border: rgba(212, 212, 216, .12);
+    --track: #27272a;
+    --accent: #a78bfa;
+    --accent2: #d8b4fe;
+    --text: #f4f4f5;
+    --line: #3f3f46;
+    --tag: rgba(167, 139, 250, .14);
+    --shadow: 0 12px 32px rgba(0, 0, 0, .34);
+    background:
+      radial-gradient(circle at 20% 0%, rgba(124, 58, 237, .18), transparent 40%),
+      linear-gradient(150deg, #111014, #08080a);
+  }
+  .graphite {
+    --muted: #929292;
+    --surface: rgba(25, 25, 25, .94);
+    --card: rgba(34, 34, 34, .88);
+    --border: rgba(255, 255, 255, .09);
+    --track: #2b2b2b;
+    --accent: #d4d4d4;
+    --accent2: #ffffff;
+    --text: #f0f0f0;
+    --line: #414141;
+    --tag: rgba(255, 255, 255, .08);
+    --shadow: 0 8px 20px rgba(0, 0, 0, .28);
+    background:
+      radial-gradient(circle at 50% -20%, rgba(255, 255, 255, .07), transparent 48%),
+      linear-gradient(160deg, #151515, #090909);
+  }
+  .choice-copy {
+    padding: 14px 16px 16px;
+  }
+  .choice-copy h3 { margin: 0 0 5px; }
+  .choice-copy p { margin: 0; }
+  @media (max-width: 900px) {
+    .theme-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<h2>暗黑主题想走哪种方向？</h2>
+<p class="subtitle">三种方案都会始终保持暗色，不受 Obsidian 当前明暗模式影响。点击你喜欢的一项。</p>
+
+<div class="theme-grid cards">
+  <div class="card theme-choice" data-choice="midnight-blue" onclick="toggleSelect(this)">
+    <div class="theme-preview midnight">
+      <div class="preview-banner">
+        <h4>深夜蓝</h4>
+        <div class="preview-subtitle">冷静、清晰、长时间使用舒适</div>
+        <div class="preview-progress"><span></span></div>
+      </div>
+      <div class="preview-columns">
+        <div class="preview-card">
+          <strong>今日计划</strong>
+          <div class="preview-line"></div><div class="preview-line short"></div>
+          <span class="preview-tag">进行中</span>
+        </div>
+        <div class="preview-card">
+          <strong>项目笔记</strong>
+          <div class="preview-line short"></div><div class="preview-line"></div>
+          <span class="preview-tag">知识库</span>
+        </div>
+        <div class="preview-card">
+          <strong>待办事项</strong>
+          <div class="preview-line"></div><div class="preview-line short"></div>
+        </div>
+        <div class="preview-card">
+          <strong>专注时间</strong>
+          <div class="preview-line short"></div><div class="preview-line"></div>
+        </div>
+      </div>
+    </div>
+    <div class="choice-copy">
+      <h3>A. 深夜蓝</h3>
+      <p>蓝色强调，层次清楚。我最推荐，适合作为通用暗黑主题。</p>
+    </div>
+  </div>
+
+  <div class="card theme-choice" data-choice="obsidian-purple" onclick="toggleSelect(this)">
+    <div class="theme-preview obsidian">
+      <div class="preview-banner">
+        <h4>黑曜紫</h4>
+        <div class="preview-subtitle">贴近 Obsidian 气质，柔和玻璃感</div>
+        <div class="preview-progress"><span></span></div>
+      </div>
+      <div class="preview-columns">
+        <div class="preview-card">
+          <strong>今日计划</strong>
+          <div class="preview-line"></div><div class="preview-line short"></div>
+          <span class="preview-tag">进行中</span>
+        </div>
+        <div class="preview-card">
+          <strong>项目笔记</strong>
+          <div class="preview-line short"></div><div class="preview-line"></div>
+          <span class="preview-tag">知识库</span>
+        </div>
+        <div class="preview-card">
+          <strong>待办事项</strong>
+          <div class="preview-line"></div><div class="preview-line short"></div>
+        </div>
+        <div class="preview-card">
+          <strong>专注时间</strong>
+          <div class="preview-line short"></div><div class="preview-line"></div>
+        </div>
+      </div>
+    </div>
+    <div class="choice-copy">
+      <h3>B. 黑曜紫</h3>
+      <p>紫色强调，更有 Obsidian 原生感，也更偏精致与氛围感。</p>
+    </div>
+  </div>
+
+  <div class="card theme-choice" data-choice="graphite" onclick="toggleSelect(this)">
+    <div class="theme-preview graphite">
+      <div class="preview-banner">
+        <h4>石墨黑</h4>
+        <div class="preview-subtitle">纯粹克制，几乎没有彩色干扰</div>
+        <div class="preview-progress"><span></span></div>
+      </div>
+      <div class="preview-columns">
+        <div class="preview-card">
+          <strong>今日计划</strong>
+          <div class="preview-line"></div><div class="preview-line short"></div>
+          <span class="preview-tag">进行中</span>
+        </div>
+        <div class="preview-card">
+          <strong>项目笔记</strong>
+          <div class="preview-line short"></div><div class="preview-line"></div>
+          <span class="preview-tag">知识库</span>
+        </div>
+        <div class="preview-card">
+          <strong>待办事项</strong>
+          <div class="preview-line"></div><div class="preview-line short"></div>
+        </div>
+        <div class="preview-card">
+          <strong>专注时间</strong>
+          <div class="preview-line short"></div><div class="preview-line"></div>
+        </div>
+      </div>
+    </div>
+    <div class="choice-copy">
+      <h3>C. 石墨黑</h3>
+      <p>中性灰白强调，极简、低干扰，但状态辨识度稍弱。</p>
+    </div>
+  </div>
+</div>
