@@ -20,13 +20,15 @@
 
 ## 连接相关
 
-| 命令 | 说明 | 示例 |
-|------|------|------|
-| `-s, --serial=SERIAL` | 指定设备序列号 | `scrcpy -s 0123456789abcdef` |
-| `-d, --select-usb` | 选择 USB 连接的设备 | `scrcpy -d` |
-| `-e, --select-tcpip` | 选择 TCP/IP 连接的设备 | `scrcpy -e` |
-| `--tcpip[=IP[:PORT]]` | 自动配置 TCP/IP 连接 | `scrcpy --tcpip=192.168.1.1:5555` |
-| `--force-adb-forward` | 强制使用 adb forward | `scrcpy --force-adb-forward` |
+adb tcpip 5555
+
+| 命令                    | 说明               | 示例                                |
+| --------------------- | ---------------- | --------------------------------- |
+| `-s, --serial=SERIAL` | 指定设备序列号          | `scrcpy -s 0123456789abcdef`      |
+| `-d, --select-usb`    | 选择 USB 连接的设备     | `scrcpy -d`                       |
+| `-e, --select-tcpip`  | 选择 TCP/IP 连接的设备  | `scrcpy -e`                       |
+| `--tcpip[=IP[:PORT]]` | 自动配置 TCP/IP 连接   | `scrcpy --tcpip=192.168.1.1:5555` |
+| `--force-adb-forward` | 强制使用 adb forward | `scrcpy --force-adb-forward`      |
 
 **TCP/IP 无线连接示例：**
 ```bash
