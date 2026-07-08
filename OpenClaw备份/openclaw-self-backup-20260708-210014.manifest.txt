@@ -1,8 +1,8 @@
 OpenClaw assistant workspace backup
-Time: 2026-07-04 17:55:07 CST
+Time: 2026-07-08 21:00:14 CST
 Source: /root/.openclaw/workspace
-Archive: /mnt/d/老王/OpenClaw备份/openclaw-self-backup-20260704-175507.tar.gz
-SHA256: 7eb61d1f58683cd56ad7b97872aebf5dc8dd7299623539a4ca55566edd31a240
+Archive: /mnt/d/老王/OpenClaw备份/openclaw-self-backup-20260708-210014.tar.gz
+SHA256: 9d078df6b2467dc2cce247e01f9bc2133866acb9f89f3c90818ed85b43297178
 
 Archive contents:
 - ./
@@ -45,15 +45,19 @@ Archive contents:
 - ./memory/.dreams/session-corpus/2026-06-12.txt
 - ./memory/.dreams/session-corpus/2026-06-08.txt
 - ./memory/.dreams/session-corpus/2026-06-26.txt
+- ./memory/.dreams/session-corpus/2026-07-04.txt
 - ./memory/.dreams/session-corpus/2026-06-22.txt
 - ./memory/.dreams/session-corpus/2026-06-01.txt
 - ./memory/.dreams/session-corpus/2026-07-02.txt
+- ./memory/.dreams/session-corpus/2026-07-06.txt
 - ./memory/.dreams/session-corpus/2026-06-07.txt
 - ./memory/.dreams/session-corpus/2026-06-24.txt
 - ./memory/.dreams/session-corpus/2026-06-30.txt
 - ./memory/.dreams/session-corpus/2026-06-06.txt
+- ./memory/.dreams/session-corpus/2026-07-07.txt
 - ./memory/.dreams/session-corpus/2026-06-27.txt
 - ./memory/.dreams/session-corpus/2026-06-10.txt
+- ./memory/.dreams/session-corpus/2026-07-05.txt
 - ./memory/.dreams/session-corpus/2026-06-15.txt
 - ./memory/.dreams/session-corpus/2026-06-09.txt
 - ./memory/.dreams/session-corpus/2026-06-25.txt
@@ -65,7 +69,9 @@ Archive contents:
 - ./memory/.dreams/short-term-recall.json.migrated
 - ./memory/.dreams/events.jsonl
 - ./memory/2026-06-07-1230.md
+- ./memory/2026-07-06-1655.md
 - ./memory/2026-06-16-2031.md
+- ./memory/2026-07-06-1712.md
 - ./memory/dreaming/
 - ./memory/dreaming/rem/
 - ./memory/dreaming/rem/2026-06-06.md
@@ -82,13 +88,17 @@ Archive contents:
 - ./memory/dreaming/rem/2026-07-01.md
 - ./memory/dreaming/rem/2026-06-16.md
 - ./memory/dreaming/rem/2026-06-26.md
+- ./memory/dreaming/rem/2026-07-08.md
 - ./memory/dreaming/rem/2026-06-10.md
 - ./memory/dreaming/rem/2026-06-23.md
 - ./memory/dreaming/rem/2026-06-27.md
 - ./memory/dreaming/rem/2026-06-17.md
 - ./memory/dreaming/rem/2026-06-21.md
+- ./memory/dreaming/rem/2026-07-07.md
 - ./memory/dreaming/rem/2026-06-07.md
 - ./memory/dreaming/rem/2026-06-25.md
+- ./memory/dreaming/rem/2026-07-06.md
+- ./memory/dreaming/rem/2026-07-05.md
 - ./memory/dreaming/rem/2026-06-28.md
 - ./memory/dreaming/rem/2026-06-13.md
 - ./memory/dreaming/rem/2026-06-05.md
@@ -113,13 +123,17 @@ Archive contents:
 - ./memory/dreaming/light/2026-07-01.md
 - ./memory/dreaming/light/2026-06-16.md
 - ./memory/dreaming/light/2026-06-26.md
+- ./memory/dreaming/light/2026-07-08.md
 - ./memory/dreaming/light/2026-06-10.md
 - ./memory/dreaming/light/2026-06-23.md
 - ./memory/dreaming/light/2026-06-27.md
 - ./memory/dreaming/light/2026-06-17.md
 - ./memory/dreaming/light/2026-06-21.md
+- ./memory/dreaming/light/2026-07-07.md
 - ./memory/dreaming/light/2026-06-07.md
 - ./memory/dreaming/light/2026-06-25.md
+- ./memory/dreaming/light/2026-07-06.md
+- ./memory/dreaming/light/2026-07-05.md
 - ./memory/dreaming/light/2026-06-28.md
 - ./memory/dreaming/light/2026-06-13.md
 - ./memory/dreaming/light/2026-06-05.md
@@ -144,13 +158,17 @@ Archive contents:
 - ./memory/dreaming/deep/2026-07-01.md
 - ./memory/dreaming/deep/2026-06-16.md
 - ./memory/dreaming/deep/2026-06-26.md
+- ./memory/dreaming/deep/2026-07-08.md
 - ./memory/dreaming/deep/2026-06-10.md
 - ./memory/dreaming/deep/2026-06-23.md
 - ./memory/dreaming/deep/2026-06-27.md
 - ./memory/dreaming/deep/2026-06-17.md
 - ./memory/dreaming/deep/2026-06-21.md
+- ./memory/dreaming/deep/2026-07-07.md
 - ./memory/dreaming/deep/2026-06-07.md
 - ./memory/dreaming/deep/2026-06-25.md
+- ./memory/dreaming/deep/2026-07-06.md
+- ./memory/dreaming/deep/2026-07-05.md
 - ./memory/dreaming/deep/2026-06-28.md
 - ./memory/dreaming/deep/2026-06-13.md
 - ./memory/dreaming/deep/2026-06-05.md
@@ -160,9 +178,11 @@ Archive contents:
 - ./memory/dreaming/deep/2026-06-19.md
 - ./memory/dreaming/deep/2026-06-08.md
 - ./memory/dreaming/deep/2026-07-02.md
+- ./memory/2026-07-05-2159.md
 - ./memory/2026-06-28-1311.md
 - ./memory/2026-06-27-1805.md
 - ./memory/2026-06-03.md
+- ./memory/2026-07-04-1838.md
 - ./memory/2026-06-01.md
 - ./memory/2026-06-07-1213.md
 - ./memory/2026-07-04-1736.md
@@ -244,6 +264,8 @@ Archive contents:
 - ./skills/obsidian-git-vault/vault-sync-sop.md
 - ./skills/obsidian-git-vault/SKILL.md
 - ./skills/obsidian-git-vault/_meta.json
+- ./skills/monthly-salary-auto-calc/
+- ./skills/monthly-salary-auto-calc/SKILL.md
 - ./skills/skillhub-preference/
 - ./skills/skillhub-preference/SKILL.md
 - ./skills/find-skills/
