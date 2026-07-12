@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rust 入门资料：语法、函数与热门库</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif;line-height:1.85;color:#263238;background:#fafafa}.container{display:flex;min-height:100vh}.sidebar{width:288px;background:#fff;border-right:1px solid #e8e8e8;padding:28px 22px;position:fixed;height:100vh;overflow-y:auto}.sidebar-title{font-size:20px;font-weight:700;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #d97706;color:#111827}.nav-list{list-style:none}.nav-item{margin-bottom:6px}.nav-link{display:block;padding:9px 12px;border-radius:8px;color:#4b5563;text-decoration:none;font-size:14px}.nav-link:hover,.nav-link.active{background:#fff7ed;color:#c2410c}.nav-number{color:#9ca3af;margin-right:6px}.main-content{margin-left:288px;padding:42px 58px;max-width:1060px}.hero{background:linear-gradient(135deg,#fff7ed,#eef2ff);border:1px solid #fed7aa;border-radius:18px;padding:30px;margin-bottom:36px}.hero h1{font-size:34px;margin-bottom:12px;color:#111827}.hero p{color:#374151;margin-bottom:8px}.chapter{margin-bottom:58px;scroll-margin-top:24px;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:28px}.chapter-title{font-size:26px;margin-bottom:18px;color:#111827;border-bottom:1px solid #e5e7eb;padding-bottom:12px}.chapter-content h3{font-size:18px;margin:22px 0 10px;color:#1f2937}.chapter-content p{margin-bottom:14px}.chapter-content ul,.chapter-content ol{margin:12px 0 18px 24px}.chapter-content li{margin-bottom:8px}.visualization{margin:24px 0;padding:18px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;text-align:center}.visualization-title{font-size:14px;color:#6b7280;margin-bottom:10px}.tip-box{margin:20px 0;padding:14px 16px;background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px}.tip-box-title{font-weight:700;color:#b45309;margin-bottom:6px}.tip-box-content{font-size:14px;color:#4b5563}.code{background:#111827;color:#e5e7eb;border-radius:12px;padding:16px;overflow-x:auto;margin:14px 0 18px;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:14px;line-height:1.65}.inline-code{font-family:Consolas,monospace;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:5px;padding:1px 5px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:16px 0}.card{border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#fff}.card strong{color:#111827}.refs{padding:24px;margin-bottom:30px;background:#fff;border:1px solid #e5e7eb;border-radius:16px}.refs h2{font-size:22px;margin-bottom:12px}.refs a{color:#2563eb;text-decoration:none}.refs a:hover{text-decoration:underline}@media(max-width:800px){.container{display:block}.sidebar{position:relative;width:100%;height:auto}.main-content{margin-left:0;padding:24px 16px}.chapter{padding:20px}.hero h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="container">
+<aside class="sidebar">
+<div class="sidebar-title">Rust 入门导航</div>
+<ul class="nav-list">
+<li class="nav-item"><a class="nav-link" href="#s1"><span class="nav-number">01</span>学习路线</a></li>
+<li class="nav-item"><a class="nav-link" href="#s2"><span class="nav-number">02</span>环境与 Cargo</a></li>
+<li class="nav-item"><a class="nav-link" href="#s3"><span class="nav-number">03</span>基础语法</a></li>
+<li class="nav-item"><a class="nav-link" href="#s4"><span class="nav-number">04</span>函数与表达式</a></li>
+<li class="nav-item"><a class="nav-link" href="#s5"><span class="nav-number">05</span>所有权、借用与生命周期</a></li>
+<li class="nav-item"><a class="nav-link" href="#s6"><span class="nav-number">06</span>结构体、枚举与模式匹配</a></li>
+<li class="nav-item"><a class="nav-link" href="#s7"><span class="nav-number">07</span>错误处理、泛型与 Trait</a></li>
+<li class="nav-item"><a class="nav-link" href="#s8"><span class="nav-number">08</span>集合、迭代器、闭包、模块与测试</a></li>
+<li class="nav-item"><a class="nav-link" href="#s9"><span class="nav-number">09</span>并发与异步</a></li>
+<li class="nav-item"><a class="nav-link" href="#s10"><span class="nav-number">10</span>热门库与练习项目</a></li>
+</ul>
+</aside>
+<main class="main-content">
+<section class="hero">
+<h1>Rust 入门资料：语法、函数与热门库</h1>
+<p>适合已经会一点编程、想系统入门 Rust 的学习路线。重点不是背语法，而是理解 Rust 的核心：<strong>所有权 + 类型系统 + 零成本抽象</strong>。</p>
+<p>建议节奏：先跑通环境 → 写小程序 → 重点攻克所有权 → 再看生态库和项目。</p>
+</section>
+
+<section class="chapter" id="s1">
+<h2 class="chapter-title">学习路线</h2>
+<div class="chapter-content">
+<p>Rust 的学习曲线比 Python、JavaScript 陡一些，但它的难点很集中：一开始会被所有权、借用、生命周期卡住；一旦过了这关，后面的工程体验会非常稳。</p>
+<div class="visualization"><div class="visualization-title">Rust 学习路径</div>
+<svg viewBox="0 0 760 120" width="100%" height="120" role="img">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#d97706"/></marker></defs>
+<line x1="80" y1="60" x2="680" y2="60" stroke="#d97706" stroke-width="3" marker-end="url(#arrow)"/>
+<g fill="#fff" stroke="#fb923c" stroke-width="2"><rect x="20" y="30" width="105" height="60" rx="12"/><rect x="160" y="30" width="105" height="60" rx="12"/><rect x="300" y="30" width="115" height="60" rx="12"/><rect x="450" y="30" width="115" height="60" rx="12"/><rect x="600" y="30" width="120" height="60" rx="12"/></g>
+<g fill="#111827" font-size="14" text-anchor="middle"><text x="72" y="55">环境</text><text x="72" y="75">Cargo</text><text x="212" y="55">语法</text><text x="212" y="75">函数</text><text x="357" y="55">所有权</text><text x="357" y="75">借用</text><text x="507" y="55">错误处理</text><text x="507" y="75">Trait</text><text x="660" y="55">Web/CLI</text><text x="660" y="75">项目实战</text></g>
+</svg></div>
+<h3>推荐顺序</h3>
+<ol><li>先安装 Rust，熟悉 <span class="inline-code">cargo new</span>、<span class="inline-code">cargo run</span>、<span class="inline-code">cargo test</span>。</li><li>学基础语法：变量、类型、控制流、函数。</li><li>集中攻克所有权、借用、引用、生命周期。</li><li>学结构体、枚举、模式匹配、错误处理。</li><li>再学模块、测试、常用库，最后做小项目。</li></ol>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div class="tip-box-content">不要一开始就死磕生命周期标注。先会写简单函数和结构体，再看编译器报错，它会一步步教你。</div></div>
+</div>
+</section>
+
+<section class="chapter" id="s2">
+<h2 class="chapter-title">环境与 Cargo</h2>
+<div class="chapter-content">
+<p>Rust 官方工具链叫 <span class="inline-code">rustup</span>，包管理和构建工具叫 <span class="inline-code">cargo</span>。实际开发里，Cargo 是每天都要用的入口。</p>
+<div class="visualization"><div class="visualization-title">Cargo 项目结构</div>
+<svg viewBox="0 0 620 180" width="100%" height="180">
+<rect x="30" y="20" width="560" height="140" rx="14" fill="#fff" stroke="#cbd5e1"/>
+<text x="60" y="55" font-size="16" font-weight="700" fill="#111827">my_app/</text>
+<text x="90" y="85" font-size="15" fill="#374151">Cargo.toml  → 项目名、版本、依赖</text>
+<text x="90" y="115" font-size="15" fill="#374151">src/main.rs → 程序入口</text>
+<text x="90" y="145" font-size="15" fill="#374151">src/lib.rs  → 库代码，可被测试和复用</text>
+</svg></div>
+<div class="code"># 安装后常用命令
+rustc --version
+cargo new hello_rust
+cd hello_rust
+cargo run
+cargo build --release
+cargo test
+cargo fmt
+cargo clippy</div>
+<h3>Cargo.toml 示例</h3>
+<div class="code">[package]
+name = "hello_rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }</div>
+<p>把 Cargo 理解为 Rust 的“项目管家”：下载依赖、编译、测试、格式化、发布都靠它。</p>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div class="tip-box-content">不要直接用 <span class="inline-code">rustc main.rs</span> 管大项目。学习单文件可以，正式项目用 Cargo。</div></div>
+</div>
+</section>
+
+<section class="chapter" id="s3">
+<h2 class="chapter-title">基础语法</h2>
+<div class="chapter-content">
+<p>Rust 默认变量不可变，这是它鼓励安全代码的第一步。需要修改时显式写 <span class="inline-code">mut</span>。</p>
+<div class="visualization"><div class="visualization-title">变量绑定与可变性</div>
+<svg viewBox="0 0 620 160" width="100%" height="160">
+<rect x="70" y="35" width="200" height="80" rx="12" fill="#eff6ff" stroke="#60a5fa"/><text x="170" y="68" text-anchor="middle" font-size="16" fill="#1e3a8a">let x = 10</text><text x="170" y="94" text-anchor="middle" font-size="13" fill="#1e40af">默认不可变</text>
+<rect x="350" y="35" width="200" height="80" rx="12" fill="#ecfdf5" stroke="#34d399"/><text x="450" y="68" text-anchor="middle" font-size="16" fill="#065f46">let mut y = 10</text><text x="450" y="94" text-anchor="middle" font-size="13" fill="#047857">可以重新赋值</text>
+</svg></div>
+<h3>常见类型</h3>
+<ul><li>整数：<span class="inline-code">i32</span>、<span class="inline-code">i64</span>、<span class="inline-code">u32</span>、<span class="inline-code">usize</span></li><li>浮点：<span class="inline-code">f32</span>、<span class="inline-code">f64</span></li><li>布尔：<span class="inline-code">bool</span></li><li>字符：<span class="inline-code">char</span>，是 Unicode 标量值，不只是 ASCII</li><li>字符串：<span class="inline-code">String</span> 和 <span class="inline-code">&str</span></li><li>复合类型：元组、数组、切片、结构体、枚举</li></ul>
+<div class="code">fn main() {
+    let x = 10;        // 不可变
+    let mut y = 20;    // 可变
+    y += 1;
+
+    let name: &str = "laowang";
+    let title: String = String::from("Rust 入门");
+
+    let point = (10, 20);
+    let nums = [1, 2, 3, 4];
+
+    println!("x={x}, y={y}, name={name}, title={title}");
+    println!("point=({}, {}), first={}", point.0, point.1, nums[0]);
+}</div>
+<h3>控制流</h3>
+<div class="code">let score = 82;
+let level = if score >= 90 {
+    "优秀"
+} else if score >= 60 {
+    "及格"
+} else {
+    "继续练"
+};
+
+for i in 0..5 {
+    println!("{i}");
+}
+
+let mut n = 3;
+while n > 0 {
+    n -= 1;
+}</div>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div class="tip-box-content">Rust 的 <span class="inline-code">if</span> 可以作为表达式返回值，但每个分支返回类型必须一致。</div></div>
+</div>
+</section>
+
+<section class="chapter" id="s4">
+<h2 class="chapter-title">函数与表达式</h2>
+<div class="chapter-content">
+<p>Rust 函数用 <span class="inline-code">fn</span> 定义，参数必须写类型，返回值用 <span class="inline-code">-&gt;</span>。函数体最后一行如果没有分号，就是返回表达式。</p>
+<div class="visualization"><div class="visualization-title">函数：输入 → 处理 → 输出</div>
+<svg viewBox="0 0 650 150" width="100%" height="150">
+<defs><marker id="a2" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#2563eb"/></marker></defs>
+<rect x="40" y="48" width="135" height="54" rx="10" fill="#dbeafe" stroke="#60a5fa"/><text x="107" y="81" text-anchor="middle" font-size="15">参数 a, b</text>
+<line x1="178" y1="75" x2="270" y2="75" stroke="#2563eb" stroke-width="3" marker-end="url(#a2)"/>
+<rect x="280" y="35" width="135" height="80" rx="10" fill="#fff7ed" stroke="#fb923c"/><text x="347" y="68" text-anchor="middle" font-size="15">函数体</text><text x="347" y="91" text-anchor="middle" font-size="13">表达式求值</text>
+<line x1="418" y1="75" x2="510" y2="75" stroke="#2563eb" stroke-width="3" marker-end="url(#a2)"/>
+<rect x="520" y="48" width="95" height="54" rx="10" fill="#dcfce7" stroke="#4ade80"/><text x="567" y="81" text-anchor="middle" font-size="15">返回值</text>
+</svg></div>
+<div class="code">fn add(a: i32, b: i32) -> i32 {
+    a + b   // 没有分号，作为返回值
+}
+
+fn print_msg(msg: &str) {
+    println!("{msg}"); // 无返回值，相当于返回 ()
+}
+
+fn main() {
+    let result = add(3, 5);
+    print_msg("hello rust");
+    println!("result = {result}");
+}</div>
+<h3>函数里的表达式</h3>
+<div class="code">let x = {
+    let a = 10;
+    let b = 20;
+    a + b
+};
+// x = 30</div>
+<p>Rust 更偏表达式风格。很多结构都能产出值，例如 <span class="inline-code">if</span>、代码块、<span class="inline-code">match</span>。</p>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div class="tip-box-content"><span class="inline-code">a + b;</span> 有分号就变成语句，返回 <span class="inline-code">()</span>，这会导致返回类型不匹配。</div></div>
+</div>
+</section>
+
+<section class="chapter" id="s5">
+<h2 class="chapter-title">所有权、借用与生命周期</h2>
+<div class="chapter-content">
+<p>这是 Rust 最核心也最容易卡住的部分。简单说：每个值只有一个所有者；所有者离开作用域，值就被释放；想临时使用别人的值，用引用借用。</p>
+<div class="visualization"><div class="visualization-title">所有权移动与借用</div>
+<svg viewBox="0 0 720 190" width="100%" height="190">
+<defs><marker id="a3" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#dc2626"/></marker><marker id="a4" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#16a34a"/></marker></defs>
+<rect x="60" y="40" width="130" height="60" rx="10" fill="#fee2e2" stroke="#f87171"/><text x="125" y="75" text-anchor="middle">s1 拥有 String</text>
+<line x1="195" y1="70" x2="330" y2="70" stroke="#dc2626" stroke-width="3" marker-end="url(#a3)"/><text x="260" y="55" text-anchor="middle" font-size="13" fill="#991b1b">move</text>
+<rect x="340" y="40" width="130" height="60" rx="10" fill="#fee2e2" stroke="#f87171"/><text x="405" y="75" text-anchor="middle">s2 成为所有者</text>
+<rect x="520" y="40" width="130" height="60" rx="10" fill="#ecfdf5" stroke="#4ade80"/><text x="585" y="75" text-anchor="middle">&s2 借用</text>
+<line x1="520" y1="100" x2="470" y2="100" stroke="#16a34a" stroke-width="3" marker-end="url(#a4)"/><text x="500" y="126" text-anchor="middle" font-size="13" fill="#166534">不拿走所有权</text>
+<text x="360" y="155" text-anchor="middle" font-size="14" fill="#374151">移动：值换主人；借用：临时看一眼或临时修改</text>
+</svg></div>
+<h3>所有权移动</h3>
+<div class="code">let s1 = String::from("hello");
+let s2 = s1; // s1 的所有权移动给 s2
+// println!("{s1}"); // 这里会报错：s1 已经不能用了
+println!("{s2}");</div>
+<h3>借用引用</h3>
+<div class="code">fn len_of(s: &String) -> usize {
+    s.len()
+}
+
+fn main() {
+    let s = String::from("hello");
+    let len = len_of(&s); // 借用，不拿走所有权
+    println!("{s}, len={len}");
+}</div>
+<h3>可变借用</h3>
+<div class="code">fn push_world(s: &mut String) {
+    s.push_str(" world");
+}
+
+let mut s = String::from("hello");
+push_world(&mut s);</div>
+<p>规则可以先记成两条：同一时间可以有多个不可变引用；或者一个可变引用；两者不能同时存在。</p>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div class="tip-box-content">生命周期不是“让变量活得更久”的魔法。生命周期标注只是告诉编译器：返回引用和输入引用之间是什么关系。</div></div>
+</div>
+</section>
+
+<section class="chapter" id="s6">
+<h2 class="chapter-title">结构体、枚举与模式匹配</h2>
+<div class="chapter-content">
+<p>结构体适合表达“一个东西有很多字段”，枚举适合表达“一个值可能是几种状态之一”。Rust 的枚举很强，可以携带数据。</p>
+<div class="visualization"><div class="visualization-title">结构体 vs 枚举</div>
+<svg viewBox="0 0 650 185" width="100%" height="185">
+<rect x="55" y="35" width="230" height="115" rx="12" fill="#eff6ff" stroke="#60a5fa"/><text x="170" y="65" text-anchor="middle" font-size="16" font-weight="700">struct User</text><text x="170" y="95" text-anchor="middle" font-size="14">name</text><text x="170" y="120" text-anchor="middle" font-size="14">age</text>
+<rect x="365" y="35" width="230" height="115" rx="12" fill="#fef3c7" stroke="#f59e0b"/><text x="480" y="65" text-anchor="middle" font-size="16" font-weight="700">enum Result</text><text x="480" y="95" text-anchor="middle" font-size="14">Ok(value)</text><text x="480" y="120" text-anchor="middle" font-size="14">Err(error)</text>
+</svg></div>
+<h3>结构体</h3>
+<div class="code">struct User {
+    name: String,
+    age: u8,
+}
+
+impl User {
+    fn new(name: String, age: u8) -> Self {
+        Self { name, age }
+    }
+
+    fn say_hi(&self) {
+        println!("我是 {}，{} 岁", self.name, self.age);
+    }
+}</div>
+<h3>枚举和 match</h3>
+<div class="code">enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+fn move_to(d: Direction) {
+    match d {
+        Direction::Up => println!("向上"),
+        Direction::Down => println!("向下"),
+        Direction::Left => println!("向左"),
+        Direction::Right => println!("向右"),
+    }
+}</div>
+<p><span class="inline-code">match</span> 必须覆盖所有情况，这让很多遗漏在编译期就被抓出来。</p>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div class="tip-box-content">不要把 Rust 的 enum 当成 C 语言那种纯数字枚举。Rust 的 enum 可以携带不同类型的数据，非常适合建模状态。</div></div>
+</div>
+</section>
+
+<section class="chapter" id="s7">
+<h2 class="chapter-title">错误处理、泛型与 Trait</h2>
+<div class="chapter-content">
+<p>Rust 不鼓励到处抛异常。可恢复错误常用 <span class="inline-code">Result&lt;T, E&gt;</span>，可能为空常用 <span class="inline-code">Option&lt;T&gt;</span>。</p>
+<div class="visualization"><div class="visualization-title">Result 错误流</div>
+<svg viewBox="0 0 700 170" width="100%" height="170">
+<defs><marker id="a5" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker></defs>
+<rect x="40" y="55" width="130" height="60" rx="10" fill="#eef2ff" stroke="#818cf8"/><text x="105" y="90" text-anchor="middle">操作</text>
+<line x1="175" y1="85" x2="285" y2="85" stroke="#4f46e5" stroke-width="3" marker-end="url(#a5)"/>
+<rect x="295" y="35" width="140" height="45" rx="10" fill="#dcfce7" stroke="#4ade80"/><text x="365" y="64" text-anchor="middle">Ok(value)</text>
+<rect x="295" y="100" width="140" height="45" rx="10" fill="#fee2e2" stroke="#f87171"/><text x="365" y="128" text-anchor="middle">Err(error)</text>
+<line x1="440" y1="57" x2="575" y2="57" stroke="#16a34a" stroke-width="3" marker-end="url(#a5)"/><line x1="440" y1="122" x2="575" y2="122" stroke="#dc2626" stroke-width="3" marker-end="url(#a5)"/>
+<text x="620" y="62" text-anchor="middle" font-size="14">继续</text><text x="620" y="127" text-anchor="middle" font-size="14">处理/返回</text>
+</svg></div>
+<h3>Result 与 ?</h3>
+<div class="code">use std::fs;
+use std::io;
+
+fn read_config() -> Result<String, io::Error> {
+    let text = fs::read_to_string("config.toml")?;
+    Ok(text)
+}</div>
+<p><span class="inline-code">?</span> 的意思是：如果是 <span class="inline-code">Ok</span> 就取出值继续；如果是 <span class="inline-code">Err</span> 就提前返回错误。</p>
+<h3>泛型与 Trait</h3>
+<div class="code">trait Summary {
+    fn summary(&self) -> String;
+}
+
+struct Article {
+    title: String,
+}
+
+impl Summary for Article {
+    fn summary(&self) -> String {
+        format!("文章：{}", self.title)
+    }
+}
+
+fn print_summary<T: Summary>(item: &T) {
+    println!("{}", item.summary());
+}</div>
+<p>Trait 可以理解为“能力接口”：一个类型实现了某个 Trait，就说明它具备某种能力。</p>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div class="tip-box-content">不要一上来就写复杂泛型。先把具体类型代码写清楚，再抽象成 Trait。</div></div>
+</div>
+</section>
+
+<section class="chapter" id="s8">
+<h2 class="chapter-title">集合、迭代器、闭包、模块与测试</h2>
+<div class="chapter-content">
+<p>实际写 Rust，常见容器是 <span class="inline-code">Vec</span>、<span class="inline-code">HashMap</span>、<span class="inline-code">String</span>。迭代器和闭包让数据处理很舒服。</p>
+<div class="visualization"><div class="visualization-title">数据处理管道</div>
+<svg viewBox="0 0 720 150" width="100%" height="150">
+<defs><marker id="a6" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#0891b2"/></marker></defs>
+<rect x="45" y="48" width="110" height="54" rx="10" fill="#ecfeff" stroke="#22d3ee"/><text x="100" y="81" text-anchor="middle">Vec</text>
+<line x1="160" y1="75" x2="250" y2="75" stroke="#0891b2" stroke-width="3" marker-end="url(#a6)"/>
+<rect x="260" y="48" width="110" height="54" rx="10" fill="#ecfeff" stroke="#22d3ee"/><text x="315" y="81" text-anchor="middle">iter()</text>
+<line x1="375" y1="75" x2="465" y2="75" stroke="#0891b2" stroke-width="3" marker-end="url(#a6)"/>
+<rect x="475" y="35" width="110" height="80" rx="10" fill="#f0fdf4" stroke="#4ade80"/><text x="530" y="68" text-anchor="middle">map/filter</text><text x="530" y="91" text-anchor="middle" font-size="13">闭包处理</text>
+<line x1="590" y1="75" x2="665" y2="75" stroke="#0891b2" stroke-width="3" marker-end="url(#a6)"/>
+<text x="690" y="81" text-anchor="middle">结果</text>
+</svg></div>
+<h3>集合与迭代器</h3>
+<div class="code">let nums = vec![1, 2, 3, 4, 5];
+let doubled_even: Vec<i32> = nums
+    .iter()
+    .filter(|n| **n % 2 == 0)
+    .map(|n| n * 2)
+    .collect();
+
+println!("{:?}", doubled_even); // [4, 8]</div>
+<h3>模块</h3>
+<div class="code">// src/lib.rs
+pub mod user;
+
+// src/user.rs
+pub fn create_user(name: &str) {
+    println!("create {name}");
+}</div>
+<h3>测试</h3>
+<div class="code">fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_add() {
+        assert_eq!(add(2, 3), 5);
+    }
+}</div>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div class="tip-box-content">迭代器是惰性的。只写 <span class="inline-code">map</span> 不一定执行，通常需要 <span class="inline-code">collect</span>、<span class="inline-code">sum</span>、<span class="inline-code">for_each</span> 等消费它。</div></div>
+</div>
+</section>
+
+<section class="chapter" id="s9">
+<h2 class="chapter-title">并发与异步</h2>
+<div class="chapter-content">
+<p>Rust 的并发优势在于：很多线程安全问题会在编译期被阻止。普通并发可以用线程和 channel；网络服务常用 async 生态，比如 Tokio。</p>
+<div class="visualization"><div class="visualization-title">并发模型：线程与消息</div>
+<svg viewBox="0 0 720 180" width="100%" height="180">
+<defs><marker id="a7" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#7c3aed"/></marker></defs>
+<rect x="50" y="35" width="150" height="45" rx="10" fill="#f5f3ff" stroke="#a78bfa"/><text x="125" y="64" text-anchor="middle">线程 A</text>
+<rect x="50" y="105" width="150" height="45" rx="10" fill="#f5f3ff" stroke="#a78bfa"/><text x="125" y="134" text-anchor="middle">线程 B</text>
+<rect x="300" y="68" width="130" height="45" rx="10" fill="#ede9fe" stroke="#8b5cf6"/><text x="365" y="97" text-anchor="middle">channel</text>
+<rect x="530" y="68" width="130" height="45" rx="10" fill="#f5f3ff" stroke="#a78bfa"/><text x="595" y="97" text-anchor="middle">主线程接收</text>
+<line x1="205" y1="58" x2="295" y2="85" stroke="#7c3aed" stroke-width="3" marker-end="url(#a7)"/><line x1="205" y1="128" x2="295" y2="96" stroke="#7c3aed" stroke-width="3" marker-end="url(#a7)"/><line x1="435" y1="91" x2="525" y2="91" stroke="#7c3aed" stroke-width="3" marker-end="url(#a7)"/>
+</svg></div>
+<h3>线程示例</h3>
+<div class="code">use std::thread;
+
+fn main() {
+    let handle = thread::spawn(|| {
+        for i in 1..=3 {
+            println!("子线程 {i}");
+        }
+    });
+
+    handle.join().unwrap();
+}</div>
+<h3>Tokio 异步示例</h3>
+<div class="code">#[tokio::main]
+async fn main() {
+    let body = reqwest::get("https://www.rust-lang.org")
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+
+    println!("len = {}", body.len());
+}</div>
+<p>异步代码里的 <span class="inline-code">await</span> 不是阻塞线程，而是把当前任务让出去，等 IO 准备好后再继续。</p>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div class="tip-box-content">不要把 async 当成“自动变快”。它适合大量 IO 等待，比如网络请求、数据库、文件服务；CPU 密集任务还是要考虑线程池。</div></div>
+</div>
+</section>
+
+<section class="chapter" id="s10">
+<h2 class="chapter-title">热门库与练习项目</h2>
+<div class="chapter-content">
+<p>Rust 生态非常偏工程化。入门时不需要把库全学完，按项目需求挑即可。</p>
+<div class="visualization"><div class="visualization-title">Rust 生态地图</div>
+<svg viewBox="0 0 760 300" width="100%" height="300">
+<circle cx="380" cy="150" r="55" fill="#fff7ed" stroke="#fb923c" stroke-width="3"/><text x="380" y="145" text-anchor="middle" font-size="18" font-weight="700">Rust</text><text x="380" y="170" text-anchor="middle" font-size="13">安全 + 性能</text>
+<g font-size="14" text-anchor="middle"><rect x="60" y="40" width="150" height="54" rx="12" fill="#eff6ff" stroke="#60a5fa"/><text x="135" y="73">Web: axum</text><rect x="550" y="40" width="150" height="54" rx="12" fill="#ecfdf5" stroke="#34d399"/><text x="625" y="73">Async: tokio</text><rect x="60" y="205" width="150" height="54" rx="12" fill="#fef3c7" stroke="#f59e0b"/><text x="135" y="238">CLI: clap</text><rect x="550" y="205" width="150" height="54" rx="12" fill="#fce7f3" stroke="#f472b6"/><text x="625" y="238">序列化: serde</text><rect x="305" y="230" width="150" height="54" rx="12" fill="#f5f3ff" stroke="#a78bfa"/><text x="380" y="263">数据库: sqlx</text></g>
+<g stroke="#cbd5e1" stroke-width="2"><line x1="210" y1="67" x2="330" y2="125"/><line x1="550" y1="67" x2="430" y2="125"/><line x1="210" y1="232" x2="330" y2="175"/><line x1="550" y1="232" x2="430" y2="175"/><line x1="380" y1="230" x2="380" y2="205"/></g>
+</svg></div>
+<h3>热门库索引</h3>
+<div class="grid">
+<div class="card"><strong>serde</strong><br>序列化/反序列化，JSON、YAML、TOML 都常用。几乎是 Rust 数据交换标配。</div>
+<div class="card"><strong>tokio</strong><br>异步运行时。写高并发网络服务、定时任务、异步 IO 常用。</div>
+<div class="card"><strong>reqwest</strong><br>HTTP 客户端。调用 API、下载网页、发请求很方便。</div>
+<div class="card"><strong>axum</strong><br>Web 框架，基于 tokio/tower，适合写 REST API。</div>
+<div class="card"><strong>actix-web</strong><br>成熟高性能 Web 框架，生态久，资料多。</div>
+<div class="card"><strong>clap</strong><br>命令行参数解析。做 CLI 工具优先看它。</div>
+<div class="card"><strong>anyhow</strong><br>应用层错误处理，适合快速开发 CLI/服务。</div>
+<div class="card"><strong>thiserror</strong><br>库层自定义错误类型，适合写更规范的错误。</div>
+<div class="card"><strong>tracing</strong><br>结构化日志和链路追踪，比 println 更适合服务端。</div>
+<div class="card"><strong>sqlx</strong><br>异步 SQL 数据库访问，支持 PostgreSQL、MySQL、SQLite。</div>
+<div class="card"><strong>diesel</strong><br>类型安全 ORM，偏传统 ORM 风格。</div>
+<div class="card"><strong>rayon</strong><br>数据并行库，CPU 密集任务并行处理非常方便。</div>
+<div class="card"><strong>chrono / time</strong><br>日期时间处理。新项目也可以看看 time。</div>
+<div class="card"><strong>regex</strong><br>正则表达式库，稳定常用。</div>
+<div class="card"><strong>bevy</strong><br>游戏引擎，适合对 ECS 和游戏开发感兴趣时学习。</div>
+</div>
+<h3>推荐练习项目</h3>
+<ol><li><strong>CLI Todo：</strong>用 clap 解析命令，用 serde 保存 JSON 文件。</li><li><strong>日志分析器：</strong>读取大文件，统计错误行、IP、接口耗时。</li><li><strong>HTTP 小工具：</strong>用 reqwest 请求 API，格式化输出结果。</li><li><strong>短链接服务：</strong>用 axum + sqlx + PostgreSQL 做一个 Web API。</li><li><strong>并发下载器：</strong>用 tokio 同时下载多个 URL，练 async。</li></ol>
+<div class="code">// 一个简单 CLI 依赖组合
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"</div>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div class="tip-box-content">别从大型 Web 项目开局。Rust 新手最适合先写 CLI 和小工具，因为反馈快、依赖少、能集中练语法和所有权。</div></div>
+</div>
+</section>
+
+<section class="refs">
+<h2>官方与高质量资料</h2>
+<ul>
+<li><a href="https://www.rust-lang.org/learn" target="_blank">Rust Learn 官方学习入口</a></li>
+<li><a href="https://doc.rust-lang.org/book/" target="_blank">The Rust Programming Language（Rust 官方书）</a></li>
+<li><a href="https://rustwiki.org/zh-CN/book/" target="_blank">Rust 程序设计语言中文版</a></li>
+<li><a href="https://doc.rust-lang.org/rust-by-example/" target="_blank">Rust By Example</a></li>
+<li><a href="https://doc.rust-lang.org/std/" target="_blank">Rust 标准库文档</a></li>
+<li><a href="https://crates.io/" target="_blank">crates.io Rust 包仓库</a></li>
+<li><a href="https://lib.rs/" target="_blank">lib.rs Rust 库分类索引</a></li>
+</ul>
+</section>
+</main>
+</div>
+<script>
+const links=[...document.querySelectorAll('.nav-link')];
+const sections=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+function onScroll(){let current=sections[0]?.id;for(const sec of sections){if(sec.getBoundingClientRect().top<140)current=sec.id;}links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+current));}
+document.addEventListener('scroll',onScroll,{passive:true});onScroll();
+</script>
+</body>
+</html>
