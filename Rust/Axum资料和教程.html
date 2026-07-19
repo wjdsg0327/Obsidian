@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rust Axum 资料和教程</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',Arial,sans-serif;line-height:1.8;color:#263238;background:#f7f8fa}.container{display:flex;min-height:100vh}.sidebar{width:300px;background:#fff;border-right:1px solid #e5e7eb;padding:28px 22px;position:fixed;height:100vh;overflow:auto}.sidebar-title{font-size:21px;font-weight:700;color:#111827;margin-bottom:8px}.sidebar-subtitle{font-size:13px;color:#6b7280;margin-bottom:22px;padding-bottom:16px;border-bottom:2px solid #2563eb}.nav-list{list-style:none}.nav-item{margin-bottom:6px}.nav-link{display:block;padding:9px 12px;color:#4b5563;text-decoration:none;border-radius:8px;font-size:14px}.nav-link:hover,.nav-link.active{background:#eff6ff;color:#2563eb}.nav-number{color:#9ca3af;margin-right:7px}.main-content{margin-left:300px;max-width:980px;padding:44px 64px}.hero{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:white;border-radius:18px;padding:34px;margin-bottom:36px;box-shadow:0 14px 40px rgba(37,99,235,.18)}.hero h1{font-size:34px;margin-bottom:10px}.hero p{color:#dbeafe}.meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.badge{font-size:13px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 10px}.chapter{margin-bottom:58px;scroll-margin-top:24px;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:30px;box-shadow:0 8px 28px rgba(15,23,42,.04)}.chapter-title{font-size:27px;color:#111827;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #e5e7eb}.chapter-content h3{font-size:19px;margin:24px 0 10px;color:#1f2937}.chapter-content p{margin-bottom:14px}.chapter-content ul,.chapter-content ol{padding-left:24px;margin:14px 0}.chapter-content li{margin-bottom:7px}code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#f3f4f6;border:1px solid #e5e7eb;padding:2px 5px;border-radius:5px;font-size:.92em}pre{background:#0f172a;color:#e5e7eb;padding:18px;border-radius:12px;overflow:auto;margin:18px 0;font-size:14px;line-height:1.65}pre code{background:transparent;border:0;color:inherit;padding:0}.tip-box{margin:20px 0;padding:15px 18px;background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px}.tip-box-title{font-weight:700;color:#b45309;margin-bottom:6px}.note-box{margin:20px 0;padding:15px 18px;background:#ecfdf5;border-left:4px solid #10b981;border-radius:8px}.note-box-title{font-weight:700;color:#047857;margin-bottom:6px}.visualization{margin:26px 0;padding:20px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;text-align:center}.visualization-title{font-size:14px;color:#6b7280;margin-bottom:12px}.refs{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:28px;margin-bottom:60px}.refs h2{font-size:24px;margin-bottom:14px}.refs a{color:#2563eb;text-decoration:none}.refs a:hover{text-decoration:underline}.table{width:100%;border-collapse:collapse;margin:18px 0}.table th,.table td{border:1px solid #e5e7eb;padding:10px 12px;text-align:left;vertical-align:top}.table th{background:#f9fafb;color:#374151}@media(max-width:768px){.container{display:block}.sidebar{position:relative;width:100%;height:auto}.main-content{margin-left:0;padding:24px}.hero h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="container">
+<nav class="sidebar">
+  <div class="sidebar-title">Rust Axum</div>
+  <div class="sidebar-subtitle">从入门到能写后端服务</div>
+  <ul class="nav-list">
+    <li class="nav-item"><a class="nav-link active" href="#s1"><span class="nav-number">01</span>Axum 是什么</a></li>
+    <li class="nav-item"><a class="nav-link" href="#s2"><span class="nav-number">02</span>环境与最小服务</a></li>
+    <li class="nav-item"><a class="nav-link" href="#s3"><span class="nav-number">03</span>路由与 Handler</a></li>
+    <li class="nav-item"><a class="nav-link" href="#s4"><span class="nav-number">04</span>Extractor 请求提取器</a></li>
+    <li class="nav-item"><a class="nav-link" href="#s5"><span class="nav-number">05</span>Response 响应设计</a></li>
+    <li class="nav-item"><a class="nav-link" href="#s6"><span class="nav-number">06</span>共享状态与项目结构</a></li>
+    <li class="nav-item"><a class="nav-link" href="#s7"><span class="nav-number">07</span>错误处理</a></li>
+    <li class="nav-item"><a class="nav-link" href="#s8"><span class="nav-number">08</span>中间件与 Tower</a></li>
+    <li class="nav-item"><a class="nav-link" href="#s9"><span class="nav-number">09</span>数据库、认证与文件</a></li>
+    <li class="nav-item"><a class="nav-link" href="#s10"><span class="nav-number">10</span>部署、测试与练习</a></li>
+  </ul>
+</nav>
+<main class="main-content">
+<section class="hero">
+  <h1>Rust Axum 资料和教程</h1>
+  <p>这是一份面向 Rust 已入门用户的 Axum 后端开发笔记：目标不是背 API，而是理解 Axum 的工作方式，并能写出一个结构清楚、能接数据库、能处理错误、能部署的 Web 服务。</p>
+  <div class="meta"><span class="badge">适合：Rust 基础之后</span><span class="badge">稳定线：Axum 0.8.x</span><span class="badge">运行时：Tokio</span><span class="badge">生态：Tower / Hyper</span></div>
+</section>
+
+<section class="chapter" id="s1"><h2 class="chapter-title">01. Axum 是什么</h2><div class="chapter-content">
+<p><strong>Axum</strong> 是 Tokio 团队维护的 Rust HTTP 路由与请求处理库。它的定位很清楚：提供舒服的路由、请求提取、响应转换和错误处理，但不重新发明一套中间件系统，而是直接接入 <code>tower</code> 生态。</p>
+<div class="visualization"><div class="visualization-title">Axum 在 Rust Web 栈里的位置</div><svg width="760" height="210" viewBox="0 0 760 210" xmlns="http://www.w3.org/2000/svg"><rect x="30" y="30" width="150" height="60" rx="10" fill="#dbeafe" stroke="#2563eb"/><text x="105" y="66" text-anchor="middle" font-size="16">浏览器 / 客户端</text><path d="M180 60 H260" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/><rect x="260" y="30" width="130" height="60" rx="10" fill="#e0f2fe" stroke="#0284c7"/><text x="325" y="66" text-anchor="middle" font-size="16">Hyper</text><path d="M390 60 H470" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/><rect x="470" y="30" width="130" height="60" rx="10" fill="#dcfce7" stroke="#16a34a"/><text x="535" y="66" text-anchor="middle" font-size="16">Axum</text><path d="M535 90 V130" stroke="#64748b" stroke-width="2" marker-end="url(#a)"/><rect x="420" y="130" width="230" height="52" rx="10" fill="#fef3c7" stroke="#f59e0b"/><text x="535" y="162" text-anchor="middle" font-size="16">Tower 中间件生态</text><defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#64748b"/></marker></defs></svg></div>
+<h3>Axum 的核心特点</h3><ul><li><strong>无宏路由：</strong>不像某些框架那样大量用属性宏，Axum 通过 <code>Router::new().route(...)</code> 组合路由。</li><li><strong>Extractor：</strong>用类型来声明你要从请求里取什么，比如 <code>Path</code>、<code>Query</code>、<code>Json</code>、<code>State</code>。</li><li><strong>IntoResponse：</strong>handler 返回的东西只要能转成 HTTP 响应即可。</li><li><strong>Tower 生态：</strong>CORS、Trace、Timeout、Compression、Limit 等都可以通过 <code>tower-http</code> 组合。</li></ul>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div>Axum 不是“全家桶框架”。它不替你规定 ORM、配置系统、目录结构、认证方案。好处是灵活，坏处是新手需要自己组合生态。</div></div>
+<p>一句话记住：<strong>Axum = Router + Handler + Extractor + IntoResponse + Tower。</strong></p>
+</div></section>
+
+<section class="chapter" id="s2"><h2 class="chapter-title">02. 环境与最小服务</h2><div class="chapter-content">
+<p>建议使用稳定 Rust、Tokio 和 Axum 0.8.x。Axum 主分支可能已经朝 0.9 发展，但学习和项目落地优先看 crates.io/docs.rs 的稳定版。</p>
+<pre><code>cargo new axum-demo
+cd axum-demo
+cargo add axum
+cargo add tokio --features full
+cargo add serde --features derive
+cargo add serde_json
+cargo add tracing tracing-subscriber</code></pre>
+<p>最小服务：</p>
+<pre><code>use axum::{routing::get, Router};
+
+#[tokio::main]
+async fn main() {
+    tracing_subscriber::fmt::init();
+
+    let app = Router::new()
+        .route("/", get(root));
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
+        .await
+        .unwrap();
+
+    axum::serve(listener, app).await.unwrap();
+}
+
+async fn root() -> &'static str {
+    "Hello, Axum!"
+}</code></pre>
+<div class="visualization"><div class="visualization-title">最小服务启动过程</div><svg width="760" height="160" viewBox="0 0 760 160" xmlns="http://www.w3.org/2000/svg"><g fill="#eff6ff" stroke="#2563eb"><rect x="35" y="50" width="130" height="54" rx="10"/><rect x="210" y="50" width="130" height="54" rx="10"/><rect x="385" y="50" width="130" height="54" rx="10"/><rect x="560" y="50" width="150" height="54" rx="10"/></g><g font-size="15" fill="#111827" text-anchor="middle"><text x="100" y="82">定义 Router</text><text x="275" y="82">绑定端口</text><text x="450" y="82">serve</text><text x="635" y="82">等待请求</text></g><g stroke="#64748b" stroke-width="2"><path d="M165 77 H210"/><path d="M340 77 H385"/><path d="M515 77 H560"/></g></svg></div>
+<h3>验证</h3><pre><code>cargo run
+curl http://127.0.0.1:3000/</code></pre>
+<div class="tip-box"><div class="tip-box-title">常见错误</div><div>如果 <code>#[tokio::main]</code> 报错，通常是 Tokio 没开 <code>macros</code> 和运行时特性。新手直接用 <code>tokio --features full</code> 最省心。</div></div>
+</div></section>
+
+<section class="chapter" id="s3"><h2 class="chapter-title">03. 路由与 Handler</h2><div class="chapter-content">
+<p>Axum 的路由由 <code>Router</code> 组合，handler 是普通异步函数。你可以按 HTTP 方法绑定不同处理函数。</p>
+<pre><code>use axum::{routing::{get, post}, Router};
+
+let app = Router::new()
+    .route("/", get(index))
+    .route("/users", get(list_users).post(create_user))
+    .route("/users/{id}", get(get_user));
+
+async fn index() -> &'static str { "ok" }
+async fn list_users() {}
+async fn create_user() {}
+async fn get_user() {}</code></pre>
+<div class="visualization"><div class="visualization-title">Router 把路径 + 方法分发给 handler</div><svg width="760" height="230" viewBox="0 0 760 230" xmlns="http://www.w3.org/2000/svg"><rect x="40" y="40" width="160" height="150" rx="12" fill="#dbeafe" stroke="#2563eb"/><text x="120" y="75" text-anchor="middle" font-size="17">Router</text><text x="120" y="110" text-anchor="middle" font-size="14">GET /</text><text x="120" y="135" text-anchor="middle" font-size="14">POST /users</text><text x="120" y="160" text-anchor="middle" font-size="14">GET /users/{id}</text><g fill="#ecfdf5" stroke="#10b981"><rect x="430" y="35" width="190" height="42" rx="8"/><rect x="430" y="95" width="190" height="42" rx="8"/><rect x="430" y="155" width="190" height="42" rx="8"/></g><g font-size="14" fill="#111827" text-anchor="middle"><text x="525" y="62">index()</text><text x="525" y="122">create_user()</text><text x="525" y="182">get_user()</text></g><g stroke="#64748b" stroke-width="2" marker-end="url(#b)"><path d="M200 95 C280 70 340 58 430 56"/><path d="M200 132 C280 125 340 118 430 116"/><path d="M200 163 C285 175 340 178 430 176"/></g><defs><marker id="b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#64748b"/></marker></defs></svg></div>
+<h3>路由组织建议</h3><ul><li>小项目：直接在 <code>main.rs</code> 里写路由。</li><li>中型项目：拆成 <code>routes/user.rs</code>、<code>routes/auth.rs</code>。</li><li>大型项目：按领域拆分，比如 <code>modules/users</code>、<code>modules/orders</code>。</li></ul>
+<pre><code>pub fn routes() -> Router&lt;AppState&gt; {
+    Router::new()
+        .route("/users", get(list_users).post(create_user))
+        .route("/users/{id}", get(get_user))
+}</code></pre>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div>不要把业务逻辑全塞进 handler。handler 最好只负责“取请求、调用 service、转响应”。真正逻辑放到 service 层更容易测试。</div></div>
+</div></section>
+
+<section class="chapter" id="s4"><h2 class="chapter-title">04. Extractor 请求提取器</h2><div class="chapter-content">
+<p>Extractor 是 Axum 最重要的概念之一。handler 参数不是随便写的，而是告诉 Axum：“我要从请求里提取这些东西”。</p>
+<table class="table"><tr><th>Extractor</th><th>用途</th><th>例子</th></tr><tr><td><code>Path&lt;T&gt;</code></td><td>路径参数</td><td><code>/users/{id}</code></td></tr><tr><td><code>Query&lt;T&gt;</code></td><td>查询参数</td><td><code>?page=1</code></td></tr><tr><td><code>Json&lt;T&gt;</code></td><td>JSON 请求体</td><td>POST body</td></tr><tr><td><code>State&lt;T&gt;</code></td><td>应用共享状态</td><td>数据库连接池</td></tr><tr><td><code>HeaderMap</code></td><td>请求头</td><td>Authorization</td></tr></table>
+<pre><code>use axum::{extract::{Path, Query}, Json};
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize)]
+struct Page {
+    page: Option&lt;u32&gt;,
+}
+
+#[derive(Deserialize)]
+struct CreateUser {
+    username: String,
+}
+
+#[derive(Serialize)]
+struct User {
+    id: u64,
+    username: String,
+}
+
+async fn get_user(Path(id): Path&lt;u64&gt;) -> String {
+    format!("user id = {id}")
+}
+
+async fn list_users(Query(page): Query&lt;Page&gt;) -> String {
+    format!("page = {:?}", page.page)
+}
+
+async fn create_user(Json(input): Json&lt;CreateUser&gt;) -> Json&lt;User&gt; {
+    Json(User { id: 1, username: input.username })
+}</code></pre>
+<div class="visualization"><div class="visualization-title">请求被 Extractor 拆成 handler 参数</div><svg width="760" height="220" viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg"><rect x="35" y="65" width="185" height="92" rx="12" fill="#fef3c7" stroke="#f59e0b"/><text x="127" y="96" text-anchor="middle" font-size="15">HTTP Request</text><text x="127" y="124" text-anchor="middle" font-size="13">path/query/header/body</text><path d="M220 110 H305" stroke="#64748b" stroke-width="2" marker-end="url(#c)"/><rect x="305" y="40" width="160" height="140" rx="12" fill="#eff6ff" stroke="#2563eb"/><text x="385" y="70" text-anchor="middle" font-size="16">Extractors</text><text x="385" y="102" text-anchor="middle" font-size="13">Path&lt;T&gt;</text><text x="385" y="126" text-anchor="middle" font-size="13">Query&lt;T&gt;</text><text x="385" y="150" text-anchor="middle" font-size="13">Json&lt;T&gt;</text><path d="M465 110 H545" stroke="#64748b" stroke-width="2" marker-end="url(#c)"/><rect x="545" y="70" width="170" height="82" rx="12" fill="#dcfce7" stroke="#16a34a"/><text x="630" y="105" text-anchor="middle" font-size="16">handler 参数</text><text x="630" y="130" text-anchor="middle" font-size="13">类型安全</text><defs><marker id="c" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#64748b"/></marker></defs></svg></div>
+<div class="tip-box"><div class="tip-box-title">参数顺序提醒</div><div>会消费 body 的 extractor，比如 <code>Json</code>，通常放在最后。因为请求体只能被读取一次。</div></div>
+</div></section>
+
+<section class="chapter" id="s5"><h2 class="chapter-title">05. Response 响应设计</h2><div class="chapter-content">
+<p>Axum 的 handler 返回值只要实现 <code>IntoResponse</code>，就能变成 HTTP 响应。常见返回方式：</p>
+<pre><code>use axum::{http::StatusCode, response::IntoResponse, Json};
+use serde::Serialize;
+
+#[derive(Serialize)]
+struct ApiResp&lt;T&gt; {
+    code: i32,
+    message: String,
+    data: T,
+}
+
+async fn plain() -> &'static str {
+    "ok"
+}
+
+async fn created() -> impl IntoResponse {
+    (StatusCode::CREATED, "created")
+}
+
+async fn json_data() -> impl IntoResponse {
+    Json(ApiResp {
+        code: 0,
+        message: "success".into(),
+        data: vec!["axum", "tokio"],
+    })
+}</code></pre>
+<div class="visualization"><div class="visualization-title">IntoResponse 把不同返回值统一成 HTTP 响应</div><svg width="760" height="210" viewBox="0 0 760 210" xmlns="http://www.w3.org/2000/svg"><g fill="#eff6ff" stroke="#2563eb"><rect x="45" y="32" width="150" height="42" rx="8"/><rect x="45" y="88" width="150" height="42" rx="8"/><rect x="45" y="144" width="150" height="42" rx="8"/></g><text x="120" y="58" text-anchor="middle" font-size="14">&str</text><text x="120" y="114" text-anchor="middle" font-size="14">Json&lt;T&gt;</text><text x="120" y="170" text-anchor="middle" font-size="14">(StatusCode, T)</text><path d="M195 109 H330" stroke="#64748b" stroke-width="2" marker-end="url(#d)"/><rect x="330" y="72" width="150" height="74" rx="10" fill="#fef3c7" stroke="#f59e0b"/><text x="405" y="116" text-anchor="middle" font-size="16">IntoResponse</text><path d="M480 109 H595" stroke="#64748b" stroke-width="2" marker-end="url(#d)"/><rect x="595" y="72" width="125" height="74" rx="10" fill="#dcfce7" stroke="#16a34a"/><text x="657" y="103" text-anchor="middle" font-size="15">HTTP</text><text x="657" y="126" text-anchor="middle" font-size="15">Response</text><defs><marker id="d" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#64748b"/></marker></defs></svg></div>
+<h3>建议统一 API 响应格式</h3><p>业务项目中建议统一 JSON 结构，比如：</p><pre><code>{
+  "code": 0,
+  "message": "success",
+  "data": {}
+}</code></pre>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div>不要每个接口随手返回不同 JSON 结构。前端、调用方和日志排查都会很痛苦。</div></div>
+</div></section>
+
+<section class="chapter" id="s6"><h2 class="chapter-title">06. 共享状态与项目结构</h2><div class="chapter-content">
+<p>实际项目通常需要共享数据库连接池、配置、缓存客户端等。Axum 推荐用 <code>State</code>。</p>
+<pre><code>use axum::{extract::State, routing::get, Router};
+use std::sync::Arc;
+
+#[derive(Clone)]
+struct AppState {
+    app_name: String,
+}
+
+async fn health(State(state): State&lt;Arc&lt;AppState&gt;&gt;) -> String {
+    format!("{} is ok", state.app_name)
+}
+
+let state = Arc::new(AppState { app_name: "demo".into() });
+let app = Router::new()
+    .route("/health", get(health))
+    .with_state(state);</code></pre>
+<div class="visualization"><div class="visualization-title">共享状态在每个请求中被廉价 clone</div><svg width="760" height="220" viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg"><rect x="300" y="35" width="160" height="60" rx="12" fill="#dbeafe" stroke="#2563eb"/><text x="380" y="70" text-anchor="middle" font-size="16">Arc&lt;AppState&gt;</text><g fill="#ecfdf5" stroke="#10b981"><rect x="70" y="145" width="140" height="45" rx="9"/><rect x="310" y="145" width="140" height="45" rx="9"/><rect x="550" y="145" width="140" height="45" rx="9"/></g><text x="140" y="173" text-anchor="middle" font-size="14">请求 A</text><text x="380" y="173" text-anchor="middle" font-size="14">请求 B</text><text x="620" y="173" text-anchor="middle" font-size="14">请求 C</text><g stroke="#64748b" stroke-width="2"><path d="M340 95 L140 145"/><path d="M380 95 V145"/><path d="M420 95 L620 145"/></g></svg></div>
+<h3>推荐目录结构</h3><pre><code>src/
+  main.rs              # 启动入口
+  app.rs               # Router 组装
+  state.rs             # AppState
+  config.rs            # 配置
+  error.rs             # AppError
+  modules/
+    users/
+      mod.rs
+      routes.rs
+      handler.rs
+      service.rs
+      model.rs</code></pre>
+<div class="note-box"><div class="note-box-title">实用原则</div><div>Router 层只负责把 URL 接到 handler；handler 负责 HTTP 适配；service 负责业务逻辑；repository/dao 负责数据库。</div></div>
+</div></section>
+
+<section class="chapter" id="s7"><h2 class="chapter-title">07. 错误处理</h2><div class="chapter-content">
+<p>Axum 的错误处理推荐做法：定义自己的 <code>AppError</code>，实现 <code>IntoResponse</code>，handler 返回 <code>Result&lt;T, AppError&gt;</code>。</p>
+<pre><code>use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
+use serde_json::json;
+
+#[derive(Debug)]
+enum AppError {
+    NotFound,
+    BadRequest(String),
+    Internal(String),
+}
+
+impl IntoResponse for AppError {
+    fn into_response(self) -> Response {
+        let (status, message) = match self {
+            AppError::NotFound =&gt; (StatusCode::NOT_FOUND, "not found".to_string()),
+            AppError::BadRequest(msg) =&gt; (StatusCode::BAD_REQUEST, msg),
+            AppError::Internal(msg) =&gt; (StatusCode::INTERNAL_SERVER_ERROR, msg),
+        };
+
+        (status, Json(json!({
+            "code": status.as_u16(),
+            "message": message,
+            "data": null
+        }))).into_response()
+    }
+}
+
+async fn get_user() -> Result&lt;Json&lt;serde_json::Value&gt;, AppError&gt; {
+    Err(AppError::NotFound)
+}</code></pre>
+<div class="visualization"><div class="visualization-title">业务错误转换成 HTTP 响应</div><svg width="760" height="180" viewBox="0 0 760 180" xmlns="http://www.w3.org/2000/svg"><rect x="45" y="58" width="150" height="60" rx="10" fill="#fee2e2" stroke="#ef4444"/><text x="120" y="93" text-anchor="middle" font-size="15">AppError</text><path d="M195 88 H310" stroke="#64748b" stroke-width="2" marker-end="url(#e)"/><rect x="310" y="48" width="155" height="80" rx="10" fill="#fef3c7" stroke="#f59e0b"/><text x="387" y="82" text-anchor="middle" font-size="15">IntoResponse</text><text x="387" y="106" text-anchor="middle" font-size="13">映射状态码和 JSON</text><path d="M465 88 H580" stroke="#64748b" stroke-width="2" marker-end="url(#e)"/><rect x="580" y="58" width="140" height="60" rx="10" fill="#dcfce7" stroke="#16a34a"/><text x="650" y="82" text-anchor="middle" font-size="15">404 / 400 / 500</text><text x="650" y="104" text-anchor="middle" font-size="13">统一响应体</text><defs><marker id="e" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#64748b"/></marker></defs></svg></div>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div>不要在 handler 里到处 <code>unwrap()</code>。Web 服务里 panic 会让请求失败，严重时影响服务稳定性。</div></div>
+</div></section>
+
+<section class="chapter" id="s8"><h2 class="chapter-title">08. 中间件与 Tower</h2><div class="chapter-content">
+<p>Axum 自己不搞一套独立中间件体系，而是使用 Tower。常用中间件通常来自 <code>tower-http</code>。</p>
+<pre><code>cargo add tower-http --features trace,cors,compression-full,timeout</code></pre>
+<pre><code>use axum::Router;
+use tower_http::{
+    trace::TraceLayer,
+    cors::CorsLayer,
+    compression::CompressionLayer,
+};
+use std::time::Duration;
+use tower::ServiceBuilder;
+
+let middleware = ServiceBuilder::new()
+    .layer(TraceLayer::new_for_http())
+    .layer(CorsLayer::permissive())
+    .layer(CompressionLayer::new());
+
+let app = Router::new()
+    .route("/", axum::routing::get(|| async { "ok" }))
+    .layer(middleware);</code></pre>
+<div class="visualization"><div class="visualization-title">请求穿过中间件链再进入路由</div><svg width="760" height="170" viewBox="0 0 760 170" xmlns="http://www.w3.org/2000/svg"><g fill="#fef3c7" stroke="#f59e0b"><rect x="170" y="55" width="100" height="56" rx="9"/><rect x="300" y="55" width="100" height="56" rx="9"/><rect x="430" y="55" width="120" height="56" rx="9"/></g><text x="220" y="88" text-anchor="middle" font-size="14">Trace</text><text x="350" y="88" text-anchor="middle" font-size="14">CORS</text><text x="490" y="88" text-anchor="middle" font-size="14">Compression</text><rect x="600" y="55" width="105" height="56" rx="9" fill="#dbeafe" stroke="#2563eb"/><text x="652" y="88" text-anchor="middle" font-size="14">Router</text><text x="80" y="88" text-anchor="middle" font-size="14" fill="#111827">Request</text><g stroke="#64748b" stroke-width="2" marker-end="url(#f)"><path d="M105 83 H170"/><path d="M270 83 H300"/><path d="M400 83 H430"/><path d="M550 83 H600"/></g><defs><marker id="f" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#64748b"/></marker></defs></svg></div>
+<h3>什么时候用中间件</h3><ul><li>统一日志：TraceLayer。</li><li>跨域：CorsLayer。</li><li>压缩：CompressionLayer。</li><li>认证：可以自定义 middleware 或 extractor。</li><li>请求 ID、超时、限流：Tower/Tower HTTP 组合。</li></ul>
+<div class="tip-box"><div class="tip-box-title">安全提醒</div><div>生产环境不要无脑 <code>CorsLayer::permissive()</code>，应该限制允许的域名、方法和请求头。</div></div>
+</div></section>
+
+<section class="chapter" id="s9"><h2 class="chapter-title">09. 数据库、认证与文件</h2><div class="chapter-content">
+<p>Axum 不绑定数据库。常见组合是 <code>sqlx</code> + PostgreSQL/MySQL/SQLite。连接池放进 <code>AppState</code>，handler 通过 <code>State</code> 拿。</p>
+<pre><code>cargo add sqlx --features runtime-tokio-rustls,postgres,macros
+cargo add uuid chrono</code></pre>
+<pre><code>use axum::{extract::State, Json};
+use sqlx::PgPool;
+use std::sync::Arc;
+
+#[derive(Clone)]
+struct AppState {
+    db: PgPool,
+}
+
+async fn list_users(State(state): State&lt;Arc&lt;AppState&gt;&gt;) -> Result&lt;Json&lt;Vec&lt;User&gt;&gt;, AppError&gt; {
+    let users = sqlx::query_as!(User, "select id, username from users")
+        .fetch_all(&state.db)
+        .await
+        .map_err(|e| AppError::Internal(e.to_string()))?;
+
+    Ok(Json(users))
+}</code></pre>
+<h3>认证思路</h3><p>认证可以分为两层：</p><ul><li><strong>解析身份：</strong>从 Header/Cookie 取 token，校验 JWT 或 session。</li><li><strong>注入身份：</strong>把当前用户放进 request extensions，handler 通过自定义 extractor 拿。</li></ul>
+<div class="visualization"><div class="visualization-title">典型后端请求链路</div><svg width="760" height="220" viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg"><g fill="#eff6ff" stroke="#2563eb"><rect x="35" y="80" width="110" height="50" rx="8"/><rect x="180" y="80" width="110" height="50" rx="8"/><rect x="325" y="80" width="110" height="50" rx="8"/><rect x="470" y="80" width="110" height="50" rx="8"/><rect x="615" y="80" width="110" height="50" rx="8"/></g><g font-size="14" text-anchor="middle" fill="#111827"><text x="90" y="110">Client</text><text x="235" y="110">Auth</text><text x="380" y="110">Handler</text><text x="525" y="110">Service</text><text x="670" y="110">DB</text></g><g stroke="#64748b" stroke-width="2" marker-end="url(#g)"><path d="M145 105 H180"/><path d="M290 105 H325"/><path d="M435 105 H470"/><path d="M580 105 H615"/></g><defs><marker id="g" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#64748b"/></marker></defs></svg></div>
+<h3>文件上传</h3><p>Axum 支持 multipart，需要启用 feature：</p><pre><code>cargo add axum --features multipart</code></pre>
+<pre><code>use axum::extract::Multipart;
+
+async fn upload(mut multipart: Multipart) {
+    while let Some(field) = multipart.next_field().await.unwrap() {
+        let name = field.name().unwrap_or("").to_string();
+        let bytes = field.bytes().await.unwrap();
+        println!("field={name}, size={}", bytes.len());
+    }
+}</code></pre>
+<div class="tip-box"><div class="tip-box-title">常见误区</div><div>上传文件不要直接无限读入内存。生产项目要限制大小，必要时流式写入磁盘或对象存储。</div></div>
+</div></section>
+
+<section class="chapter" id="s10"><h2 class="chapter-title">10. 部署、测试与练习项目</h2><div class="chapter-content">
+<h3>优雅关闭</h3><p>服务部署时要处理 Ctrl+C 或容器停止信号，让请求有机会正常结束。</p>
+<pre><code>let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+axum::serve(listener, app)
+    .with_graceful_shutdown(shutdown_signal())
+    .await
+    .unwrap();
+
+async fn shutdown_signal() {
+    tokio::signal::ctrl_c().await.expect("failed to install Ctrl+C handler");
+}</code></pre>
+<h3>测试 handler</h3><p>Axum 应用本质上也是 Tower Service，可以用 <code>tower::ServiceExt</code> 发送测试请求。</p>
+<pre><code>cargo add tower --features util --dev
+cargo add http-body-util --dev</code></pre>
+<pre><code>#[tokio::test]
+async fn health_works() {
+    use axum::{body::Body, http::{Request, StatusCode}};
+    use tower::ServiceExt;
+
+    let app = Router::new().route("/health", get(|| async { "ok" }));
+
+    let response = app
+        .oneshot(Request::builder().uri("/health").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::OK);
+}</code></pre>
+<div class="visualization"><div class="visualization-title">学习路线：从 Demo 到可部署服务</div><svg width="760" height="240" viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg"><polyline points="70,165 190,125 310,145 430,90 560,110 690,55" fill="none" stroke="#2563eb" stroke-width="4"/><g fill="#dbeafe" stroke="#2563eb"><circle cx="70" cy="165" r="18"/><circle cx="190" cy="125" r="18"/><circle cx="310" cy="145" r="18"/><circle cx="430" cy="90" r="18"/><circle cx="560" cy="110" r="18"/><circle cx="690" cy="55" r="18"/></g><g font-size="13" fill="#111827" text-anchor="middle"><text x="70" y="205">Hello</text><text x="190" y="165">REST</text><text x="310" y="185">State</text><text x="430" y="130">DB</text><text x="560" y="150">Auth</text><text x="690" y="95">Deploy</text></g></svg></div>
+<h3>练习项目顺序</h3><ol><li><strong>健康检查服务：</strong><code>GET /health</code> 返回版本、时间、状态。</li><li><strong>Todo API：</strong>实现 CRUD，先内存 HashMap，再换 SQLite/PostgreSQL。</li><li><strong>用户系统：</strong>注册、登录、JWT、当前用户接口。</li><li><strong>文件上传：</strong>上传图片，限制大小，返回访问 URL。</li><li><strong>管理后台 API：</strong>分页、筛选、统一错误、日志、权限。</li></ol>
+<h3>生产部署清单</h3><ul><li>监听 <code>0.0.0.0:端口</code>，前面用 Nginx/Caddy 反代。</li><li>配置从环境变量读取，不要写死密钥。</li><li>打开结构化日志和请求 ID。</li><li>数据库连接池设置合理上限。</li><li>开启 graceful shutdown。</li><li>Docker 镜像用多阶段构建，最终镜像尽量小。</li></ul>
+<div class="tip-box"><div class="tip-box-title">学习建议</div><div>先不要急着追求复杂架构。Axum 最值得掌握的是类型化请求处理：Extractor 负责输入，IntoResponse 负责输出，AppError 负责错误，State 负责共享资源。把这四个练熟，项目就稳了。</div></div>
+</div></section>
+
+<section class="refs"><h2>参考资料与延伸阅读</h2><ul>
+<li><a href="https://docs.rs/axum/latest/axum/">Axum docs.rs 官方文档</a>：API、Extractor、Response、State、Middleware 示例最全。</li>
+<li><a href="https://github.com/tokio-rs/axum">tokio-rs/axum GitHub 仓库</a>：README 和版本信息。</li>
+<li><a href="https://github.com/tokio-rs/axum/tree/main/examples">Axum examples</a>：官方示例，包括 CORS、JWT、SQLx、SSE、WebSocket、静态文件、测试、优雅关闭等。</li>
+<li><a href="https://docs.rs/tower-http/latest/tower_http/">tower-http 文档</a>：Trace、CORS、Compression、Timeout、Request ID 等中间件。</li>
+<li><a href="https://docs.rs/sqlx/latest/sqlx/">SQLx 文档</a>：数据库连接池、编译期 SQL 检查、迁移。</li>
+<li><a href="https://tokio.rs/tokio/tutorial">Tokio 教程</a>：理解 async runtime、任务、IO，对 Axum 很有帮助。</li>
+</ul></section>
+</main>
+</div>
+<script>
+const links=[...document.querySelectorAll('.nav-link')];const sections=links.map(a=>document.querySelector(a.getAttribute('href')));const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const a=document.querySelector(`.nav-link[href="#${e.target.id}"]`);if(a)a.classList.add('active')}})},{rootMargin:'-20% 0px -70% 0px'});sections.forEach(s=>s&&obs.observe(s));
+</script>
+</body>
+</html>
