@@ -1,0 +1,30 @@
+# Clash 可直接导入的配置文件
+# 说明：这是一个最小可用配置，包含 1 个 Shadowsocks 节点
+
+port: 7890
+socks-port: 7891
+allow-lan: false
+mode: rule
+log-level: info
+external-controller: 127.0.0.1:9090
+
+authentication: []
+
+proxies:
+  - name: ss-1
+    type: ss
+    server: 43.160.247.50
+    port: 23336
+    cipher: aes-256-gcm
+    password: "g1g%dakD2@cdV8SKY*"
+    udp: true
+
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies:
+      - ss-1
+      - DIRECT
+
+rules:
+  - MATCH,PROXY
