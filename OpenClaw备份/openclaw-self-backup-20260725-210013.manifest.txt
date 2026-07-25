@@ -1,8 +1,8 @@
 OpenClaw assistant workspace backup
-Time: 2026-07-23 21:00:10 CST
+Time: 2026-07-25 21:00:13 CST
 Source: /root/.openclaw/workspace
-Archive: /mnt/d/老王/OpenClaw备份/openclaw-self-backup-20260723-210010.tar.gz
-SHA256: e83025883bcd4c735ec5710a9b262dbe4865e63ecb3ec87c054b368852d350a3
+Archive: /mnt/d/老王/OpenClaw备份/openclaw-self-backup-20260725-210013.tar.gz
+SHA256: 8d929c578b943ca9304c3db9ac00de1f921c76cf2ad6b2689aa84e07dd094b78
 
 Archive contents:
 - ./
@@ -43,6 +43,7 @@ Archive contents:
 - ./memory/.dreams/session-corpus/2026-07-09.txt
 - ./memory/.dreams/session-corpus/2026-06-04.txt
 - ./memory/.dreams/session-corpus/2026-06-18.txt
+- ./memory/.dreams/session-corpus/2026-07-24.txt
 - ./memory/.dreams/session-corpus/2026-06-11.txt
 - ./memory/.dreams/session-corpus/2026-07-03.txt
 - ./memory/.dreams/session-corpus/2026-06-19.txt
@@ -52,6 +53,7 @@ Archive contents:
 - ./memory/.dreams/session-corpus/2026-07-18.txt
 - ./memory/.dreams/session-corpus/2026-07-10.txt
 - ./memory/.dreams/session-corpus/2026-06-17.txt
+- ./memory/.dreams/session-corpus/2026-07-23.txt
 - ./memory/.dreams/session-corpus/2026-06-12.txt
 - ./memory/.dreams/session-corpus/2026-07-12.txt
 - ./memory/.dreams/session-corpus/2026-06-08.txt
@@ -94,6 +96,7 @@ Archive contents:
 - ./memory/dreaming/rem/2026-06-06.md
 - ./memory/dreaming/rem/2026-06-15.md
 - ./memory/dreaming/rem/2026-06-04.md
+- ./memory/dreaming/rem/2026-07-24.md
 - ./memory/dreaming/rem/2026-06-29.md
 - ./memory/dreaming/rem/2026-07-10.md
 - ./memory/dreaming/rem/2026-07-16.md
@@ -113,6 +116,7 @@ Archive contents:
 - ./memory/dreaming/rem/2026-07-08.md
 - ./memory/dreaming/rem/2026-07-18.md
 - ./memory/dreaming/rem/2026-06-10.md
+- ./memory/dreaming/rem/2026-07-25.md
 - ./memory/dreaming/rem/2026-06-23.md
 - ./memory/dreaming/rem/2026-07-23.md
 - ./memory/dreaming/rem/2026-06-27.md
@@ -144,6 +148,7 @@ Archive contents:
 - ./memory/dreaming/light/2026-06-06.md
 - ./memory/dreaming/light/2026-06-15.md
 - ./memory/dreaming/light/2026-06-04.md
+- ./memory/dreaming/light/2026-07-24.md
 - ./memory/dreaming/light/2026-06-29.md
 - ./memory/dreaming/light/2026-07-10.md
 - ./memory/dreaming/light/2026-07-16.md
@@ -163,6 +168,7 @@ Archive contents:
 - ./memory/dreaming/light/2026-07-08.md
 - ./memory/dreaming/light/2026-07-18.md
 - ./memory/dreaming/light/2026-06-10.md
+- ./memory/dreaming/light/2026-07-25.md
 - ./memory/dreaming/light/2026-06-23.md
 - ./memory/dreaming/light/2026-07-23.md
 - ./memory/dreaming/light/2026-06-27.md
@@ -194,6 +200,7 @@ Archive contents:
 - ./memory/dreaming/deep/2026-06-06.md
 - ./memory/dreaming/deep/2026-06-15.md
 - ./memory/dreaming/deep/2026-06-04.md
+- ./memory/dreaming/deep/2026-07-24.md
 - ./memory/dreaming/deep/2026-06-29.md
 - ./memory/dreaming/deep/2026-07-10.md
 - ./memory/dreaming/deep/2026-07-16.md
@@ -213,6 +220,7 @@ Archive contents:
 - ./memory/dreaming/deep/2026-07-08.md
 - ./memory/dreaming/deep/2026-07-18.md
 - ./memory/dreaming/deep/2026-06-10.md
+- ./memory/dreaming/deep/2026-07-25.md
 - ./memory/dreaming/deep/2026-06-23.md
 - ./memory/dreaming/deep/2026-07-23.md
 - ./memory/dreaming/deep/2026-06-27.md
@@ -254,6 +262,7 @@ Archive contents:
 - ./memory/2026-07-04-1736.md
 - ./memory/2026-06-17-0826.md
 - ./memory/2026-07-23-1725.md
+- ./memory/2026-07-25-0900.md
 - ./memory/2026-07-17.md
 - ./memory/2026-06-07-0716.md
 - ./memory/2026-07-11-1802.md
@@ -269,6 +278,7 @@ Archive contents:
 - ./memory/2026-07-04-1725.md
 - ./memory/2026-06-08-1123.md
 - ./memory/2026-06-02.md
+- ./memory/2026-07-24-1741.md
 - ./memory/2026-06-08-1005.md
 - ./memory/2026-06-10-1721.md
 - ./memory/2026-06-18-1423.md
