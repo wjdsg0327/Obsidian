@@ -1,0 +1,22 @@
+{
+  "algorithm": "sift",
+  "ratio": 0.75,
+  "keypoints_a": 370,
+  "keypoints_b": 1081,
+  "descriptor_shape_a": [
+    370,
+    128
+  ],
+  "descriptor_shape_b": [
+    1081,
+    128
+  ],
+  "good_matches": 166,
+  "inliers": 149,
+  "inlier_ratio": 0.89759,
+  "detect_and_describe_ms": 74.876,
+  "match_ms": 1.841,
+  "homography_found": true,
+  "image_a": "C:\\Users\\Administrator\\Documents\\Codex\\2026-07-26\\ni\\work\\SIFT_SURF_从入门到精通\\09_样例与数据集\\opencv_samples\\synthetic_object.png",
+  "image_b": "C:\\Users\\Administrator\\Documents\\Codex\\2026-07-26\\ni\\work\\SIFT_SURF_从入门到精通\\09_样例与数据集\\opencv_samples\\synthetic_scene.png"
+}

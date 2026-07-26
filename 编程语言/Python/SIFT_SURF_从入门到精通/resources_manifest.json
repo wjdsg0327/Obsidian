@@ -1,0 +1,212 @@
+[
+  {
+    "category": "经典论文",
+    "title": "Distinctive Image Features from Scale-Invariant Keypoints",
+    "difficulty": "进阶",
+    "language": "英文",
+    "source_url": "https://www.cs.ubc.ca/~lowe/papers/ijcv04.pdf",
+    "license_status": "作者公开页面；学习引用",
+    "local_path": "",
+    "note": "SIFT 经典完整论文；网络可用时用下载脚本离线保存"
+  },
+  {
+    "category": "经典论文",
+    "title": "SURF: Speeded Up Robust Features",
+    "difficulty": "进阶",
+    "language": "英文",
+    "source_url": "https://people.ee.ethz.ch/~surf/eccv06.pdf",
+    "license_status": "作者/机构公开页面；学习引用",
+    "local_path": "",
+    "note": "ECCV 2006 SURF 经典论文；网络可用时用下载脚本离线保存"
+  },
+  {
+    "category": "现代方法",
+    "title": "SuperPoint: Self-Supervised Interest Point Detection and Description",
+    "difficulty": "进阶",
+    "language": "英文",
+    "source_url": "https://arxiv.org/pdf/1712.07629",
+    "license_status": "arXiv 公开论文；学习引用",
+    "local_path": "",
+    "note": "用于理解经典方法与学习型局部特征的衔接；网络可用时离线保存"
+  },
+  {
+    "category": "官方教程",
+    "title": "OpenCV Introduction to SIFT",
+    "difficulty": "入门",
+    "language": "英文",
+    "source_url": "https://docs.opencv.org/4.x/da/df5/tutorial_py_sift_intro.html",
+    "license_status": "OpenCV 官方文档",
+    "local_path": "",
+    "note": "SIFT Python 教程；网络可用时用下载脚本离线保存"
+  },
+  {
+    "category": "官方教程",
+    "title": "OpenCV Introduction to SURF",
+    "difficulty": "入门",
+    "language": "英文",
+    "source_url": "https://docs.opencv.org/4.x/df/dd2/tutorial_py_surf_intro.html",
+    "license_status": "OpenCV 官方文档",
+    "local_path": "",
+    "note": "接口存在不代表当前 OpenCV 构建启用了 SURF"
+  },
+  {
+    "category": "官方教程",
+    "title": "OpenCV Feature Matching",
+    "difficulty": "熟练",
+    "language": "英文",
+    "source_url": "https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html",
+    "license_status": "OpenCV 官方文档",
+    "local_path": "",
+    "note": "BFMatcher、FLANN 与 Lowe 比率测试"
+  },
+  {
+    "category": "官方教程",
+    "title": "OpenCV Feature Matching + Homography",
+    "difficulty": "熟练",
+    "language": "英文",
+    "source_url": "https://docs.opencv.org/4.x/d1/de0/tutorial_py_feature_homography.html",
+    "license_status": "OpenCV 官方文档",
+    "local_path": "",
+    "note": "从局部匹配到平面目标定位"
+  },
+  {
+    "category": "示例数据",
+    "title": "OpenCV box.png",
+    "difficulty": "入门",
+    "language": "无",
+    "source_url": "https://raw.githubusercontent.com/opencv/opencv/4.x/samples/data/box.png",
+    "license_status": "OpenCV 项目样例；查看项目许可证",
+    "local_path": "",
+    "note": "OpenCV 官方平面目标图；网络可用时用下载脚本保存"
+  },
+  {
+    "category": "示例数据",
+    "title": "OpenCV box_in_scene.png",
+    "difficulty": "入门",
+    "language": "无",
+    "source_url": "https://raw.githubusercontent.com/opencv/opencv/4.x/samples/data/box_in_scene.png",
+    "license_status": "OpenCV 项目样例；查看项目许可证",
+    "local_path": "",
+    "note": "OpenCV 官方场景图；网络可用时用下载脚本保存"
+  },
+  {
+    "category": "示例数据",
+    "title": "OpenCV graf1.png",
+    "difficulty": "熟练",
+    "language": "无",
+    "source_url": "https://raw.githubusercontent.com/opencv/opencv/4.x/samples/data/graf1.png",
+    "license_status": "OpenCV 项目样例；查看项目许可证",
+    "local_path": "",
+    "note": "OpenCV 官方视角变化样例 A；网络可用时保存"
+  },
+  {
+    "category": "示例数据",
+    "title": "OpenCV graf3.png",
+    "difficulty": "熟练",
+    "language": "无",
+    "source_url": "https://raw.githubusercontent.com/opencv/opencv/4.x/samples/data/graf3.png",
+    "license_status": "OpenCV 项目样例；查看项目许可证",
+    "local_path": "",
+    "note": "OpenCV 官方视角变化样例 B；网络可用时保存"
+  },
+  {
+    "category": "本地样例",
+    "title": "可复现的合成目标与场景图",
+    "difficulty": "入门",
+    "language": "无",
+    "source_url": "",
+    "license_status": "本学习包原创生成",
+    "local_path": "09_样例与数据集/opencv_samples/synthetic_object.png",
+    "note": "目标图；由 scripts/generate_samples.py 固定随机种子生成"
+  },
+  {
+    "category": "本地样例",
+    "title": "可复现的合成目标场景图",
+    "difficulty": "入门",
+    "language": "无",
+    "source_url": "",
+    "license_status": "本学习包原创生成",
+    "local_path": "09_样例与数据集/opencv_samples/synthetic_scene.png",
+    "note": "透视变换场景图；由 scripts/generate_samples.py 固定随机种子生成"
+  },
+  {
+    "category": "本地样例",
+    "title": "可复现的合成全景图像对",
+    "difficulty": "熟练",
+    "language": "无",
+    "source_url": "",
+    "license_status": "本学习包原创生成",
+    "local_path": "09_样例与数据集/opencv_samples/synthetic_panorama_a.png",
+    "note": "全景图像 A；由 scripts/generate_samples.py 固定随机种子生成"
+  },
+  {
+    "category": "本地样例",
+    "title": "可复现的合成全景图像 B",
+    "difficulty": "熟练",
+    "language": "无",
+    "source_url": "",
+    "license_status": "本学习包原创生成",
+    "local_path": "09_样例与数据集/opencv_samples/synthetic_panorama_b.png",
+    "note": "全景图像 B；由 scripts/generate_samples.py 固定随机种子生成"
+  },
+  {
+    "category": "源码",
+    "title": "OpenCV source repository",
+    "difficulty": "进阶",
+    "language": "英文",
+    "source_url": "https://github.com/opencv/opencv/tree/4.12.0",
+    "license_status": "Apache-2.0",
+    "local_path": "",
+    "note": "主模块与 SIFT 实现；在线索引"
+  },
+  {
+    "category": "源码",
+    "title": "opencv_contrib source repository",
+    "difficulty": "进阶",
+    "language": "英文",
+    "source_url": "https://github.com/opencv/opencv_contrib/tree/4.12.0",
+    "license_status": "Apache-2.0；具体算法另行核查",
+    "local_path": "",
+    "note": "xfeatures2d 与 SURF 源码；在线索引"
+  },
+  {
+    "category": "扩展教程",
+    "title": "VLFeat SIFT overview",
+    "difficulty": "熟练",
+    "language": "英文",
+    "source_url": "https://www.vlfeat.org/overview/sift.html",
+    "license_status": "在线公开文档",
+    "local_path": "",
+    "note": "另一种成熟 SIFT 实现与说明"
+  },
+  {
+    "category": "数据集",
+    "title": "Oxford Affine Covariant Features dataset",
+    "difficulty": "进阶",
+    "language": "英文",
+    "source_url": "https://www.robots.ox.ac.uk/~vgg/research/affine/",
+    "license_status": "使用前查看数据集页面条款",
+    "local_path": "",
+    "note": "经典局部特征评测数据；按需下载"
+  },
+  {
+    "category": "数据集",
+    "title": "HPatches dataset",
+    "difficulty": "进阶",
+    "language": "英文",
+    "source_url": "https://github.com/hpatches/hpatches-dataset",
+    "license_status": "使用前查看仓库许可证",
+    "local_path": "",
+    "note": "局部描述子评测；按需下载"
+  },
+  {
+    "category": "原创导读",
+    "title": "SIFT 与 SURF 经典论文精读指南",
+    "difficulty": "熟练",
+    "language": "中文",
+    "source_url": "",
+    "license_status": "本学习包原创",
+    "local_path": "07_论文与扩展资料/经典论文/论文精读指南.pdf",
+    "note": "6 页中文离线阅读地图，含原文权威入口"
+  }
+]

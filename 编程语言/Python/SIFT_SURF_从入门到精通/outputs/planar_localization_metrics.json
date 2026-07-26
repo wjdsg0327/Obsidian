@@ -1,0 +1,38 @@
+{
+  "algorithm": "sift",
+  "ratio": 0.75,
+  "keypoints_a": 370,
+  "keypoints_b": 1081,
+  "descriptor_shape_a": [
+    370,
+    128
+  ],
+  "descriptor_shape_b": [
+    1081,
+    128
+  ],
+  "good_matches": 166,
+  "inliers": 149,
+  "inlier_ratio": 0.89759,
+  "detect_and_describe_ms": 81.546,
+  "match_ms": 1.851,
+  "homography_found": true,
+  "projected_corners": [
+    [
+      179.85899353027344,
+      144.9149932861328
+    ],
+    [
+      635.010009765625,
+      95.01399993896484
+    ],
+    [
+      679.4390258789062,
+      454.74798583984375
+    ],
+    [
+      134.9459991455078,
+      484.85101318359375
+    ]
+  ]
+}

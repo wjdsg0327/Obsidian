@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tauri 入门教程：用 Web 前端 + Rust 构建跨平台桌面应用</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.85;color:#273142;background:#f7f8fb}.container{display:flex;min-height:100vh}.sidebar{width:300px;background:#fff;border-right:1px solid #e6e9ef;padding:30px 22px;position:fixed;height:100vh;overflow-y:auto}.sidebar-title{font-size:20px;font-weight:700;color:#101828;margin-bottom:8px}.sidebar-subtitle{font-size:13px;color:#667085;margin-bottom:22px;padding-bottom:16px;border-bottom:2px solid #24c8db}.nav-list{list-style:none}.nav-item{margin-bottom:6px}.nav-link{display:block;padding:10px 12px;color:#526071;text-decoration:none;border-radius:8px;transition:.18s;font-size:14px}.nav-link:hover{background:#edfaff;color:#0d8fa6}.nav-link.active{background:#dff8ff;color:#087e94;font-weight:650}.nav-number{color:#98a2b3;margin-right:8px}.main-content{flex:1;margin-left:300px;padding:46px 64px;max-width:1040px}.hero{background:linear-gradient(135deg,#e6fbff,#fff 45%,#f2f4ff);border:1px solid #e6e9ef;border-radius:18px;padding:34px;margin-bottom:38px}.hero h1{font-size:34px;line-height:1.25;margin-bottom:16px;color:#101828}.hero p{color:#475467;font-size:16px}.meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.pill{font-size:13px;background:#fff;border:1px solid #d9e2ec;color:#475467;border-radius:999px;padding:5px 11px}.chapter{margin-bottom:64px;scroll-margin-top:24px}.chapter-title{font-size:27px;font-weight:700;color:#101828;margin-bottom:22px;padding-bottom:12px;border-bottom:1px solid #e4e7ec}.chapter-content{font-size:16px}.chapter-content h3{font-size:19px;font-weight:650;color:#1d2939;margin:26px 0 10px}.chapter-content p{margin-bottom:15px}.chapter-content ul,.chapter-content ol{margin:15px 0;padding-left:24px}.chapter-content li{margin-bottom:8px}code{font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;background:#f0f4f8;color:#0b5c6b;border:1px solid #dce7ee;border-radius:5px;padding:1px 5px;font-size:.92em}pre{background:#101828;color:#e6f7ff;border-radius:12px;padding:16px 18px;overflow:auto;line-height:1.55;margin:18px 0;font-size:14px}pre code{background:transparent;color:inherit;border:0;padding:0}.visualization{margin:28px 0;padding:22px;background:#fff;border-radius:14px;border:1px solid #e6e9ef;text-align:center;box-shadow:0 8px 24px rgba(16,24,40,.04)}.visualization-title{font-size:14px;color:#667085;margin-bottom:14px}.tip-box{margin:22px 0;padding:16px 18px;background:#fff8e6;border-left:4px solid #f59e0b;border-radius:8px}.tip-box-title{font-weight:700;color:#b45309;margin-bottom:6px}.tip-box-content{color:#5f4b22;font-size:14px}.note-box{margin:22px 0;padding:16px 18px;background:#edfaff;border-left:4px solid #22b8cf;border-radius:8px;color:#30525a}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}.card{background:#fff;border:1px solid #e6e9ef;border-radius:12px;padding:14px}.card strong{display:block;color:#101828;margin-bottom:6px}.references{margin-top:70px;padding-top:30px;border-top:2px solid #e6e9ef}.references-title{font-size:21px;font-weight:700;margin-bottom:16px}.references-list{list-style:none}.references-list li{margin-bottom:8px;color:#526071}.references-list a{color:#087e94;text-decoration:none}.references-list a:hover{text-decoration:underline}@media(max-width:820px){.container{flex-direction:column}.sidebar{position:relative;width:100%;height:auto}.main-content{margin-left:0;padding:24px}.grid{grid-template-columns:1fr}.hero h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="container">
+<nav class="sidebar">
+<h1 class="sidebar-title">Tauri 入门教程</h1>
+<div class="sidebar-subtitle">Web 前端 + Rust 后端 + 原生应用能力</div>
+<ul class="nav-list">
+<li class="nav-item"><a href="#chapter-1" class="nav-link active"><span class="nav-number">01</span>Tauri 是什么</a></li>
+<li class="nav-item"><a href="#chapter-2" class="nav-link"><span class="nav-number">02</span>环境准备</a></li>
+<li class="nav-item"><a href="#chapter-3" class="nav-link"><span class="nav-number">03</span>创建第一个项目</a></li>
+<li class="nav-item"><a href="#chapter-4" class="nav-link"><span class="nav-number">04</span>项目结构</a></li>
+<li class="nav-item"><a href="#chapter-5" class="nav-link"><span class="nav-number">05</span>前端调用 Rust</a></li>
+<li class="nav-item"><a href="#chapter-6" class="nav-link"><span class="nav-number">06</span>配置、权限与插件</a></li>
+<li class="nav-item"><a href="#chapter-7" class="nav-link"><span class="nav-number">07</span>调试与开发循环</a></li>
+<li class="nav-item"><a href="#chapter-8" class="nav-link"><span class="nav-number">08</span>打包发布与学习路线</a></li>
+</ul>
+</nav>
+<main class="main-content">
+<section class="hero">
+<h1>Tauri 入门教程：用熟悉的 Web 技术做小而快的原生应用</h1>
+<p>这份教程面向已经会一点前端、想把网页能力变成桌面/移动应用的人。你可以把 Tauri 理解为：界面用 HTML/CSS/JS 或任意前端框架写，系统能力和后端逻辑用 Rust 写，中间通过安全的 IPC 通信连接。</p>
+<div class="meta"><span class="pill">Tauri 2.x</span><span class="pill">桌面：Windows / macOS / Linux</span><span class="pill">移动：Android / iOS</span><span class="pill">适合工具类、效率类、跨平台客户端</span></div>
+</section>
+
+<section id="chapter-1" class="chapter"><h2 class="chapter-title">Tauri 是什么</h2><div class="chapter-content">
+<p>Tauri 是一个跨平台应用工具包。它不把 Chromium 这种完整浏览器引擎打包进应用，而是使用操作系统自带的 WebView：Windows 用 Edge WebView2，macOS 用 WKWebView，Linux 用 WebKitGTK。这样应用体积通常比 Electron 小很多，同时核心逻辑可以用 Rust 获得更好的性能和安全边界。</p>
+<h3>核心模型</h3>
+<p>一个 Tauri 应用通常由两部分组成：前端 WebView 和 Rust Core。前端负责界面、交互、状态展示；Rust Core 负责窗口、文件、系统托盘、通知、数据库、命令、权限和真正敏感的系统操作。</p>
+<div class="visualization"><div class="visualization-title">Tauri 的两层结构</div>
+<svg width="640" height="230" viewBox="0 0 640 230" role="img" aria-label="Tauri architecture">
+<defs><marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#22b8cf"/></marker></defs>
+<rect x="35" y="42" width="230" height="138" rx="16" fill="#e6fbff" stroke="#22b8cf" stroke-width="2"/>
+<text x="150" y="82" text-anchor="middle" font-size="18" fill="#075c6b" font-weight="700">WebView 前端</text><text x="150" y="116" text-anchor="middle" font-size="14" fill="#475467">HTML / CSS / JS</text><text x="150" y="142" text-anchor="middle" font-size="14" fill="#475467">React / Vue / Svelte / Vanilla</text>
+<rect x="375" y="42" width="230" height="138" rx="16" fill="#f2f4ff" stroke="#667eea" stroke-width="2"/>
+<text x="490" y="82" text-anchor="middle" font-size="18" fill="#3440a0" font-weight="700">Rust Core</text><text x="490" y="116" text-anchor="middle" font-size="14" fill="#475467">命令 / 插件 / 权限</text><text x="490" y="142" text-anchor="middle" font-size="14" fill="#475467">文件 / 网络 / 系统能力</text>
+<line x1="270" y1="105" x2="368" y2="105" stroke="#22b8cf" stroke-width="3" marker-end="url(#arrow)"/><line x1="370" y1="132" x2="272" y2="132" stroke="#22b8cf" stroke-width="3" marker-end="url(#arrow)"/><text x="320" y="93" text-anchor="middle" font-size="13" fill="#087e94">invoke</text><text x="320" y="154" text-anchor="middle" font-size="13" fill="#087e94">result / event</text></svg></div>
+<h3>适合什么场景</h3><ul><li>桌面工具：剪贴板、文件处理、开发者工具、启动器、笔记工具。</li><li>跨平台客户端：一套 Web UI，多平台打包。</li><li>已有 Web 项目转桌面应用：在现有前端外面套一层原生能力。</li><li>需要轻量分发：不想每个应用都带一个完整浏览器。</li></ul>
+<div class="tip-box"><div class="tip-box-title">易错点提醒</div><div class="tip-box-content">不要把 Tauri 当成“网页直接拥有系统权限”。Tauri 的安全设计是：前端默认没有随便操作系统的能力，需要 Rust 命令、插件权限和 capability 明确授权。</div></div>
+<p>理解了“前端负责界面、Rust 负责系统能力”之后，下一步就是把开发环境搭好。</p>
+</div></section>
+
+<section id="chapter-2" class="chapter"><h2 class="chapter-title">环境准备</h2><div class="chapter-content">
+<p>开发 Tauri 需要两类依赖：Rust 工具链，以及对应平台的系统构建依赖。如果你用 JavaScript/TypeScript 前端，还需要 Node.js 和包管理器。</p>
+<h3>必装组件</h3><div class="grid"><div class="card"><strong>Rust</strong><p>安装 <code>rustup</code>，使用 stable 工具链。Rust 编译 Tauri Core 和打包应用。</p></div><div class="card"><strong>Node.js</strong><p>如果使用 React/Vue/Svelte/Vite 等前端框架，需要 Node.js。建议配合 <code>pnpm</code> 或 <code>npm</code>。</p></div><div class="card"><strong>Windows</strong><p>需要 Microsoft C++ Build Tools；Windows 10 1803 之后通常已有 WebView2。</p></div><div class="card"><strong>Linux / macOS</strong><p>Linux 需要 WebKitGTK 等开发库；macOS 需要 Xcode 或 Command Line Tools。</p></div></div>
+<div class="visualization"><div class="visualization-title">环境依赖关系</div><svg width="660" height="240" viewBox="0 0 660 240"><defs><marker id="a2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#667085"/></marker></defs><rect x="40" y="40" width="130" height="55" rx="10" fill="#fff" stroke="#98a2b3"/><text x="105" y="74" text-anchor="middle" font-size="15">Rust</text><rect x="40" y="145" width="130" height="55" rx="10" fill="#fff" stroke="#98a2b3"/><text x="105" y="179" text-anchor="middle" font-size="15">Node.js</text><rect x="265" y="92" width="150" height="65" rx="12" fill="#e6fbff" stroke="#22b8cf" stroke-width="2"/><text x="340" y="130" text-anchor="middle" font-size="16" font-weight="700" fill="#075c6b">Tauri CLI</text><rect x="505" y="92" width="125" height="65" rx="12" fill="#f2f4ff" stroke="#667eea" stroke-width="2"/><text x="568" y="130" text-anchor="middle" font-size="16" font-weight="700" fill="#3440a0">App</text><line x1="170" y1="68" x2="260" y2="107" stroke="#667085" stroke-width="2" marker-end="url(#a2)"/><line x1="170" y1="172" x2="260" y2="142" stroke="#667085" stroke-width="2" marker-end="url(#a2)"/><line x1="417" y1="124" x2="500" y2="124" stroke="#667085" stroke-width="2" marker-end="url(#a2)"/><text x="340" y="185" text-anchor="middle" fill="#667085" font-size="13">CLI 负责 dev / build / bundle</text></svg></div>
+<h3>推荐检查命令</h3><pre><code>rustc --version
+cargo --version
+node -v
+npm -v
+# 如果用 pnpm
+corepack enable
+pnpm -v</code></pre>
+<div class="tip-box"><div class="tip-box-title">易错点提醒</div><div class="tip-box-content">第一次运行 <code>tauri dev</code> 会编译 Rust 依赖，几分钟很正常。后续因为依赖有缓存，会快很多。</div></div>
+<p>环境准备好后，就可以用官方脚手架创建第一个项目。</p>
+</div></section>
+
+<section id="chapter-3" class="chapter"><h2 class="chapter-title">创建第一个项目</h2><div class="chapter-content">
+<p>官方推荐用 <code>create-tauri-app</code> 快速生成项目。它会让你选择项目名、应用标识、前端语言、包管理器和 UI 模板。</p>
+<h3>推荐新手选择</h3><p>如果只是入门，建议先选：<code>TypeScript / JavaScript</code> → <code>pnpm</code> 或 <code>npm</code> → <code>Vanilla</code> 或 <code>React</code>。Vanilla 更少干扰，React 更接近真实项目。</p>
+<pre><code># npm 方式
+npm create tauri-app@latest
+cd tauri-app
+npm install
+npm run tauri dev
+
+# pnpm 方式
+pnpm create tauri-app
+cd tauri-app
+pnpm install
+pnpm tauri dev</code></pre>
+<div class="visualization"><div class="visualization-title">创建项目流程</div><svg width="680" height="170" viewBox="0 0 680 170"><defs><marker id="a3" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#22b8cf"/></marker></defs><g font-size="14"><rect x="25" y="58" width="120" height="55" rx="10" fill="#fff" stroke="#d0d5dd"/><text x="85" y="91" text-anchor="middle">选择模板</text><rect x="190" y="58" width="120" height="55" rx="10" fill="#fff" stroke="#d0d5dd"/><text x="250" y="91" text-anchor="middle">安装依赖</text><rect x="355" y="58" width="120" height="55" rx="10" fill="#fff" stroke="#d0d5dd"/><text x="415" y="91" text-anchor="middle">tauri dev</text><rect x="520" y="58" width="135" height="55" rx="10" fill="#e6fbff" stroke="#22b8cf"/><text x="587" y="91" text-anchor="middle" fill="#075c6b" font-weight="700">看到窗口</text><line x1="145" y1="85" x2="185" y2="85" stroke="#22b8cf" stroke-width="2" marker-end="url(#a3)"/><line x1="310" y1="85" x2="350" y2="85" stroke="#22b8cf" stroke-width="2" marker-end="url(#a3)"/><line x1="475" y1="85" x2="515" y2="85" stroke="#22b8cf" stroke-width="2" marker-end="url(#a3)"/></g></svg></div>
+<h3>给已有前端项目加 Tauri</h3><p>如果你已经有 Vite/React/Vue 项目，可以安装 CLI 后运行初始化命令：</p><pre><code>npm install -D @tauri-apps/cli@latest
+npx tauri init
+npx tauri dev</code></pre>
+<div class="tip-box"><div class="tip-box-title">易错点提醒</div><div class="tip-box-content">已有 Vite 项目里，建议把 <code>src-tauri</code> 加到 Vite 的 watch ignore，避免前端开发服务器监听 Rust 编译产物导致额外刷新。</div></div>
+<p>项目跑起来后，最重要的是看懂目录结构，否则很容易不知道代码该写在哪里。</p>
+</div></section>
+
+<section id="chapter-4" class="chapter"><h2 class="chapter-title">项目结构</h2><div class="chapter-content">
+<p>典型 Tauri 项目顶层是前端工程，<code>src-tauri/</code> 里面是 Rust 工程。构建时，前端先打包成静态资源，然后 Rust 工程把这些资源和原生能力一起打包成应用。</p>
+<pre><code>tauri-app/
+├── package.json          # 前端依赖和脚本
+├── index.html
+├── src/                  # 前端源码
+└── src-tauri/
+    ├── Cargo.toml        # Rust 依赖和包信息
+    ├── Cargo.lock        # Rust 锁定文件，建议提交
+    ├── build.rs          # Tauri 构建脚本
+    ├── tauri.conf.json   # Tauri 配置
+    ├── capabilities/     # 窗口/权限能力配置
+    ├── icons/            # 应用图标
+    └── src/
+        ├── lib.rs        # Tauri app 核心入口
+        └── main.rs       # 桌面入口</code></pre>
+<div class="visualization"><div class="visualization-title">构建时资源进入 Rust 应用</div><svg width="680" height="220" viewBox="0 0 680 220"><defs><marker id="a4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#667eea"/></marker></defs><rect x="35" y="45" width="175" height="120" rx="14" fill="#fff" stroke="#d0d5dd"/><text x="122" y="78" text-anchor="middle" font-size="16" font-weight="700">前端工程</text><text x="122" y="108" text-anchor="middle" font-size="13" fill="#667085">src / index.html</text><text x="122" y="134" text-anchor="middle" font-size="13" fill="#667085">npm run build</text><rect x="280" y="45" width="175" height="120" rx="14" fill="#fff" stroke="#d0d5dd"/><text x="368" y="78" text-anchor="middle" font-size="16" font-weight="700">src-tauri</text><text x="368" y="108" text-anchor="middle" font-size="13" fill="#667085">Rust Core</text><text x="368" y="134" text-anchor="middle" font-size="13" fill="#667085">tauri.conf.json</text><rect x="525" y="45" width="120" height="120" rx="14" fill="#f2f4ff" stroke="#667eea" stroke-width="2"/><text x="585" y="98" text-anchor="middle" font-size="16" fill="#3440a0" font-weight="700">安装包</text><text x="585" y="126" text-anchor="middle" font-size="13" fill="#475467">exe/dmg/deb</text><line x1="212" y1="105" x2="275" y2="105" stroke="#667eea" stroke-width="2" marker-end="url(#a4)"/><line x1="457" y1="105" x2="520" y2="105" stroke="#667eea" stroke-width="2" marker-end="url(#a4)"/></svg></div>
+<h3>几个最常改的文件</h3><ul><li><code>src/</code>：页面、组件、样式、前端状态。</li><li><code>src-tauri/src/lib.rs</code>：注册命令、插件、状态管理。</li><li><code>src-tauri/tauri.conf.json</code>：应用名、窗口、构建路径、打包配置。</li><li><code>src-tauri/capabilities/default.json</code>：给窗口声明可以使用哪些权限。</li></ul>
+<div class="tip-box"><div class="tip-box-title">易错点提醒</div><div class="tip-box-content"><code>src-tauri/target</code> 是 Rust 编译产物，不要提交；<code>src-tauri/Cargo.lock</code> 建议提交，保证多台机器构建依赖一致。</div></div>
+<p>目录清楚之后，就可以写第一个“前端调用 Rust”的功能了。</p>
+</div></section>
+
+<section id="chapter-5" class="chapter"><h2 class="chapter-title">前端调用 Rust</h2><div class="chapter-content">
+<p>Tauri 的核心通信方式是 IPC。最常用的是 <code>Command</code>：在 Rust 里定义函数，用 <code>#[tauri::command]</code> 标记；在前端用 <code>invoke</code> 调用。</p>
+<h3>Rust 侧定义命令</h3><pre><code>// src-tauri/src/lib.rs
+#[tauri::command]
+fn greet(name: String) -> String {
+    format!("你好，{}！来自 Rust", name)
+}
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![greet])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}</code></pre>
+<h3>前端调用命令</h3><pre><code>// src/main.ts
+import { invoke } from '@tauri-apps/api/core';
+
+const message = await invoke&lt;string&gt;('greet', { name: '老王' });
+console.log(message);</code></pre>
+<div class="visualization"><div class="visualization-title">Command 的请求-响应过程</div><svg width="680" height="230" viewBox="0 0 680 230"><defs><marker id="a5" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#22b8cf"/></marker></defs><rect x="55" y="52" width="190" height="120" rx="14" fill="#e6fbff" stroke="#22b8cf" stroke-width="2"/><text x="150" y="85" text-anchor="middle" font-size="17" fill="#075c6b" font-weight="700">前端</text><text x="150" y="116" text-anchor="middle" font-size="13" fill="#475467">invoke('greet')</text><text x="150" y="142" text-anchor="middle" font-size="13" fill="#475467">JSON 参数</text><rect x="435" y="52" width="190" height="120" rx="14" fill="#f2f4ff" stroke="#667eea" stroke-width="2"/><text x="530" y="85" text-anchor="middle" font-size="17" fill="#3440a0" font-weight="700">Rust 命令</text><text x="530" y="116" text-anchor="middle" font-size="13" fill="#475467">#[tauri::command]</text><text x="530" y="142" text-anchor="middle" font-size="13" fill="#475467">返回 Serialize 数据</text><line x1="248" y1="95" x2="430" y2="95" stroke="#22b8cf" stroke-width="3" marker-end="url(#a5)"/><line x1="432" y1="135" x2="250" y2="135" stroke="#22b8cf" stroke-width="3" marker-end="url(#a5)"/><text x="340" y="82" text-anchor="middle" font-size="13" fill="#087e94">请求</text><text x="340" y="157" text-anchor="middle" font-size="13" fill="#087e94">Promise 结果</text></svg></div>
+<h3>错误、异步和事件</h3><ul><li>命令可以返回 <code>Result&lt;T, E&gt;</code>，前端用 <code>try/catch</code> 接错误。</li><li>耗时操作建议写成 <code>async fn</code>，避免阻塞 UI。</li><li>事件系统适合“通知状态变化”，例如下载进度、同步完成；但事件不是类型安全的，也没有返回值。</li></ul>
+<div class="tip-box"><div class="tip-box-title">易错点提醒</div><div class="tip-box-content">前端传参对象使用 camelCase，例如 Rust 参数 <code>invoke_message</code>，前端一般写 <code>{ invokeMessage: 'Hello' }</code>。返回值和错误都要能被 serde 序列化。</div></div>
+<p>会写 command 之后，你已经能完成大多数“前端界面 + 本地能力”的功能。下一步要补上 Tauri 很重要的一层：权限。</p>
+</div></section>
+
+<section id="chapter-6" class="chapter"><h2 class="chapter-title">配置、权限与插件</h2><div class="chapter-content">
+<p>Tauri 2.x 很强调最小权限。即使安装了插件，也通常还要在 capability 里给窗口授权。你可以把它理解成：插件提供能力，permission 描述能力，capability 把能力分配给某个窗口。</p>
+<h3>常见配置文件</h3><ul><li><code>tauri.conf.json</code>：配置构建命令、前端 devUrl、窗口标题、打包图标、插件配置。</li><li><code>Cargo.toml</code>：Rust 依赖，比如 <code>tauri</code>、插件 crate、<code>serde</code>。</li><li><code>package.json</code>：前端依赖和脚本，比如 <code>@tauri-apps/api</code>、<code>@tauri-apps/cli</code>。</li><li><code>capabilities/default.json</code>：声明默认窗口允许使用哪些权限。</li></ul>
+<div class="visualization"><div class="visualization-title">插件权限模型</div><svg width="700" height="250" viewBox="0 0 700 250"><defs><marker id="a6" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#667085"/></marker></defs><rect x="35" y="88" width="135" height="70" rx="12" fill="#fff" stroke="#d0d5dd"/><text x="102" y="130" text-anchor="middle" font-size="15">窗口 main</text><rect x="235" y="45" width="145" height="70" rx="12" fill="#e6fbff" stroke="#22b8cf"/><text x="307" y="86" text-anchor="middle" font-size="15" fill="#075c6b">capability</text><rect x="235" y="145" width="145" height="70" rx="12" fill="#fff8e6" stroke="#f59e0b"/><text x="307" y="186" text-anchor="middle" font-size="15" fill="#92400e">permissions</text><rect x="465" y="45" width="165" height="70" rx="12" fill="#f2f4ff" stroke="#667eea"/><text x="547" y="86" text-anchor="middle" font-size="15" fill="#3440a0">plugin fs/dialog/sql</text><rect x="465" y="145" width="165" height="70" rx="12" fill="#fff" stroke="#d0d5dd"/><text x="547" y="186" text-anchor="middle" font-size="15">Rust commands</text><line x1="170" y1="122" x2="230" y2="82" stroke="#667085" stroke-width="2" marker-end="url(#a6)"/><line x1="307" y1="116" x2="307" y2="140" stroke="#667085" stroke-width="2" marker-end="url(#a6)"/><line x1="382" y1="80" x2="460" y2="80" stroke="#667085" stroke-width="2" marker-end="url(#a6)"/><line x1="382" y1="180" x2="460" y2="180" stroke="#667085" stroke-width="2" marker-end="url(#a6)"/></svg></div>
+<h3>常用官方插件</h3><div class="grid"><div class="card"><strong>fs</strong><p>文件系统读写。一定要配置 scope，不要把整个磁盘随便开放。</p></div><div class="card"><strong>dialog</strong><p>打开文件选择、保存对话框、消息框。</p></div><div class="card"><strong>shell</strong><p>启动外部命令。风险高，必须谨慎限定命令和参数。</p></div><div class="card"><strong>sql / store</strong><p>本地数据存储：轻量配置用 store，结构化数据用 SQL。</p></div></div>
+<div class="tip-box"><div class="tip-box-title">易错点提醒</div><div class="tip-box-content">开发桌面工具时最容易“为了省事放宽权限”。Tauri 的优势恰恰在于权限边界清楚，建议只开放当前功能需要的目录、命令和插件。</div></div>
+<p>配置和权限做好后，开发体验主要看调试方式和反馈循环。</p>
+</div></section>
+
+<section id="chapter-7" class="chapter"><h2 class="chapter-title">调试与开发循环</h2><div class="chapter-content">
+<p>日常开发最常用的是 <code>tauri dev</code>。它会启动前端开发服务器、编译 Rust、打开 WebView 窗口，并监听 <code>src-tauri</code> 的改动。前端如果有热更新，窗口也会像浏览器一样刷新。</p>
+<h3>开发命令</h3><pre><code>npm run tauri dev
+# 或
+pnpm tauri dev
+# 或只用 cargo 安装 CLI 时
+cargo tauri dev</code></pre>
+<div class="visualization"><div class="visualization-title">开发反馈循环</div><svg width="650" height="280" viewBox="0 0 650 280"><defs><marker id="a7" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#22b8cf"/></marker></defs><circle cx="325" cy="140" r="95" fill="#fff" stroke="#d0d5dd"/><rect x="268" y="18" width="115" height="46" rx="10" fill="#e6fbff" stroke="#22b8cf"/><text x="325" y="47" text-anchor="middle" font-size="14">改前端</text><rect x="485" y="118" width="115" height="46" rx="10" fill="#f2f4ff" stroke="#667eea"/><text x="542" y="147" text-anchor="middle" font-size="14">改 Rust</text><rect x="268" y="218" width="115" height="46" rx="10" fill="#fff8e6" stroke="#f59e0b"/><text x="325" y="247" text-anchor="middle" font-size="14">看窗口</text><rect x="50" y="118" width="115" height="46" rx="10" fill="#fff" stroke="#d0d5dd"/><text x="108" y="147" text-anchor="middle" font-size="14">DevTools</text><path d="M380 52 C460 70 500 95 528 115" fill="none" stroke="#22b8cf" stroke-width="2" marker-end="url(#a7)"/><path d="M542 166 C515 220 440 245 386 243" fill="none" stroke="#22b8cf" stroke-width="2" marker-end="url(#a7)"/><path d="M263 243 C200 235 145 195 115 166" fill="none" stroke="#22b8cf" stroke-width="2" marker-end="url(#a7)"/><path d="M112 116 C145 75 205 50 263 43" fill="none" stroke="#22b8cf" stroke-width="2" marker-end="url(#a7)"/></svg></div>
+<h3>打开 Web Inspector</h3><p>桌面端可以在 WebView 里右键选择 Inspect，或者用快捷键：Windows/Linux 是 <code>Ctrl + Shift + I</code>，macOS 是 <code>Cmd + Option + I</code>。这能调试前端 DOM、样式、网络请求和 console。</p>
+<h3>常见问题定位</h3><ul><li>前端没加载：检查 <code>build.devUrl</code> 和 <code>beforeDevCommand</code> 是否正确。</li><li>命令调用失败：检查 <code>invoke_handler</code> 是否注册命令、命令名是否一致、参数是否 camelCase。</li><li>插件 API 无权限：检查 <code>capabilities/default.json</code> 是否声明 permission。</li><li>Linux 编译失败：多数是 WebKitGTK 或系统 dev 包缺失。</li></ul>
+<div class="tip-box"><div class="tip-box-title">易错点提醒</div><div class="tip-box-content">Tauri API 只在 Tauri WebView 环境里可用。把前端单独放浏览器打开时，调用 <code>@tauri-apps/api</code> 可能不可用，这是正常的。</div></div>
+<p>开发调通以后，最后一步是打包成目标平台能安装的应用。</p>
+</div></section>
+
+<section id="chapter-8" class="chapter"><h2 class="chapter-title">打包发布与学习路线</h2><div class="chapter-content">
+<p>Tauri 通过 CLI 直接构建和打包应用。桌面端常用 <code>tauri build</code>；移动端使用 <code>tauri android build</code> 或 <code>tauri ios build</code>。不同平台会生成对应格式，例如 Windows 安装包、macOS app/dmg、Linux deb/AppImage/rpm 等。</p>
+<h3>打包命令</h3><pre><code>npm run tauri build
+# 或
+pnpm tauri build
+# 或
+cargo tauri build</code></pre>
+<div class="visualization"><div class="visualization-title">从源码到分发包</div><svg width="690" height="230" viewBox="0 0 690 230"><defs><marker id="a8" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#667eea"/></marker></defs><rect x="30" y="80" width="130" height="70" rx="12" fill="#fff" stroke="#d0d5dd"/><text x="95" y="121" text-anchor="middle">源码</text><rect x="215" y="80" width="130" height="70" rx="12" fill="#e6fbff" stroke="#22b8cf"/><text x="280" y="121" text-anchor="middle" fill="#075c6b">tauri build</text><rect x="400" y="35" width="110" height="55" rx="10" fill="#f2f4ff" stroke="#667eea"/><text x="455" y="68" text-anchor="middle">Windows</text><rect x="400" y="100" width="110" height="55" rx="10" fill="#f2f4ff" stroke="#667eea"/><text x="455" y="133" text-anchor="middle">macOS</text><rect x="400" y="165" width="110" height="55" rx="10" fill="#f2f4ff" stroke="#667eea"/><text x="455" y="198" text-anchor="middle">Linux</text><rect x="565" y="80" width="100" height="70" rx="12" fill="#fff8e6" stroke="#f59e0b"/><text x="615" y="121" text-anchor="middle">签名/发布</text><line x1="160" y1="115" x2="210" y2="115" stroke="#667eea" stroke-width="2" marker-end="url(#a8)"/><line x1="345" y1="115" x2="395" y2="63" stroke="#667eea" stroke-width="2" marker-end="url(#a8)"/><line x1="345" y1="115" x2="395" y2="127" stroke="#667eea" stroke-width="2" marker-end="url(#a8)"/><line x1="345" y1="115" x2="395" y2="192" stroke="#667eea" stroke-width="2" marker-end="url(#a8)"/><line x1="512" y1="115" x2="560" y2="115" stroke="#667eea" stroke-width="2" marker-end="url(#a8)"/></svg></div>
+<h3>建议学习路线</h3><ol><li><strong>先跑通 Vanilla 模板：</strong>理解窗口、前端、Rust 入口。</li><li><strong>写 3 个命令：</strong>返回字符串、读写本地文件、异步请求网络。</li><li><strong>学权限：</strong>给文件系统插件配置最小 scope。</li><li><strong>做一个小工具：</strong>比如 Markdown 转换器、JSON 格式化器、本地日志查看器。</li><li><strong>学打包：</strong>配置图标、应用名、版本、Windows/macOS/Linux 目标。</li><li><strong>再学高级能力：</strong>系统托盘、多窗口、自动更新、sidecar、数据库、移动端。</li></ol>
+<h3>一个入门小项目建议</h3><p>做一个“本地 Markdown 工具”：左边输入 Markdown，右边预览；用 Rust 命令保存文件；用 dialog 插件选择保存位置；用 store 保存上次打开目录。这个项目能覆盖前端、Rust 命令、插件、权限、配置和打包。</p>
+<div class="tip-box"><div class="tip-box-title">易错点提醒</div><div class="tip-box-content">打包发布不只是 <code>build</code> 成功。macOS、Windows、移动端通常还涉及代码签名、公证、商店要求或证书配置。个人学习阶段可以先本地打包，正式分发再处理签名。</div></div>
+<p>到这里，你已经有了 Tauri 的完整入门地图：先理解架构，再跑项目，再用 command 接通 Rust，最后围绕权限、插件和打包做真实小工具。</p>
+</div></section>
+
+<section class="references"><h2 class="references-title">参考资料</h2><ul class="references-list">
+<li>Tauri 官网：<a href="https://tauri.app/" target="_blank">https://tauri.app/</a></li>
+<li>What is Tauri / Quick Start：<a href="https://tauri.app/start/" target="_blank">https://tauri.app/start/</a></li>
+<li>Prerequisites：<a href="https://tauri.app/start/prerequisites/" target="_blank">https://tauri.app/start/prerequisites/</a></li>
+<li>Create a Project：<a href="https://tauri.app/start/create-project/" target="_blank">https://tauri.app/start/create-project/</a></li>
+<li>Project Structure：<a href="https://tauri.app/start/project-structure/" target="_blank">https://tauri.app/start/project-structure/</a></li>
+<li>Architecture / Process Model / IPC：<a href="https://tauri.app/concept/architecture/" target="_blank">Architecture</a>、<a href="https://tauri.app/concept/process-model/" target="_blank">Process Model</a>、<a href="https://tauri.app/concept/inter-process-communication/" target="_blank">IPC</a></li>
+<li>Calling Rust from the Frontend：<a href="https://tauri.app/develop/calling-rust/" target="_blank">https://tauri.app/develop/calling-rust/</a></li>
+<li>Configuration / Permissions / Plugins / Distribute：<a href="https://tauri.app/develop/configuration-files/" target="_blank">Configuration</a>、<a href="https://tauri.app/security/permissions/" target="_blank">Permissions</a>、<a href="https://tauri.app/plugin/" target="_blank">Plugins</a>、<a href="https://tauri.app/distribute/" target="_blank">Distribute</a></li>
+</ul></section>
+</main></div>
+<script>
+const navLinks=document.querySelectorAll('.nav-link');const chapters=document.querySelectorAll('.chapter');function updateActiveNav(){let current='';chapters.forEach(ch=>{const r=ch.getBoundingClientRect();if(r.top<=120)current=ch.id});if(!current&&chapters[0])current=chapters[0].id;navLinks.forEach(l=>{l.classList.toggle('active',l.getAttribute('href')==='#'+current)})}window.addEventListener('scroll',updateActiveNav,{passive:true});updateActiveNav();
+</script>
+</body>
+</html>

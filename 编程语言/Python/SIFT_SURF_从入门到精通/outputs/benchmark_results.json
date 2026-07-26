@@ -1,0 +1,43 @@
+[
+  {
+    "algorithm": "sift",
+    "status": "ok",
+    "keypoints_a": 370,
+    "keypoints_b": 1081,
+    "good_matches": 166,
+    "inliers": 149,
+    "inlier_ratio": 0.89759,
+    "median_total_ms": 58.179,
+    "repeats": 5,
+    "message": ""
+  },
+  {
+    "algorithm": "orb",
+    "status": "ok",
+    "keypoints_a": 1557,
+    "keypoints_b": 2500,
+    "good_matches": 454,
+    "inliers": 417,
+    "inlier_ratio": 0.918502,
+    "median_total_ms": 13.715,
+    "repeats": 5,
+    "message": ""
+  },
+  {
+    "algorithm": "akaze",
+    "status": "ok",
+    "keypoints_a": 386,
+    "keypoints_b": 1640,
+    "good_matches": 224,
+    "inliers": 214,
+    "inlier_ratio": 0.955357,
+    "median_total_ms": 39.829,
+    "repeats": 5,
+    "message": ""
+  },
+  {
+    "algorithm": "surf",
+    "status": "unavailable",
+    "message": "当前 OpenCV 未启用 SURF（通常是 Non-free algorithms: NO）。"
+  }
+]

@@ -1,0 +1,12 @@
+name: sift-surf-study
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - numpy=2.2
+  - jupyterlab=4.2
+  - nbconvert=7.16
+  - pip
+  - pip:
+      - opencv-python==4.12.0.88
+      - pytest==8.3.3

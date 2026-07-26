@@ -1,0 +1,5 @@
+﻿algorithm,status,keypoints_a,keypoints_b,good_matches,inliers,inlier_ratio,median_total_ms,repeats,message
+sift,ok,370,1081,166,149,0.89759,58.179,5,
+orb,ok,1557,2500,454,417,0.918502,13.715,5,
+akaze,ok,386,1640,224,214,0.955357,39.829,5,
+surf,unavailable,,,,,,,,当前 OpenCV 未启用 SURF（通常是 Non-free algorithms: NO）。
