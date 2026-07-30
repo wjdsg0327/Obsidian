@@ -1,8 +1,8 @@
 OpenClaw assistant workspace backup
-Time: 2026-07-28 21:00:10 CST
+Time: 2026-07-30 21:00:08 CST
 Source: /root/.openclaw/workspace
-Archive: /mnt/d/老王/OpenClaw备份/openclaw-self-backup-20260728-210010.tar.gz
-SHA256: df1e8df3bafd36f3da22d7ad4ee5a348c7d2f4e89615d9064c9be70dbfcb8c98
+Archive: /mnt/d/老王/OpenClaw备份/openclaw-self-backup-20260730-210008.tar.gz
+SHA256: dc2d852692ab339be82419f6b19552dbf6596e054550b1c6454e5f0dd2299ed6
 
 Archive contents:
 - ./
@@ -70,6 +70,7 @@ Archive contents:
 - ./memory/.dreams/session-corpus/2026-07-20.txt
 - ./memory/.dreams/session-corpus/2026-06-24.txt
 - ./memory/.dreams/session-corpus/2026-06-30.txt
+- ./memory/.dreams/session-corpus/2026-07-28.txt
 - ./memory/.dreams/session-corpus/2026-06-06.txt
 - ./memory/.dreams/session-corpus/2026-07-16.txt
 - ./memory/.dreams/session-corpus/2026-07-07.txt
@@ -77,6 +78,7 @@ Archive contents:
 - ./memory/.dreams/session-corpus/2026-07-11.txt
 - ./memory/.dreams/session-corpus/2026-06-10.txt
 - ./memory/.dreams/session-corpus/2026-07-05.txt
+- ./memory/.dreams/session-corpus/2026-07-29.txt
 - ./memory/.dreams/session-corpus/2026-06-15.txt
 - ./memory/.dreams/session-corpus/2026-06-09.txt
 - ./memory/.dreams/session-corpus/2026-06-25.txt
@@ -106,6 +108,7 @@ Archive contents:
 - ./memory/dreaming/rem/2026-06-29.md
 - ./memory/dreaming/rem/2026-07-10.md
 - ./memory/dreaming/rem/2026-07-16.md
+- ./memory/dreaming/rem/2026-07-29.md
 - ./memory/dreaming/rem/2026-06-30.md
 - ./memory/dreaming/rem/2026-06-24.md
 - ./memory/dreaming/rem/2026-07-20.md
@@ -149,6 +152,7 @@ Archive contents:
 - ./memory/dreaming/rem/2026-06-11.md
 - ./memory/dreaming/rem/2026-07-12.md
 - ./memory/dreaming/rem/2026-06-19.md
+- ./memory/dreaming/rem/2026-07-30.md
 - ./memory/dreaming/rem/2026-07-14.md
 - ./memory/dreaming/rem/2026-06-08.md
 - ./memory/dreaming/rem/2026-07-02.md
@@ -161,6 +165,7 @@ Archive contents:
 - ./memory/dreaming/light/2026-06-29.md
 - ./memory/dreaming/light/2026-07-10.md
 - ./memory/dreaming/light/2026-07-16.md
+- ./memory/dreaming/light/2026-07-29.md
 - ./memory/dreaming/light/2026-06-30.md
 - ./memory/dreaming/light/2026-06-24.md
 - ./memory/dreaming/light/2026-07-20.md
@@ -204,6 +209,7 @@ Archive contents:
 - ./memory/dreaming/light/2026-06-11.md
 - ./memory/dreaming/light/2026-07-12.md
 - ./memory/dreaming/light/2026-06-19.md
+- ./memory/dreaming/light/2026-07-30.md
 - ./memory/dreaming/light/2026-07-14.md
 - ./memory/dreaming/light/2026-06-08.md
 - ./memory/dreaming/light/2026-07-02.md
@@ -216,6 +222,7 @@ Archive contents:
 - ./memory/dreaming/deep/2026-06-29.md
 - ./memory/dreaming/deep/2026-07-10.md
 - ./memory/dreaming/deep/2026-07-16.md
+- ./memory/dreaming/deep/2026-07-29.md
 - ./memory/dreaming/deep/2026-06-30.md
 - ./memory/dreaming/deep/2026-06-24.md
 - ./memory/dreaming/deep/2026-07-20.md
@@ -259,10 +266,12 @@ Archive contents:
 - ./memory/dreaming/deep/2026-06-11.md
 - ./memory/dreaming/deep/2026-07-12.md
 - ./memory/dreaming/deep/2026-06-19.md
+- ./memory/dreaming/deep/2026-07-30.md
 - ./memory/dreaming/deep/2026-07-14.md
 - ./memory/dreaming/deep/2026-06-08.md
 - ./memory/dreaming/deep/2026-07-02.md
 - ./memory/2026-07-11-1536.md
+- ./memory/2026-07-30-1120.md
 - ./memory/2026-07-05-2159.md
 - ./memory/2026-07-16-2152.md
 - ./memory/2026-06-28-1311.md
@@ -278,12 +287,14 @@ Archive contents:
 - ./memory/2026-06-17-0826.md
 - ./memory/2026-07-23-1725.md
 - ./memory/2026-07-25-0900.md
+- ./memory/2026-07-29-0956.md
 - ./memory/2026-07-17.md
 - ./memory/2026-06-07-0716.md
 - ./memory/2026-07-11-1802.md
 - ./memory/2026-06-19-1847.md
 - ./memory/2026-06-10-2202.md
 - ./memory/2026-07-13.md
+- ./memory/2026-07-29-2116.md
 - ./memory/2026-06-27-1608.md
 - ./memory/2026-06-11-1407.md
 - ./memory/2026-06-18-1422.md
@@ -303,6 +314,7 @@ Archive contents:
 - ./memory/2026-06-18-1150.md
 - ./memory/2026-06-12-1242.md
 - ./memory/2026-06-07-0715.md
+- ./memory/2026-07-30.md
 - ./中国国内大模型价格对比_2026年5月.md
 - ./SOUL.md
 - ./TOOLS.md
@@ -312,6 +324,19 @@ Archive contents:
 - ./scripts/backup-openclaw-self.sh
 - ./USER.md
 - ./tex_to_md.py
+- ./tmp_video_frames/
+- ./tmp_video_frames/frame_10.jpg
+- ./tmp_video_frames/frame_09.jpg
+- ./tmp_video_frames/frame_06.jpg
+- ./tmp_video_frames/montage.jpg
+- ./tmp_video_frames/frame_04.jpg
+- ./tmp_video_frames/frame_05.jpg
+- ./tmp_video_frames/frame_08.jpg
+- ./tmp_video_frames/frame_11.jpg
+- ./tmp_video_frames/frame_02.jpg
+- ./tmp_video_frames/frame_03.jpg
+- ./tmp_video_frames/frame_07.jpg
+- ./tmp_video_frames/frame_01.jpg
 - ./wails-v3-learn/
 - ./wails-v3-learn/05-Bindings.md
 - ./wails-v3-learn/02-快速开始.md
