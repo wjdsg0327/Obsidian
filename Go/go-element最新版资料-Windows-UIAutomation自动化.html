@@ -1,0 +1,914 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>go-element 最新版资料：Windows UI Automation 自动化</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC",Arial,sans-serif;line-height:1.75;color:#243044;background:#f5f7fb}.wrap{display:flex;min-height:100vh}nav{position:fixed;left:0;top:0;bottom:0;width:310px;background:#fff;border-right:1px solid #e5eaf3;padding:24px 18px;overflow:auto}nav h1{font-size:19px;line-height:1.3;margin:0 0 8px}nav .sub{font-size:12px;color:#718096;border-bottom:2px solid #7c3aed;padding-bottom:14px;margin-bottom:14px}nav a{display:block;text-decoration:none;color:#526173;padding:8px 10px;border-radius:8px;font-size:14px}nav a:hover,nav a.active{background:#f3e8ff;color:#6d28d9}main{margin-left:310px;max-width:1120px;padding:42px 54px}.hero{background:linear-gradient(135deg,#312e81,#7c3aed 55%,#ec4899);color:white;border-radius:18px;padding:34px;margin-bottom:28px;box-shadow:0 18px 44px rgba(124,58,237,.18)}.hero h2{font-size:32px;margin:0 0 12px}.pill{display:inline-block;margin:6px 6px 0 0;padding:4px 10px;border:1px solid rgba(255,255,255,.36);border-radius:999px;background:rgba(255,255,255,.16);font-size:13px}section{background:#fff;border:1px solid #e5eaf3;border-radius:14px;padding:26px;margin:0 0 24px;scroll-margin-top:20px}h2{font-size:25px;margin:0 0 16px;padding-bottom:10px;border-bottom:1px solid #edf1f7;color:#111827}h3{font-size:18px;margin:22px 0 8px;color:#1f2937}code{background:#eef2f7;border:1px solid #dce3ee;border-radius:5px;padding:1px 5px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.92em}pre{background:#0f172a;color:#e0e7ff;border-radius:12px;padding:15px;overflow:auto;font-size:13px;line-height:1.6}pre code{background:transparent;border:0;color:inherit;padding:0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{background:#fbfdff;border:1px solid #e5eaf3;border-radius:12px;padding:14px}.ok{border-left:4px solid #22c55e;background:#ecfdf5;padding:12px 14px;border-radius:8px;margin:14px 0}.tip{border-left:4px solid #f59e0b;background:#fffbeb;padding:12px 14px;border-radius:8px;margin:14px 0}.warn{border-left:4px solid #ef4444;background:#fef2f2;padding:12px 14px;border-radius:8px;margin:14px 0}table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}th,td{border:1px solid #e5eaf3;padding:9px 10px;text-align:left;vertical-align:top}th{background:#f8fafc}small{color:#64748b}.viz{text-align:center;background:#fbfdff;border:1px solid #e8eef8;border-radius:12px;padding:14px;margin:16px 0}svg{max-width:100%;height:auto}@media(max-width:860px){.wrap{display:block}nav{position:relative;width:100%;height:auto}main{margin-left:0;padding:22px}.grid{grid-template-columns:1fr}}
+</style></head><body><div class="wrap"><nav><h1>go-element 最新版资料</h1><div class="sub">Windows UI Automation<br>整理时间：2026-08-03</div><a href="#intro">1. 项目定位</a><a href="#install">2. 安装与平台</a><a href="#architecture">3. 架构与调用流程</a><a href="#quickstart">4. 快速开始</a><a href="#element">5. Element 高层封装</a><a href="#search">6. 查找与遍历</a><a href="#patterns">7. Automation Patterns</a><a href="#cache">8. CacheRequest 性能优化</a><a href="#raw">9. 原始 UIAutomation API</a><a href="#legacy">10. MSAA/IAccessible</a><a href="#events">11. 事件、Provider 与 TextServices</a><a href="#examples">12. 示例解析</a><a href="#pitfalls">13. 常见坑与最佳实践</a><a href="#api">14. API 详细速查</a><a href="#refs">15. 参考链接</a></nav><main>
+<div class="hero"><h2>go-element：Go 操作 Windows UI Automation 的高性能封装</h2><p><code>github.com/auuunya/go-element</code> 是一个面向 Windows 窗体自动化的 Go 库，直接封装 Microsoft UI Automation COM 接口。它适合做桌面应用 UI 树探测、控件查找、按钮点击、文本写入、计算器/记事本/资源管理器自动化，以及为 AI Computer Use/桌面 RPA 工具提供 Windows UIA 层能力。</p><span class="pill">最新 master：739a43705505</span><span class="pill">提交时间：2026-03-06T08:54:21+08:00</span><span class="pill">提交：Merge pull request #3 from auuunya/fix_com_lockos</span><span class="pill">最新 tag：v1.0.1</span><span class="pill">Go：1.19</span></div>
+
+<section id="intro"><h2>1. 项目定位</h2><p>Windows UI Automation（UIA）是微软提供的桌面 UI 可访问性与自动化框架。相比纯坐标点击，UIA 可以按窗口句柄、元素名称、AutomationId、ControlType、Pattern 等方式定位控件，因此更稳定、更适合自动化真实桌面应用。</p><div class="grid"><div class="card"><h3>适合场景</h3><ul><li>自动化 Windows 原生应用、Win32、WPF、UWP、部分 Electron/Chromium 窗口。</li><li>读取 UI 树，导出 JSON，做 Computer Use 感知层。</li><li>调用 Invoke/Value/Toggle/SelectionItem 等 Pattern。</li><li>需要比鼠标坐标更稳定的 RPA。</li></ul></div><div class="card"><h3>不适合场景</h3><ul><li>跨平台桌面自动化：本库本质上是 Windows UIA。</li><li>网页 DOM 自动化：优先 Playwright/Selenium。</li><li>只需要键鼠模拟：RobotGo 更直接。</li><li>复杂事件订阅：源码已有接口但 README 任务列表仍标注事件监听待完善。</li></ul></div></div><div class="ok"><strong>核心改进：</strong>README 标明项目重点是 Cache Request 批量获取属性/Pattern、零反射、显式 Release 管理 COM 生命周期，以及 <code>Element.FindByName</code>/<code>FindByAutomationId</code> 这类便捷查询。</div></section>
+
+<section id="install"><h2>2. 安装与平台</h2><pre><code>go get -u github.com/auuunya/go-element</code></pre>
+<p><code>go.mod</code> 显示 module 为 <code>github.com/auuunya/go-element</code>，Go 版本 <code>1.19</code>，主要依赖 <code>golang.org/x/sys v0.20.0</code>。</p><pre><code>module github.com/auuunya/go-element
+
+go 1.19
+
+require golang.org/x/sys v0.20.0 // indirect</code></pre><h3>编译</h3><pre><code># 64 位 Windows，常规选择
+GOOS=windows GOARCH=amd64 go build .
+
+# 32 位 Windows，高兼容性
+GOOS=windows GOARCH=386 go build .</code></pre>
+<div class="warn"><strong>注意：</strong>这是 Windows UI Automation COM 库。Linux/macOS 环境不适合运行实际自动化；交叉编译可以，但测试需要 Windows 桌面会话。</div></section>
+
+<section id="architecture"><h2>3. 架构与调用流程</h2><div class="viz"><svg width="850" height="210" viewBox="0 0 850 210"><defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#7c3aed"/></marker></defs><rect x="30" y="62" width="130" height="70" rx="12" fill="#f3e8ff" stroke="#c084fc"/><text x="95" y="93" text-anchor="middle">Go 程序</text><text x="95" y="115" text-anchor="middle" font-size="12">业务/RPA/AI</text><rect x="235" y="42" width="150" height="110" rx="12" fill="#eff6ff" stroke="#93c5fd"/><text x="310" y="82" text-anchor="middle">go-element</text><text x="310" y="106" text-anchor="middle" font-size="12">Element / Pattern</text><text x="310" y="127" text-anchor="middle" font-size="12">COM vtable 包装</text><rect x="470" y="42" width="160" height="110" rx="12" fill="#ecfdf5" stroke="#86efac"/><text x="550" y="82" text-anchor="middle">Windows UIA</text><text x="550" y="106" text-anchor="middle" font-size="12">IUIAutomation</text><text x="550" y="127" text-anchor="middle" font-size="12">Cache / TreeWalker</text><rect x="705" y="62" width="120" height="70" rx="12" fill="#fff7ed" stroke="#fdba74"/><text x="765" y="93" text-anchor="middle">目标应用</text><text x="765" y="115" text-anchor="middle" font-size="12">窗口/控件</text><line x1="160" y1="97" x2="227" y2="97" stroke="#7c3aed" stroke-width="3" marker-end="url(#a)"/><line x1="385" y1="97" x2="462" y2="97" stroke="#7c3aed" stroke-width="3" marker-end="url(#a)"/><line x1="630" y1="97" x2="697" y2="97" stroke="#7c3aed" stroke-width="3" marker-end="url(#a)"/></svg></div><ol><li><code>CoInitialize()</code> 初始化 COM。</li><li><code>GetWindowForString(class, title)</code> 找到目标窗口句柄。</li><li><code>CreateInstance(CLSID_CUIAutomation, IID_IUIAutomation, CLSCTX_ALL)</code> 创建 UIAutomation 客户端。</li><li><code>ElementFromHandle</code> 从 HWND 得到 UIA 根元素。</li><li><code>TraverseUIElementTree</code> 遍历并缓存 UI 树。</li><li>用 <code>FindByName</code>/<code>FindByAutomationId</code> 或自定义搜索定位元素。</li><li>调用 <code>GetValuePattern</code>/<code>GetInvokePattern</code> 等执行交互。</li><li>所有 COM 对象用完 <code>Release()</code>。</li></ol></section>
+
+<section id="quickstart"><h2>4. 快速开始</h2><h3>打印窗口 UI 树</h3><pre><code>package main
+
+import uia &quot;github.com/auuunya/go-element&quot;
+
+func main() {
+    if err := uia.CoInitialize(); err != nil { panic(err) }
+    defer uia.CoUninitialize()
+
+    hwnd, _ := uia.GetWindowForString(&quot;Chrome_WidgetWin_1&quot;, &quot;&quot;)
+    instance, _ := uia.CreateInstance(uia.CLSID_CUIAutomation, uia.IID_IUIAutomation, uia.CLSCTX_INPROC_SERVER)
+    ppv := uia.NewIUIAutomation(uia.NewIUnKnown(instance))
+    defer ppv.Release()
+
+    root, _ := uia.ElementFromHandle(ppv, hwnd)
+    defer root.Release()
+
+    tree := uia.TraverseUIElementTree(ppv, root)
+    uia.TreeString(tree, 0)
+}</code></pre>
+<h3>记事本写入文本</h3><pre><code>hwnd, _ := uia.GetWindowForString(&quot;Notepad&quot;, &quot;&quot;)
+instance, _ := uia.CreateInstance(uia.CLSID_CUIAutomation, uia.IID_IUIAutomation, uia.CLSCTX_ALL)
+ppv := uia.NewIUIAutomation(uia.NewIUnKnown(instance))
+defer ppv.Release()
+
+root, _ := uia.ElementFromHandle(ppv, hwnd)
+defer root.Release()
+tree := uia.TraverseUIElementTree(ppv, root)
+
+editor := tree.FindByName(&quot;文本编辑器&quot;)
+if editor != nil {
+    vp, err := editor.GetValuePattern()
+    if err == nil {
+        defer vp.Release()
+        _ = vp.SetValue(&quot;你好，来自 go-element 的自动输入！&quot;)
+    }
+}</code></pre></section>
+
+<section id="element"><h2>5. Element 高层封装</h2><p><code>Element</code> 是库里最适合业务层直接使用的结构体：它把 <code>IUIAutomationElement</code> 的 Current/Cached 属性填充到 Go 字段中，并提供搜索与 Pattern 获取方法。</p><table><tr><th>能力</th><th>说明</th></tr><tr><td>属性填充</td><td><code>Populate(cached bool)</code> 调用一组属性读取方法，填入 CurrentName、CurrentClassName、CurrentAutomationId 等字段。</td></tr><tr><td>树结构</td><td>Element 有 Children，可用于 JSON 序列化 UI 树。</td></tr><tr><td>快捷查找</td><td><code>FindByName</code>、<code>FindByAutomationId</code>。</td></tr><tr><td>Pattern</td><td><code>GetValuePattern</code>、<code>GetInvokePattern</code>、<code>GetTogglePattern</code>、<code>GetExpandCollapsePattern</code>、<code>GetSelectionItemPattern</code>。</td></tr></table><div class="tip">业务代码建议优先走 <code>Element</code> 层；只有需要高级 UIA 条件、缓存、事件时再下沉到 <code>IUIAutomation*</code> 原始接口。</div></section>
+
+<section id="search"><h2>6. 查找与遍历</h2><p>go-element 提供了两条路线：一是构建完整 UI 树后在内存里搜索；二是用 UIA 原生 <code>FindFirst/FindAll</code> 和条件查询。</p><h3>内存树搜索</h3><pre><code>tree := uia.TraverseUIElementTree(ppv, root)
+btn := tree.FindByAutomationId(&quot;num1Button&quot;)
+edit := tree.FindByName(&quot;文本编辑器&quot;)
+
+allButtons := uia.FindElems(tree, func(e *uia.Element) bool {
+    return e.CurrentControlType == uia.UIA_ButtonControlTypeId
+})</code></pre>
+<h3>原生条件搜索</h3><pre><code>variant, _ := uia.VariantFromString(&quot;num1Button&quot;)
+cond, _ := ppv.CreatePropertyCondition(uia.UIA_AutomationIdPropertyId, variant)
+btn, _ := root.FindFirst(uia.TreeScope_Descendants, cond)
+if btn != nil { defer btn.Release() }</code></pre></section>
+
+<section id="patterns"><h2>7. Automation Patterns</h2><p>UIA 的 Pattern 表示控件支持的行为。按钮通常支持 Invoke，编辑框支持 Value，复选框支持 Toggle，树节点/下拉项支持 ExpandCollapse，列表项支持 SelectionItem。</p><table><tr><th>Pattern</th><th>go-element 包装</th><th>用途</th></tr><tr><td>Invoke</td><td><code>IUIAutomationInvokePattern.Invoke()</code></td><td>按钮点击、菜单项执行。</td></tr><tr><td>Value</td><td><code>SetValue</code>、<code>Get_CurrentValue</code></td><td>编辑框读写文本。</td></tr><tr><td>Toggle</td><td><code>Toggle</code>、<code>Get_CurrentToggleState</code></td><td>复选框/开关状态切换。</td></tr><tr><td>ExpandCollapse</td><td><code>Expand</code>、<code>Collapse</code></td><td>树节点、下拉框展开/折叠。</td></tr><tr><td>SelectionItem</td><td><code>Select</code></td><td>列表/表格选中项。</td></tr></table><pre><code>if btn := tree.FindByAutomationId(&quot;equalButton&quot;); btn != nil {
+    ip, err := btn.GetInvokePattern()
+    if err == nil {
+        defer ip.Release()
+        _ = ip.Invoke()
+    }
+}</code></pre></section>
+
+<section id="cache"><h2>8. CacheRequest 性能优化</h2><p>README 把 <code>IUIAutomationCacheRequest</code> 作为核心改进之一。UIA 跨进程读取属性成本较高，遍历 UI 树时逐个属性读取会非常慢；CacheRequest 可以指定要缓存的属性和 Pattern，然后批量返回。</p><pre><code>cache, _ := ppv.CreateCacheRequest()
+defer cache.Release()
+_ = cache.AddProperty(uia.UIA_NamePropertyId)
+_ = cache.AddProperty(uia.UIA_AutomationIdPropertyId)
+_ = cache.AddProperty(uia.UIA_ClassNamePropertyId)
+_ = cache.AddPattern(uia.UIA_InvokePatternId)
+_ = cache.Put_TreeScope(uia.TreeScope_Subtree)
+
+rootCached, _ := ppv.ElementFromHandleBuildCache(hwnd, cache)
+defer rootCached.Release()</code></pre></section>
+
+<section id="raw"><h2>9. 原始 UIAutomation API</h2><p>如果 <code>Element</code> 封装不够用，可以直接操作 <code>IUIAutomation</code>、<code>IUIAutomationElement</code>、<code>IUIAutomationElementArray</code>、<code>IUIAutomationTreeWalker</code>、<code>IUIAutomationCondition</code> 等 COM 接口包装。</p><ul><li>创建条件：<code>CreateTrueCondition</code>、<code>CreateFalseCondition</code>、<code>CreatePropertyCondition</code>、<code>CreateAndCondition</code>、<code>CreateOrCondition</code>、<code>CreateNotCondition</code>。</li><li>获取元素：<code>GetRootElement</code>、<code>GetFocusedElement</code>、<code>ElementFromHandle</code>、<code>ElementFromPoint</code>。</li><li>查找：<code>FindFirst</code>、<code>FindAll</code>、<code>FindAllBuildCache</code>。</li><li>属性：<code>GetCurrentPropertyValue</code> 以及大量 <code>Get_Current...</code>/<code>Get_Cached...</code> 方法。</li><li>数组：<code>IUIAutomationElementArray.Get_Length</code>、<code>GetElement</code>。</li></ul></section>
+
+<section id="legacy"><h2>10. MSAA / IAccessible</h2><p>源码包含 <code>IAccessible</code> 与 <code>IUIAutomationLegacyIAccessiblePattern</code>。这对应旧的 Microsoft Active Accessibility（MSAA）接口，用于兼容老控件或从 UIA 元素桥接到旧可访问性对象。</p><p>常见 API 包括 <code>Get_accName</code>、<code>Get_accValue</code>、<code>Get_accRole</code>、<code>Get_accState</code>、<code>AccDoDefaultAction</code>、<code>AccNavigate</code>、<code>Put_accValue</code> 等。</p><div class="tip">如果现代 UIA Pattern 不可用，可尝试 LegacyIAccessiblePattern，但要做好控件差异和返回 VARIANT 类型复杂的准备。</div></section>
+
+<section id="events"><h2>11. 事件、Provider 与 TextServices</h2><p>源码已定义多个事件 Handler 和 Provider/TextServices 接口，例如 <code>AddAutomationEventHandler</code>、<code>AddFocusChangedEventHandler</code>、<code>AddPropertyChangedEventHandler</code>、<code>IUIAutomationPropertyChangedEventHandler</code>、<code>IWindowProvider</code>、<code>ITextProvider</code>、<code>ITextRangeProvider</code>、<code>ITextServices</code> 等。</p><div class="warn"><strong>成熟度提醒：</strong>README 的任务列表仍写着 “UI 事件监听支持” 未完成，所以事件相关接口虽然存在，使用时要以源码和实际 Windows 测试为准。</div></section>
+
+<section id="examples"><h2>12. 示例解析</h2><table><tr><th>示例</th><th>说明</th></tr><tr><td><code>example/tree_demo</code></td><td>查找计算器窗口，创建 UIAutomation，构建缓存 UI 树并打印。</td></tr><tr><td><code>example/find_demo</code></td><td>查找资源管理器窗口，使用 <code>FindByName</code> 和 <code>FindElems</code> 搜索控件。</td></tr><tr><td><code>example/json_demo</code></td><td>构建 UI 树后 <code>json.MarshalIndent</code> 导出为 <code>ui_tree.json</code>。</td></tr><tr><td><code>example/notepad_demo</code></td><td>自动化记事本，定位编辑器并用 ValuePattern 写入文本。</td></tr><tr><td><code>example/calc_demo</code></td><td>用 AutomationId/Name 定位计算器按钮，通过 InvokePattern 执行 1+2=。</td></tr><tr><td><code>example/software</code></td><td>使用 MSI DLL 枚举已安装软件，不是 UIA 主线，但展示 Windows syscall。</td></tr></table></section>
+
+<section id="pitfalls"><h2>13. 常见坑与最佳实践</h2><div class="grid"><div class="card"><h3>必须在 Windows 桌面会话测试</h3><p>服务会话、锁屏、远程桌面断开都可能影响 UIA 可见性与交互。</p></div><div class="card"><h3>Release 要严格</h3><p><code>IUIAutomation</code>、<code>IUIAutomationElement</code>、Pattern、数组、Condition、CacheRequest 用完释放。</p></div><div class="card"><h3>AutomationId 优先</h3><p>名称会随语言变化；AutomationId 通常比 Name 稳定。没有 ID 时再用 Name/ClassName/ControlType 组合。</p></div><div class="card"><h3>UI 树可能很大</h3><p>浏览器/IDE 的 UI 树很深，遍历全树可能慢。优先缩小窗口范围、使用条件、启用缓存。</p></div><div class="card"><h3>管理员权限/完整性级别</h3><p>低权限进程可能无法自动化高权限窗口；需要同级或更高权限运行。</p></div><div class="card"><h3>多语言系统</h3><p>中文 Windows 中按钮名可能是“一/加/等于”，英文系统则是 “One/Plus/Equals”。示例中通常要做 fallback。</p></div></div><div class="ok"><strong>推荐工程结构：</strong>单独封装 <code>uiahelper</code>，提供 Init/Close、FindWindow、FindByAutomationID、Click、SetText、DumpTree 等稳定函数，业务层不要直接散落 COM 指针管理。</div></section>
+
+<section id="api"><h2>14. API 详细速查</h2><p>以下为基于最新源码提取的公开类型/函数/方法，按文件和主题分组。</p><h3>COM / IUnknown / VARIANT / 基础类型</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>func GetWindowForString(classname, windowname string) (uintptr, error) {</code><br><small>com.go:23</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func CoInitialize() error {</code><br><small>com.go:31</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func CoUninitialize() {</code><br><small>com.go:45</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func CreateInstance(clsid, riid *syscall.GUID, clsctx CLSCTX) (unsafe.Pointer, error) {</code><br><small>com.go:50</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func FindWindowW(lpclass, lpwindow string) uintptr {</code><br><small>com.go:54</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func FindWindowExW(phwdn, chwdn uintptr, lpclass, lpwindow string) uintptr {</code><br><small>com.go:58</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type PropertyConditionFlags int32</code><br><small>constants.go:3</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TreeScope int32</code><br><small>constants.go:11</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type SynchronizedInputType int32</code><br><small>constants.go:24</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagDvAspect int32</code><br><small>constants.go:36</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type CLSCTX uint32</code><br><small>constants.go:45</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type SelFlag int32</code><br><small>constants.go:80</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagInvokeKind int32</code><br><small>constants.go:92</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ParamFlag uint16</code><br><small>constants.go:101</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TxtHitResult int32</code><br><small>enum.go:3</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type StructureChangeType int32</code><br><small>enum.go:12</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type WindowVisualState int32</code><br><small>enum.go:23</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ToggleState int32</code><br><small>enum.go:32</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ZoomUnit int32</code><br><small>enum.go:41</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type WindowInteractionState int32</code><br><small>enum.go:52</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type SupportedTextSelection int32</code><br><small>enum.go:63</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ScrollAmount int32</code><br><small>enum.go:72</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type RowOrColumnMajor int32</code><br><small>enum.go:83</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TextPatternRangeEndpoint int32</code><br><small>enum.go:92</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TextUnit int32</code><br><small>enum.go:100</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TextArrtibuteId int32</code><br><small>enum.go:113</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type OrientationType int32</code><br><small>enum.go:119</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagFuncKind int32</code><br><small>enum.go:127</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagCallConv int32</code><br><small>enum.go:137</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagPoint struct {</code><br><small>typedef.go:3</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagRect struct {</code><br><small>typedef.go:8</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagSafeArrayBound struct {</code><br><small>typedef.go:15</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagSafeArray struct {</code><br><small>typedef.go:21</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type UiaPoint struct {</code><br><small>typedef.go:31</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagDvTargetDevice struct {</code><br><small>typedef.go:37</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type UiaRect struct {</code><br><small>typedef.go:46</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagDispParams struct {</code><br><small>typedef.go:53</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagExcepInfo struct {</code><br><small>typedef.go:60</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagSize struct {</code><br><small>typedef.go:72</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TYPEDESC struct {</code><br><small>typedef.go:77</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagIdlDesc struct {</code><br><small>typedef.go:80</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagParamDesc struct {</code><br><small>typedef.go:85</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagTypeDesc struct {</code><br><small>typedef.go:90</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagElemDesc struct {</code><br><small>typedef.go:93</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagFuncDesc struct {</code><br><small>typedef.go:98</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type PropertyId int32</code><br><small>uia.go:3</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type PatternId int32</code><br><small>uia.go:65</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ControlTypeId int32</code><br><small>uia.go:106</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type UIA_EventId int32</code><br><small>uia.go:154</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUnKnown struct {</code><br><small>unknown.go:9</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUnKnownVtbl struct {</code><br><small>unknown.go:13</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUnKnown(v unsafe.Pointer) *IUnKnown {</code><br><small>unknown.go:19</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUnKnown) AddRef() uint32 {</code><br><small>unknown.go:23</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUnKnown) Release() uint32 {</code><br><small>unknown.go:31</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func AddRef(v *IUnKnown) uint32 {</code><br><small>unknown.go:42</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func Release(v *IUnKnown) uint32 {</code><br><small>unknown.go:45</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func QueryInterface(v *IUnKnown, riid *syscall.GUID) (unsafe.Pointer, error) {</code><br><small>unknown.go:49</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func HResult(ret uintptr) error {</code><br><small>unknown.go:63</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func UnKnownToUintptr(obj interface{}) uintptr {</code><br><small>unknown.go:71</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type VARIANT struct {</code><br><small>variant.go:3</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewVariant(vt TagVarenum, val int64) VARIANT {</code><br><small>variant.go:11</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func VariantFromString(s string) (VARIANT, error) {</code><br><small>variant.go:18</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TagVarenum uint16</code><br><small>variant.go:29</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr></table><h3>Element 高层封装</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>type Element struct {</code><br><small>element.go:17</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewElement(uiaumation *IUIAutomationElement) *Element {</code><br><small>element.go:56</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) FormatString() string {</code><br><small>element.go:61</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) SetUIAutomation(uiaumation *IUIAutomationElement) {</code><br><small>element.go:89</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) AcceleratorKey() error {</code><br><small>element.go:93</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) AccessKey() error {</code><br><small>element.go:99</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) AriaProperties() error {</code><br><small>element.go:105</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) AriaRole() error {</code><br><small>element.go:111</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) AutomationId() error {</code><br><small>element.go:117</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) BoundingRectangle() {</code><br><small>element.go:123</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) ClassName() error {</code><br><small>element.go:128</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) ControllerFor() {</code><br><small>element.go:134</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) ControlType() {</code><br><small>element.go:139</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) Culture() {</code><br><small>element.go:144</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) DescribedBy() {</code><br><small>element.go:149</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) FlowsTo() {</code><br><small>element.go:154</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) FrameworkId() error {</code><br><small>element.go:159</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) HasKeyboardFocus() {</code><br><small>element.go:165</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) HelpText() error {</code><br><small>element.go:170</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) IsControlElement() {</code><br><small>element.go:176</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) IsContentElement() {</code><br><small>element.go:181</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) IsDataValidForForm() {</code><br><small>element.go:186</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) IsEnabled() {</code><br><small>element.go:191</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) IsKeyboardFocusable() {</code><br><small>element.go:196</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) IsOffscreen() {</code><br><small>element.go:201</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) IsPassword() {</code><br><small>element.go:206</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) IsRequiredForForm() {</code><br><small>element.go:211</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) ItemStatus() error {</code><br><small>element.go:216</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) ItemType() error {</code><br><small>element.go:222</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) LabeledBy() {</code><br><small>element.go:228</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) LocalizedControlType() error {</code><br><small>element.go:233</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) Name() error {</code><br><small>element.go:239</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) NativeWindowHandle() {</code><br><small>element.go:245</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) Orientation() {</code><br><small>element.go:250</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) ProcessId() {</code><br><small>element.go:255</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) ProviderDescription() error {</code><br><small>element.go:260</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type SearchFunc func(elem *Element) bool</code><br><small>element.go:266</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func SearchElem(elem *Element, searchFunc SearchFunc) *Element {</code><br><small>element.go:268</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func FindElems(elem *Element, searchFunc SearchFunc) (elems []*Element) {</code><br><small>element.go:283</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) Populate(cached bool) {</code><br><small>element.go:334</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func TraverseUIElementTree(ppv *IUIAutomation, root *IUIAutomationElement) *Element {</code><br><small>element.go:375</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func TreeString(root *Element, level int) {</code><br><small>element.go:438</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) String() string {</code><br><small>element.go:448</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) FindByName(name string) *Element {</code><br><small>element.go:456</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) FindByAutomationId(id string) *Element {</code><br><small>element.go:468</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) GetValuePattern() (*IUIAutomationValuePattern, error) {</code><br><small>element.go:480</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) GetInvokePattern() (*IUIAutomationInvokePattern, error) {</code><br><small>element.go:488</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) GetTogglePattern() (*IUIAutomationTogglePattern, error) {</code><br><small>element.go:496</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) GetExpandCollapsePattern() (*IUIAutomationExpandCollapsePattern, error) {</code><br><small>element.go:504</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (e *Element) GetSelectionItemPattern() (*IUIAutomationSelectionItemPattern, error) {</code><br><small>element.go:512</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr></table><h3>IUIAutomation 主接口、元素、缓存、事件、代理</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>type IUIAutomationCondition struct {</code><br><small>condition.go:8</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationCondition) Release() uint32 {</code><br><small>condition.go:12</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationConditionVtbl struct {</code><br><small>condition.go:16</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationAndCondition struct {</code><br><small>condition.go:20</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationAndCondition) Release() uint32 {</code><br><small>condition.go:24</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationAndConditionVtbl struct {</code><br><small>condition.go:28</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func Get_ChildCount(v *IUIAutomationAndCondition) int32 {</code><br><small>condition.go:36</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func GetChildren(v *IUIAutomationAndCondition) (*TagSafeArray, error) {</code><br><small>condition.go:45</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func GetChildrenAsNativeArray(v *IUIAutomationAndCondition) (*IUIAutomationCondition, int32, error) {</code><br><small>condition.go:57</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationBoolCondition struct {</code><br><small>condition.go:72</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationBoolCondition) Release() uint32 {</code><br><small>condition.go:76</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationBoolConditionVtbl struct {</code><br><small>condition.go:80</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func Get_BooleanValue(v *IUIAutomationBoolCondition) int32 {</code><br><small>condition.go:85</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationNotCondition struct {</code><br><small>condition.go:95</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationNotCondition) Release() uint32 {</code><br><small>condition.go:99</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationNotConditionVtbl struct {</code><br><small>condition.go:103</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func GetChild(v *IUIAutomationNotCondition) (*IUIAutomationCondition, error) {</code><br><small>condition.go:108</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationPropertyCondition struct {</code><br><small>condition.go:121</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationPropertyCondition) Release() uint32 {</code><br><small>condition.go:125</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationPropertyConditionVtbl struct {</code><br><small>condition.go:129</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func Get_PropertyConditionFlags(v *IUIAutomationPropertyCondition) *PropertyConditionFlags {</code><br><small>condition.go:137</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func Get_PropertyId(v *IUIAutomationPropertyCondition) *PropertyId {</code><br><small>condition.go:146</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func Get_PropertyValue(v *IUIAutomationPropertyCondition) *VARIANT {</code><br><small>condition.go:155</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomation struct {</code><br><small>uiautomation.go:8</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) Release() uint32 {</code><br><small>uiautomation.go:12</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationVtbl struct {</code><br><small>uiautomation.go:16</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomation(unk *IUnKnown) *IUIAutomation {</code><br><small>uiautomation.go:79</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type EventHandler struct {</code><br><small>uiautomation.go:83</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) AddAutomationEventHandler(opt *EventHandler) error {</code><br><small>uiautomation.go:91</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) AddFocusChangedEventHandler(in *IUIAutomationCacheRequest, in2 *IUIAutomationFocusChangedEventHandler) error {</code><br><small>uiautomation.go:107</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ChangeEventHandler struct {</code><br><small>uiautomation.go:120</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) AddPropertyChangedEventHandler(opt *ChangeEventHandler) error {</code><br><small>uiautomation.go:128</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ChangeEventHandlerNativeArray struct {</code><br><small>uiautomation.go:144</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) AddPropertyChangedEventHandlerNativeArray(opt *ChangeEventHandlerNativeArray) error {</code><br><small>uiautomation.go:153</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type StructureChangedEventHandler struct {</code><br><small>uiautomation.go:170</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) AddStructureChangedEventHandler(opt *StructureChangedEventHandler) error {</code><br><small>uiautomation.go:177</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CheckNotSupported(in *VARIANT) (int32, error) {</code><br><small>uiautomation.go:191</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CompareElements(in, in2 *IUIAutomationElement) (int32, error) {</code><br><small>uiautomation.go:204</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CompareRuntimeIds(in, in2 *TagSafeArray) (int32, error) {</code><br><small>uiautomation.go:218</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreateAndCondition(in, in2 *IUIAutomationCondition) (*IUIAutomationCondition, error) {</code><br><small>uiautomation.go:232</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreateAndConditionFromArray(in *TagSafeArray) (*IUIAutomationCondition, error) {</code><br><small>uiautomation.go:246</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreateAndConditionFromNativeArray(in *IUIAutomationCondition, in2 int32) (*IUIAutomationCondition, error) {</code><br><small>uiautomation.go:259</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreateCacheRequest() (*IUIAutomationCacheRequest, error) {</code><br><small>uiautomation.go:273</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreateFalseCondition() (*IUIAutomationCondition, error) {</code><br><small>uiautomation.go:285</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreateNotCondition(in *IUIAutomationCondition) (*IUIAutomationCondition, error) {</code><br><small>uiautomation.go:297</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreateOrCondition(in, in2 *IUIAutomationCondition) (*IUIAutomationCondition, error) {</code><br><small>uiautomation.go:310</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreateOrConditionFromArray(in *TagSafeArray) (*IUIAutomationCondition, error) {</code><br><small>uiautomation.go:324</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreateOrConditionFromNativeArray(in *IUIAutomationCondition, in2 int32) (*IUIAutomationCondition, error) {</code><br><small>uiautomation.go:337</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreatePropertyCondition(id PropertyId, value VARIANT) (*IUIAutomationCondition, error) {</code><br><small>uiautomation.go:351</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreatePropertyConditionEx(in *PropertyId, in2 *VARIANT, in3 PropertyConditionFlags) (*IUIAutomationCondition, error) {</code><br><small>uiautomation.go:365</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreateProxyFactoryEntry(in *IUIAutomationProxyFactory) (*IUIAutomationProxyFactoryEntry, error) {</code><br><small>uiautomation.go:380</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreateTreeWalker(in *IUIAutomationCondition) (*IUIAutomationTreeWalker, error) {</code><br><small>uiautomation.go:393</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) CreateTrueCondition() *IUIAutomationCondition {</code><br><small>uiautomation.go:406</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) ElementFromHandle(in uintptr) (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:415</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) ElementFromHandleBuildCache(in uintptr, in2 *IUIAutomationCacheRequest) (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:428</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) ElementFromIAccessible(in *IAccessible, in2 int32) (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:442</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) ElementFromIAccessibleBuildCache(in *IAccessible, in2 int32, in3 *IUIAutomationCacheRequest) (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:456</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) ElementFromPoint(in *TagPoint) (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:471</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) ElementFromPointBuildCache(in *TagPoint, in2 *IUIAutomationCacheRequest) (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:484</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) Get_ContentViewCondition() *IUIAutomationCondition {</code><br><small>uiautomation.go:498</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) Get_ContentViewWalker() *IUIAutomationTreeWalker {</code><br><small>uiautomation.go:507</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) Get_ControlViewCondition() *IUIAutomationCondition {</code><br><small>uiautomation.go:516</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) Get_ControlViewWalker() *IUIAutomationTreeWalker {</code><br><small>uiautomation.go:525</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) Get_ProxyFactoryMapping() *IUIAutomationProxyFactoryMapping {</code><br><small>uiautomation.go:534</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) Get_RawViewCondition() *IUIAutomationCondition {</code><br><small>uiautomation.go:543</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) Get_RawViewWalker() *IUIAutomationTreeWalker {</code><br><small>uiautomation.go:552</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) Get_ReservedMixedAttributeValue() *IUnKnown {</code><br><small>uiautomation.go:561</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) Get_ReservedNotSupportedValue() *IUnKnown {</code><br><small>uiautomation.go:570</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) GetFocusedElement() (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:579</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) GetFocusedElementBuildCache(in *IUIAutomationCacheRequest) (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:591</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) GetPatternProgrammaticName(in PatternId) (string, error) {</code><br><small>uiautomation.go:604</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) GetPropertyProgrammaticName(in PropertyId) (string, error) {</code><br><small>uiautomation.go:623</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) GetRootElement() (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:642</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) GetRootElementBuildCache(in *IUIAutomationCacheRequest) (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:654</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) IntNativeArrayToSafeArray(in, in2 int32) (*TagSafeArray, error) {</code><br><small>uiautomation.go:667</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) IntSafeArrayToNativeArray(in *TagSafeArray) (int32, int32, error) {</code><br><small>uiautomation.go:681</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) PollForPotentialSupportedPatterns(in *IUIAutomationElement) (*TagSafeArray, *TagSafeArray, error) {</code><br><small>uiautomation.go:696</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) PollForPotentialSupportedProperties(in *IUIAutomationElement) (*TagSafeArray, *TagSafeArray, error) {</code><br><small>uiautomation.go:711</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) RectToVariant(in *TagRect) (*VARIANT, error) {</code><br><small>uiautomation.go:726</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) RemoveAllEventHandlers() error {</code><br><small>uiautomation.go:739</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) RemoveAutomationEventHandler(in UIA_EventId, in2 *IUIAutomationElement, in3 *IUIAutomationEventHandler) error {</code><br><small>uiautomation.go:749</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) RemoveFocusChangedEventHandler(in *IUIAutomationFocusChangedEventHandler) error {</code><br><small>uiautomation.go:762</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) RemovePropertyChangedEventHandler(in *IUIAutomationElement, in2 *IUIAutomationPropertyChangedEventHandler) error {</code><br><small>uiautomation.go:773</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) RemoveStructureChangedEventHandler(in *IUIAutomationElement, in2 *IUIAutomationStructureChangedEventHandler) error {</code><br><small>uiautomation.go:785</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) SafeArrayToRectNativeArray(in *TagSafeArray) (*TagRect, int32, error) {</code><br><small>uiautomation.go:797</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomation) VariantToRect(in *VARIANT) (*TagRect, error) {</code><br><small>uiautomation.go:812</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func ElementFromHandle(v *IUIAutomation, hwnd uintptr) (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:826</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func CreateTrueCondition(v *IUIAutomation) *IUIAutomationCondition {</code><br><small>uiautomation.go:840</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationElement struct {</code><br><small>uiautomation.go:850</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Release() uint32 {</code><br><small>uiautomation.go:854</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationElementVtbl struct {</code><br><small>uiautomation.go:858</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomationElement(unk *IUnKnown) *IUIAutomationElement {</code><br><small>uiautomation.go:948</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) GetClickablePoint() (*TagPoint, int32, error) {</code><br><small>uiautomation.go:952</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) GetCurrentPattern(patternId PatternId) (*IUnKnown, error) {</code><br><small>uiautomation.go:966</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) GetCachedPattern(patternId PatternId) (*IUnKnown, error) {</code><br><small>uiautomation.go:980</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) GetCurrentPatternAs(patternId PatternId, riid *syscall.GUID) (unsafe.Pointer, error) {</code><br><small>uiautomation.go:993</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) GetCurrentPropertyValue(id PropertyId) (*VARIANT, error) {</code><br><small>uiautomation.go:1007</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) GetCurrentPropertyValueEx(id PropertyId, defaultVal int32) (*VARIANT, error) {</code><br><small>uiautomation.go:1020</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) GetRuntimeId() (*TagSafeArray, error) {</code><br><small>uiautomation.go:1034</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) SetFocus() error {</code><br><small>uiautomation.go:1046</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentAcceleratorKey() (string, error) {</code><br><small>uiautomation.go:1056</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentAccessKey() (string, error) {</code><br><small>uiautomation.go:1071</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentAriaProperties() (string, error) {</code><br><small>uiautomation.go:1086</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentAriaRole() (string, error) {</code><br><small>uiautomation.go:1101</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentAutomationId() (string, error) {</code><br><small>uiautomation.go:1116</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentBoundingRectangle() *TagRect {</code><br><small>uiautomation.go:1131</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentClassName() (string, error) {</code><br><small>uiautomation.go:1141</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentControllerFor() *IUIAutomationElementArray {</code><br><small>uiautomation.go:1157</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentControlType() ControlTypeId {</code><br><small>uiautomation.go:1167</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentCulture() int32 {</code><br><small>uiautomation.go:1177</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentDescribedBy() *IUIAutomationElementArray {</code><br><small>uiautomation.go:1187</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentFlowsTo() *IUIAutomationElementArray {</code><br><small>uiautomation.go:1197</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentFrameworkId() (string, error) {</code><br><small>uiautomation.go:1207</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentHasKeyboardFocus() int32 {</code><br><small>uiautomation.go:1223</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentHelpText() (string, error) {</code><br><small>uiautomation.go:1233</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentIsControlElement() int32 {</code><br><small>uiautomation.go:1248</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentIsContentElement() int32 {</code><br><small>uiautomation.go:1258</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentIsDataValidForForm() int32 {</code><br><small>uiautomation.go:1268</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentIsEnabled() int32 {</code><br><small>uiautomation.go:1278</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentIsKeyboardFocusable() int32 {</code><br><small>uiautomation.go:1288</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentIsOffscreen() int32 {</code><br><small>uiautomation.go:1298</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentIsPassword() int32 {</code><br><small>uiautomation.go:1308</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentIsRequiredForForm() int32 {</code><br><small>uiautomation.go:1318</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentItemStatus() (string, error) {</code><br><small>uiautomation.go:1328</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentItemType() (string, error) {</code><br><small>uiautomation.go:1344</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentLabeledBy() *IUIAutomationElement {</code><br><small>uiautomation.go:1360</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentLocalizedControlType() (string, error) {</code><br><small>uiautomation.go:1370</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentName() (string, error) {</code><br><small>uiautomation.go:1386</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentNativeWindowHandle() uintptr {</code><br><small>uiautomation.go:1401</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentOrientation() OrientationType {</code><br><small>uiautomation.go:1410</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentProcessId() int32 {</code><br><small>uiautomation.go:1419</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CurrentProviderDescription() (string, error) {</code><br><small>uiautomation.go:1428</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CachedProcessId() int32 {</code><br><small>uiautomation.go:1444</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CachedControlType() ControlTypeId {</code><br><small>uiautomation.go:1454</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CachedLocalizedControlType() (string, error) {</code><br><small>uiautomation.go:1464</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CachedName() (string, error) {</code><br><small>uiautomation.go:1479</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CachedAutomationId() (string, error) {</code><br><small>uiautomation.go:1494</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CachedClassName() (string, error) {</code><br><small>uiautomation.go:1509</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) Get_CachedIsEnabled() int32 {</code><br><small>uiautomation.go:1524</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) FindFirst(scope TreeScope, condition *IUIAutomationCondition) (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:1534</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) FindAll(scope TreeScope, condition *IUIAutomationCondition) (*IUIAutomationElementArray, error) {</code><br><small>uiautomation.go:1549</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) FindAllBuildCache(scope TreeScope, condition *IUIAutomationCondition, cacheRequest *IUIAutomationCacheRequest) (*IUIAutomationElementArray, error) {</code><br><small>uiautomation.go:1564</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElement) BuildUpdatedCache(cacheRequest *IUIAutomationCacheRequest) (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:1580</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func FindAll(v *IUIAutomationElement, condition *IUIAutomationCondition) (*IUIAutomationElementArray, error) {</code><br><small>uiautomation.go:1594</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationTreeWalker struct {</code><br><small>uiautomation.go:1609</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationTreeWalker) Release() uint32 {</code><br><small>uiautomation.go:1613</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationTreeWalkerVtbl struct {</code><br><small>uiautomation.go:1617</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationElementArray struct {</code><br><small>uiautomation.go:1635</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElementArray) Release() uint32 {</code><br><small>uiautomation.go:1639</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationElementArrayVtbl struct {</code><br><small>uiautomation.go:1647</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomationElementArray(unk *IUnKnown) *IUIAutomationElementArray {</code><br><small>uiautomation.go:1659</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElementArray) Get_Length() int32 {</code><br><small>uiautomation.go:1663</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationElementArray) GetElement(i int32) (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:1673</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func Get_Length(v *IUIAutomationElementArray) int32 {</code><br><small>uiautomation.go:1687</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func GetElement(v *IUIAutomationElementArray, i int32) (*IUIAutomationElement, error) {</code><br><small>uiautomation.go:1697</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationCacheRequest struct {</code><br><small>uiautomation.go:1711</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationCacheRequest) Release() uint32 {</code><br><small>uiautomation.go:1715</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationCacheRequestVtbl struct {</code><br><small>uiautomation.go:1719</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationCacheRequest) AddProperty(propertyId PropertyId) error {</code><br><small>uiautomation.go:1732</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationCacheRequest) AddPattern(patternId PatternId) error {</code><br><small>uiautomation.go:1744</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationCacheRequest) Put_TreeScope(scope TreeScope) error {</code><br><small>uiautomation.go:1756</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationCacheRequest) Put_AutomationElementMode(mode int32) error {</code><br><small>uiautomation.go:1768</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationEventHandler struct {</code><br><small>uiautomation.go:1780</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationEventHandler) Release() uint32 {</code><br><small>uiautomation.go:1784</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationEventHandlerVtbl struct {</code><br><small>uiautomation.go:1788</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomationEventHandler(unk *IUnKnown) *IUIAutomationEventHandler {</code><br><small>uiautomation.go:1796</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationEventHandler) HandleAutomationEvent(in *IUIAutomationElement, in2 UIA_EventId) error {</code><br><small>uiautomation.go:1799</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationFocusChangedEventHandler struct {</code><br><small>uiautomation.go:1812</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationFocusChangedEventHandler) Release() uint32 {</code><br><small>uiautomation.go:1816</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationFocusChangedEventHandlerVtbl struct {</code><br><small>uiautomation.go:1820</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomationFocusChangedEventHandler(unk *IUnKnown) *IUIAutomationFocusChangedEventHandler {</code><br><small>uiautomation.go:1828</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationFocusChangedEventHandler) HandleFocusChangedEvent(in *IUIAutomationElement) error {</code><br><small>uiautomation.go:1831</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationProxyFactory struct {</code><br><small>uiautomation.go:1843</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactory) Release() uint32 {</code><br><small>uiautomation.go:1847</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationProxyFactoryVtbl struct {</code><br><small>uiautomation.go:1851</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomationProxyFactory(unk *IUnKnown) *IUIAutomationProxyFactory {</code><br><small>uiautomation.go:1860</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactory) CreateProvider(in uintptr, in2, in3 int32) (*IRawElementProviderSimple, error) {</code><br><small>uiautomation.go:1863</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactory) Get_ProxyFactoryId() (string, error) {</code><br><small>uiautomation.go:1878</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationProxyFactoryEntry struct {</code><br><small>uiautomation.go:1897</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) Release() uint32 {</code><br><small>uiautomation.go:1901</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationProxyFactoryEntryVtbl struct {</code><br><small>uiautomation.go:1905</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomationProxyFactoryEntry(unk *IUnKnown) *IUIAutomationProxyFactoryEntry {</code><br><small>uiautomation.go:1925</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) Get_AllowSubstringMatch() int32 {</code><br><small>uiautomation.go:1928</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) Get_CanCheckBaseClass() int32 {</code><br><small>uiautomation.go:1937</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) Get_ClassName() (string, error) {</code><br><small>uiautomation.go:1946</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) Get_ImageName() (string, error) {</code><br><small>uiautomation.go:1961</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) Get_NeedsAdviseEvents() int32 {</code><br><small>uiautomation.go:1976</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) Get_ProxyFactory() *IUIAutomationProxyFactory {</code><br><small>uiautomation.go:1985</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) GetWinEventsForAutomationEvent(in UIA_EventId, in2 PropertyId) (*TagSafeArray, error) {</code><br><small>uiautomation.go:1994</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) Put_AllowSubstringMatch() int32 {</code><br><small>uiautomation.go:2008</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) Put_CanCheckBaseClass() int32 {</code><br><small>uiautomation.go:2017</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) Put_ClassName() string {</code><br><small>uiautomation.go:2026</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) Put_ImageName() string {</code><br><small>uiautomation.go:2036</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) Put_NeedsAdviseEvents() int32 {</code><br><small>uiautomation.go:2046</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryEntry) SetWinEventsForAutomationEvent(in UIA_EventId, in2 PropertyId, in3 *TagSafeArray) error {</code><br><small>uiautomation.go:2055</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationProxyFactoryMapping struct {</code><br><small>uiautomation.go:2069</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryMapping) Release() uint32 {</code><br><small>uiautomation.go:2073</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationProxyFactoryMappingVtbl struct {</code><br><small>uiautomation.go:2077</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomationProxyFactoryMapping(unk *IUnKnown) *IUIAutomationProxyFactoryMapping {</code><br><small>uiautomation.go:2093</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryMapping) ClearTable() error {</code><br><small>uiautomation.go:2096</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryMapping) Get_Count() uint32 {</code><br><small>uiautomation.go:2106</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryMapping) GetEntry(in uint32) (*IUIAutomationProxyFactoryEntry, error) {</code><br><small>uiautomation.go:2115</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryMapping) GetTable() (*TagSafeArray, error) {</code><br><small>uiautomation.go:2128</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryMapping) InsertEntries(in uint32, in2 *TagSafeArray) error {</code><br><small>uiautomation.go:2140</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryMapping) InsertEntry(in uint32, in2 *IUIAutomationProxyFactoryEntry) error {</code><br><small>uiautomation.go:2152</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryMapping) RemoveEntry(in uint32) error {</code><br><small>uiautomation.go:2164</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryMapping) RestoreDefaultTable() error {</code><br><small>uiautomation.go:2175</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationProxyFactoryMapping) SetTable(in *TagSafeArray) error {</code><br><small>uiautomation.go:2185</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationStructureChangedEventHandler struct {</code><br><small>uiautomation.go:2197</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationStructureChangedEventHandler) Release() uint32 {</code><br><small>uiautomation.go:2201</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationStructureChangedEventHandlerVtbl struct {</code><br><small>uiautomation.go:2205</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomationStructureChangedEventHandler(unk *IUnKnown) *IUIAutomationStructureChangedEventHandler {</code><br><small>uiautomation.go:2213</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationStructureChangedEventHandler) HandleStructureChangedEvent(in *IUIAutomationElement, in2 StructureChangeType, in3 *TagSafeArray) error {</code><br><small>uiautomation.go:2217</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr></table><h3>常用客户端 Pattern 包装</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>type IUIAutomationInvokePattern struct {</code><br><small>client.go:9</small></td><td>IUIAutomationInvokePattern</td></tr>
+<tr><td><code>type IUIAutomationInvokePatternVtbl struct {</code><br><small>client.go:12</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationInvokePattern) Invoke() error {</code><br><small>client.go:17</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationInvokePattern) Release() uint32 {</code><br><small>client.go:28</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomationInvokePattern(unk *IUnKnown) *IUIAutomationInvokePattern {</code><br><small>client.go:35</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationValuePattern struct {</code><br><small>client.go:40</small></td><td>IUIAutomationValuePattern</td></tr>
+<tr><td><code>type IUIAutomationValuePatternVtbl struct {</code><br><small>client.go:43</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationValuePattern) SetValue(val string) error {</code><br><small>client.go:52</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationValuePattern) Get_CurrentValue() (string, error) {</code><br><small>client.go:69</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomationValuePattern(unk *IUnKnown) *IUIAutomationValuePattern {</code><br><small>client.go:86</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationValuePattern) Release() uint32 {</code><br><small>client.go:90</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationSelectionItemPattern struct {</code><br><small>client.go:95</small></td><td>IUIAutomationSelectionItemPattern</td></tr>
+<tr><td><code>type IUIAutomationSelectionItemPatternVtbl struct {</code><br><small>client.go:98</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationSelectionItemPattern) Select() error {</code><br><small>client.go:109</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationSelectionItemPattern) Release() uint32 {</code><br><small>client.go:120</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationTogglePattern struct {</code><br><small>client.go:125</small></td><td>IUIAutomationTogglePattern</td></tr>
+<tr><td><code>type IUIAutomationTogglePatternVtbl struct {</code><br><small>client.go:128</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationTogglePattern) Toggle() error {</code><br><small>client.go:135</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationTogglePattern) Get_CurrentToggleState() (ToggleState, error) {</code><br><small>client.go:146</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomationTogglePattern(unk *IUnKnown) *IUIAutomationTogglePattern {</code><br><small>client.go:162</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationTogglePattern) Release() uint32 {</code><br><small>client.go:166</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationExpandCollapsePattern struct {</code><br><small>client.go:171</small></td><td>IUIAutomationExpandCollapsePattern</td></tr>
+<tr><td><code>type IUIAutomationExpandCollapsePatternVtbl struct {</code><br><small>client.go:174</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationExpandCollapsePattern) Expand() error {</code><br><small>client.go:182</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationExpandCollapsePattern) Collapse() error {</code><br><small>client.go:193</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationExpandCollapsePattern) Release() uint32 {</code><br><small>client.go:204</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr></table><h3>Provider / Pattern 接口全集</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>type IAnnotationProvider struct {</code><br><small>provider.go:13</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IAnnotationProviderVtbl struct {</code><br><small>provider.go:18</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IRawElementProviderSimple struct {</code><br><small>provider.go:27</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IRawElementProviderSimpleVtbl struct {</code><br><small>provider.go:31</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIAnnotationProvider(unk *IUnKnown) *IAnnotationProvider {</code><br><small>provider.go:39</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAnnotationProvider) Get_AnnotationTypeId() int32 {</code><br><small>provider.go:45</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAnnotationProvider) Get_AnnotationTypeName() string {</code><br><small>provider.go:54</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAnnotationProvider) Get_Author() string {</code><br><small>provider.go:68</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAnnotationProvider) Get_DateTime() string {</code><br><small>provider.go:82</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAnnotationProvider) Get_Target() *IRawElementProviderSimple {</code><br><small>provider.go:96</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IDockProvider struct {</code><br><small>provider.go:110</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IDockProviderVtbl struct {</code><br><small>provider.go:114</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type DockPosition int</code><br><small>provider.go:120</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIDockProvider(unk *IUnKnown) *IDockProvider {</code><br><small>provider.go:132</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IDockProvider) Get_DockPosition() *DockPosition {</code><br><small>provider.go:138</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IDockProvider) SetDockPosition(position *DockPosition) error {</code><br><small>provider.go:147</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IDragProvider struct {</code><br><small>provider.go:159</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IDragProviderVtbl struct {</code><br><small>provider.go:162</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIDragProvider(unk *IUnKnown) *IDragProvider {</code><br><small>provider.go:170</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IDragProvider) Get_DropEffect() string {</code><br><small>provider.go:176</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IDragProvider) Get_DropEffects() *TagSafeArray {</code><br><small>provider.go:190</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IDragProvider) Get_IsGrabbed() int32 {</code><br><small>provider.go:199</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IDragProvider) GetGrabbedItems() *TagSafeArray {</code><br><small>provider.go:208</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IDropTargetProvider struct {</code><br><small>provider.go:218</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IDropTargetProviderVtbl struct {</code><br><small>provider.go:221</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIDropTargetProvider(unk *IUnKnown) *IDropTargetProvider {</code><br><small>provider.go:227</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IDropTargetProvider) Get_DropTargetEffect() string {</code><br><small>provider.go:233</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IDropTargetProvider) Get_DropTargetEffects() *TagSafeArray {</code><br><small>provider.go:247</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IExpandCollapseProvider struct {</code><br><small>provider.go:257</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IExpandCollapseProviderVtbl struct {</code><br><small>provider.go:260</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ExpandCollapseState int</code><br><small>provider.go:266</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIExpandCollapseProvider(unk *IUnKnown) *IExpandCollapseProvider {</code><br><small>provider.go:275</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IExpandCollapseProvider) Collapse() (int32, error) {</code><br><small>provider.go:281</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IExpandCollapseProvider) Expand() (int32, error) {</code><br><small>provider.go:291</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IExpandCollapseProvider) GetExpandCollapseState() *ExpandCollapseState {</code><br><small>provider.go:301</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IGridItemProvider struct {</code><br><small>provider.go:311</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IGridItemProviderVtbl struct {</code><br><small>provider.go:314</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIGridItemProvider(unk *IUnKnown) *IGridItemProvider {</code><br><small>provider.go:323</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IGridItemProvider) Get_Column() int32 {</code><br><small>provider.go:329</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IGridItemProvider) Get_ColumnSpan() int32 {</code><br><small>provider.go:338</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IGridItemProvider) Get_ContainingGrid() *IRawElementProviderSimple {</code><br><small>provider.go:347</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IGridItemProvider) Get_Row() int32 {</code><br><small>provider.go:356</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IGridItemProvider) Get_RowSpan() int32 {</code><br><small>provider.go:365</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IGridProvider struct {</code><br><small>provider.go:375</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IGridProviderVtbl struct {</code><br><small>provider.go:378</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIGridProvider(unk *IUnKnown) *IGridProvider {</code><br><small>provider.go:385</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IGridProvider) Get_ColumnCount() int32 {</code><br><small>provider.go:391</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IGridProvider) Get_RowCount() int32 {</code><br><small>provider.go:400</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IGridProvider) GetItem(row, column int32) (*IRawElementProviderSimple, error) {</code><br><small>provider.go:409</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IInvokeProvider struct {</code><br><small>provider.go:424</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IInvokeProviderVtbl struct {</code><br><small>provider.go:427</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIInvokeProvider(unk *IUnKnown) *IInvokeProvider {</code><br><small>provider.go:432</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IInvokeProvider) Invoke() error {</code><br><small>provider.go:438</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IItemContainerProvider struct {</code><br><small>provider.go:449</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IItemContainerProviderVtbl struct {</code><br><small>provider.go:452</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIItemContainerProvider(unk *IUnKnown) *IItemContainerProvider {</code><br><small>provider.go:457</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IItemContainerProvider) FindItemByProperty(simple *IRawElementProviderSimple, id uintptr, val *VARIANT) (*IRawElementProviderSimple, error) {</code><br><small>provider.go:463</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ILegacyIAccessibleProvider struct {</code><br><small>provider.go:479</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ILegacyIAccessibleProviderVtbl struct {</code><br><small>provider.go:482</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewILegacyIAccessibleProvider(unk *IUnKnown) *ILegacyIAccessibleProvider {</code><br><small>provider.go:503</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) DoDefaultAction() error {</code><br><small>provider.go:506</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) Get_ChildId() int32 {</code><br><small>provider.go:516</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) Get_DefaultAction() (string, error) {</code><br><small>provider.go:525</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) Get_Description() (string, error) {</code><br><small>provider.go:540</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) Get_Help() (string, error) {</code><br><small>provider.go:555</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) Get_KeyboardShortcut() (string, error) {</code><br><small>provider.go:570</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) Get_Name() (string, error) {</code><br><small>provider.go:585</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) Get_Role() uint32 {</code><br><small>provider.go:600</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) Get_State() uint32 {</code><br><small>provider.go:609</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) Get_Value() uint32 {</code><br><small>provider.go:618</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) GetIAccessible() (*IAccessible, error) {</code><br><small>provider.go:627</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) GetSelection() (*TagSafeArray, error) {</code><br><small>provider.go:639</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) Select(flag int32) error {</code><br><small>provider.go:652</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ILegacyIAccessibleProvider) SetValue(val string) error {</code><br><small>provider.go:663</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IMultipleViewProvider struct {</code><br><small>provider.go:679</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IMultipleViewProviderVtbl struct {</code><br><small>provider.go:682</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIMultipleViewProvider(unk *IUnKnown) *IMultipleViewProvider {</code><br><small>provider.go:693</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IMultipleViewProvider) Get_CurrentView() int32 {</code><br><small>provider.go:696</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IMultipleViewProvider) GetSupportedViews() (*TagSafeArray, error) {</code><br><small>provider.go:705</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IMultipleViewProvider) GetViewName(viewId int32) (string, error) {</code><br><small>provider.go:717</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IMultipleViewProvider) SetCurrentView(viewId int32) error {</code><br><small>provider.go:736</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IObjectModelProvider struct {</code><br><small>provider.go:748</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IObjectModelProviderVtbl struct {</code><br><small>provider.go:751</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIObjectModelProvider(unk *IUnKnown) *IObjectModelProvider {</code><br><small>provider.go:760</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IObjectModelProvider) GetUnderlyingObjectModel() (*IUnKnown, error) {</code><br><small>provider.go:763</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IRangeValueProvider struct {</code><br><small>provider.go:776</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IRangeValueProviderVtbl struct {</code><br><small>provider.go:779</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIRangeValueProvider(unk *IUnKnown) *IRangeValueProvider {</code><br><small>provider.go:793</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IRangeValueProvider) Get_IsReadOnly() int32 {</code><br><small>provider.go:796</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IRangeValueProvider) Get_LargeChange() float64 {</code><br><small>provider.go:805</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IRangeValueProvider) Get_Maximum() float64 {</code><br><small>provider.go:814</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IRangeValueProvider) Get_Minimum() float64 {</code><br><small>provider.go:823</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IRangeValueProvider) Get_SmallChange() float64 {</code><br><small>provider.go:832</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IRangeValueProvider) Get_Value() float64 {</code><br><small>provider.go:841</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IRangeValueProvider) SetValue(val float64) error {</code><br><small>provider.go:851</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IScrollItemProvider struct {</code><br><small>provider.go:863</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IScrollItemProviderVtbl struct {</code><br><small>provider.go:866</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIScrollItemProvider(unk *IUnKnown) *IScrollItemProvider {</code><br><small>provider.go:874</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IScrollItemProvider) ScrollIntoView() error {</code><br><small>provider.go:877</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IScrollProvider struct {</code><br><small>provider.go:888</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IScrollProviderVtbl struct {</code><br><small>provider.go:891</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIScrollProvider(unk *IUnKnown) *IScrollProvider {</code><br><small>provider.go:906</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IScrollProvider) Get_HorizontallyScrollable() int32 {</code><br><small>provider.go:909</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IScrollProvider) Get_HorizontalScrollPercent() float64 {</code><br><small>provider.go:918</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IScrollProvider) Get_HorizontalViewSize() float64 {</code><br><small>provider.go:927</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IScrollProvider) Get_VerticallyScrollable() int32 {</code><br><small>provider.go:936</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IScrollProvider) Get_VerticalScrollPercent() float64 {</code><br><small>provider.go:945</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IScrollProvider) Get_VerticalViewSize() float64 {</code><br><small>provider.go:954</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IScrollProvider) Scroll(hr, vr ScrollAmount) error {</code><br><small>provider.go:963</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IScrollProvider) SetScrollPercent(hr, vr float64) error {</code><br><small>provider.go:975</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ISelectionItemProvider struct {</code><br><small>provider.go:988</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ISelectionItemProviderVtbl struct {</code><br><small>provider.go:991</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewISelectionItemProvider(unk *IUnKnown) *ISelectionItemProvider {</code><br><small>provider.go:1003</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISelectionItemProvider) AddToSelection() error {</code><br><small>provider.go:1006</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISelectionItemProvider) Get_IsSelected() int32 {</code><br><small>provider.go:1017</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISelectionItemProvider) Get_SelectionContainer() *IRawElementProviderSimple {</code><br><small>provider.go:1026</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISelectionItemProvider) RemoveFromSelection() error {</code><br><small>provider.go:1035</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISelectionItemProvider) Select() error {</code><br><small>provider.go:1045</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ISelectionProvider struct {</code><br><small>provider.go:1056</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ISelectionProviderVtbl struct {</code><br><small>provider.go:1059</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewISelectionProvider(unk *IUnKnown) *ISelectionProvider {</code><br><small>provider.go:1069</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISelectionProvider) Get_CanSelectMultiple() int32 {</code><br><small>provider.go:1072</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISelectionProvider) Get_IsSelectionRequired() int32 {</code><br><small>provider.go:1081</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISelectionProvider) GetSelection() (*TagSafeArray, error) {</code><br><small>provider.go:1090</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ISpreadsheetProvider struct {</code><br><small>provider.go:1103</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ISpreadsheetProviderVtbl struct {</code><br><small>provider.go:1106</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewISpreadsheetProvider(unk *IUnKnown) *ISpreadsheetProvider {</code><br><small>provider.go:1114</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISpreadsheetProvider) GetItemByName(name string) (*IRawElementProviderSimple, error) {</code><br><small>provider.go:1117</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ISpreadsheetItemProvider struct {</code><br><small>provider.go:1135</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ISpreadsheetItemProviderVtbl struct {</code><br><small>provider.go:1138</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewISpreadsheetItemProvider(unk *IUnKnown) *ISpreadsheetItemProvider {</code><br><small>provider.go:1148</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISpreadsheetItemProvider) Get_Formula() (string, error) {</code><br><small>provider.go:1151</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISpreadsheetItemProvider) GetAnnotationObjects() (*TagSafeArray, error) {</code><br><small>provider.go:1166</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISpreadsheetItemProvider) GetAnnotationTypes() (*TagSafeArray, error) {</code><br><small>provider.go:1178</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IStylesProvider struct {</code><br><small>provider.go:1191</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IStylesProviderVtbl struct {</code><br><small>provider.go:1194</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIStylesProvider(unk *IUnKnown) *IStylesProvider {</code><br><small>provider.go:1209</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IStylesProvider) Get_ExtendedPropertvs() (string, error) {</code><br><small>provider.go:1212</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IStylesProvider) Get_FillColor() int32 {</code><br><small>provider.go:1227</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IStylesProvider) Get_FillPatternColor() int32 {</code><br><small>provider.go:1236</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IStylesProvider) Get_FillPatternStyle() (string, error) {</code><br><small>provider.go:1245</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IStylesProvider) Get_Shape() (string, error) {</code><br><small>provider.go:1260</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IStylesProvider) Get_StyleId() int32 {</code><br><small>provider.go:1275</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IStylesProvider) Get_StyleName() (string, error) {</code><br><small>provider.go:1284</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ISynchronizedInputProvider struct {</code><br><small>provider.go:1300</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ISynchronizedInputProviderVtbl struct {</code><br><small>provider.go:1304</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewISynchronizedInputProvider(unk *IUnKnown) *ISynchronizedInputProvider {</code><br><small>provider.go:1313</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISynchronizedInputProvider) Cancel() error {</code><br><small>provider.go:1316</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ISynchronizedInputProvider) StartListening(in SynchronizedInputType) error {</code><br><small>provider.go:1326</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITableItemProvider struct {</code><br><small>provider.go:1338</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITableItemProviderVtbl struct {</code><br><small>provider.go:1341</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITableItemProvider(unk *IUnKnown) *ITableItemProvider {</code><br><small>provider.go:1350</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITableItemProvider) GetColumnHeaderItems() (*TagSafeArray, error) {</code><br><small>provider.go:1353</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITableItemProvider) GetRowHeaderItems() (*TagSafeArray, error) {</code><br><small>provider.go:1365</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITableProvider struct {</code><br><small>provider.go:1378</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITableProviderVtbl struct {</code><br><small>provider.go:1381</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITableProvider(unk *IUnKnown) *ITableProvider {</code><br><small>provider.go:1391</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITableProvider) Get_RowOrColumnMajor() *RowOrColumnMajor {</code><br><small>provider.go:1394</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITableProvider) GetColumnHeaders() (*TagSafeArray, error) {</code><br><small>provider.go:1403</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITableProvider) GetRowHeaders() (*TagSafeArray, error) {</code><br><small>provider.go:1415</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextChildProvider struct {</code><br><small>provider.go:1428</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextChildProviderVtbl struct {</code><br><small>provider.go:1431</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITextChildProvider(unk *IUnKnown) *ITextChildProvider {</code><br><small>provider.go:1440</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextChildProvider) Get_TextContainer() *IRawElementProviderSimple {</code><br><small>provider.go:1443</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextChildProvider) Get_TextRange() *ITextRangeProvider {</code><br><small>provider.go:1452</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextRangeProvider struct {</code><br><small>provider.go:1462</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextRangeProviderVtbl struct {</code><br><small>provider.go:1465</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITextRangeProvider(unk *IUnKnown) *ITextRangeProvider {</code><br><small>provider.go:1490</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) AddToSelection() error {</code><br><small>provider.go:1493</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) Clone() (*ITextRangeProvider, error) {</code><br><small>provider.go:1503</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) Compare(in *ITextRangeProvider) (int32, error) {</code><br><small>provider.go:1515</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) CompareEndpoints(in TextPatternRangeEndpoint, in2 *ITextRangeProvider, in3 TextPatternRangeEndpoint) (int32, error) {</code><br><small>provider.go:1528</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) ExpandToEnclosingUnit(in TextUnit) error {</code><br><small>provider.go:1543</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) FindAttribute(in TextArrtibuteId, in2 *VARIANT, in3 int32) (*ITextRangeProvider, error) {</code><br><small>provider.go:1554</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) FindText(in string, in2 int32, in3 int32) (*ITextRangeProvider, error) {</code><br><small>provider.go:1569</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) GetAttributeValue(in TextArrtibuteId) (*VARIANT, error) {</code><br><small>provider.go:1588</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) GetBoundingRectangles() (*TagSafeArray, error) {</code><br><small>provider.go:1601</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) GetChildren() (*TagSafeArray, error) {</code><br><small>provider.go:1613</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) GetEnclosingElement() (*IRawElementProviderSimple, error) {</code><br><small>provider.go:1625</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) GetText(in int32) (string, error) {</code><br><small>provider.go:1637</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) Move(in TextUnit, in2 int32) (int32, error) {</code><br><small>provider.go:1656</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) MoveEndpointByRange(in TextPatternRangeEndpoint, in2 *ITextRangeProvider, in3 TextPatternRangeEndpoint) error {</code><br><small>provider.go:1670</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) MoveEndpointByUnit(in TextPatternRangeEndpoint, in2 TextUnit, in3 int32) (int32, error) {</code><br><small>provider.go:1683</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) RemoveFromSelection() error {</code><br><small>provider.go:1698</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) ScrollIntoView(in int32) error {</code><br><small>provider.go:1708</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextRangeProvider) Select() error {</code><br><small>provider.go:1719</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextEditProvider struct {</code><br><small>provider.go:1730</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextEditProviderVtbl struct {</code><br><small>provider.go:1733</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITextEditProvider(unk *IUnKnown) *ITextEditProvider {</code><br><small>provider.go:1742</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextEditProvider) GetActiveComposition() (*ITextRangeProvider, error) {</code><br><small>provider.go:1745</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextEditProvider) GetConversionTarget() (*ITextRangeProvider, error) {</code><br><small>provider.go:1757</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextProvider struct {</code><br><small>provider.go:1770</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextProviderVtbl struct {</code><br><small>provider.go:1773</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITextProvider(unk *IUnKnown) *ITextProvider {</code><br><small>provider.go:1786</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextProvider) Get_DocumentRange() *ITextRangeProvider {</code><br><small>provider.go:1789</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextProvider) Get_SupportedTextSelection() *SupportedTextSelection {</code><br><small>provider.go:1798</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextProvider) GetSelection() (*TagSafeArray, error) {</code><br><small>provider.go:1807</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextProvider) GetVisibleRanges() (*TagSafeArray, error) {</code><br><small>provider.go:1819</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextProvider) RangeFromChild(in *IRawElementProviderSimple) (*ITextRangeProvider, error) {</code><br><small>provider.go:1831</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextProvider) RangeFromPoint(in *UiaPoint) (*ITextRangeProvider, error) {</code><br><small>provider.go:1844</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextProvider2 struct {</code><br><small>provider.go:1858</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextProvider2Vtbl struct {</code><br><small>provider.go:1861</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITextProvider2(unk *IUnKnown) *ITextProvider2 {</code><br><small>provider.go:1871</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextProvider2) GetCaretRange() (int32, *ITextRangeProvider, error) {</code><br><small>provider.go:1874</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextProvider2) RangeFromAnnotation(in *IRawElementProviderSimple) (*ITextRangeProvider, error) {</code><br><small>provider.go:1888</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IToggleProvider struct {</code><br><small>provider.go:1902</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IToggleProviderVtbl struct {</code><br><small>provider.go:1905</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIToggleProvider(unk *IUnKnown) *IToggleProvider {</code><br><small>provider.go:1914</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IToggleProvider) Get_ToggleState() *ToggleState {</code><br><small>provider.go:1917</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IToggleProvider) Toggle() error {</code><br><small>provider.go:1926</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITransformProvider struct {</code><br><small>provider.go:1937</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITransformProviderVtbl struct {</code><br><small>provider.go:1940</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITransformProvider(unk *IUnKnown) *ITransformProvider {</code><br><small>provider.go:1953</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITransformProvider) Get_CanMove() int32 {</code><br><small>provider.go:1956</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITransformProvider) Get_CanResize() int32 {</code><br><small>provider.go:1965</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITransformProvider) Get_CanRotate() int32 {</code><br><small>provider.go:1974</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITransformProvider) Move(x, y float64) error {</code><br><small>provider.go:1983</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITransformProvider) Resize(w, h float64) error {</code><br><small>provider.go:1995</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITransformProvider) Rotate(in float64) error {</code><br><small>provider.go:2007</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITransformProvider2 struct {</code><br><small>provider.go:2019</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITransformProvider2Vtbl struct {</code><br><small>provider.go:2022</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITransformProvider2(unk *IUnKnown) *ITransformProvider2 {</code><br><small>provider.go:2036</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITransformProvider2) Get_CanZoom() int32 {</code><br><small>provider.go:2039</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITransformProvider2) Get_ZoomLevel() float64 {</code><br><small>provider.go:2048</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITransformProvider2) Get_ZoomMaximum() float64 {</code><br><small>provider.go:2057</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITransformProvider2) Get_ZoomMinimum() float64 {</code><br><small>provider.go:2066</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITransformProvider2) Zoom(in float64) error {</code><br><small>provider.go:2075</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITransformProvider2) ZoomByUnit(in ZoomUnit) error {</code><br><small>provider.go:2086</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IValueProvider struct {</code><br><small>provider.go:2098</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IValueProviderVtbl struct {</code><br><small>provider.go:2101</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIValueProvider(unk *IUnKnown) *IValueProvider {</code><br><small>provider.go:2111</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IValueProvider) Get_IsReadOnly() int32 {</code><br><small>provider.go:2114</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IValueProvider) Get_Value() (string, error) {</code><br><small>provider.go:2123</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IValueProvider) SetValue(in string) error {</code><br><small>provider.go:2138</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IVirtualizedItemProvider struct {</code><br><small>provider.go:2154</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IVirtualizedItemProviderVtbl struct {</code><br><small>provider.go:2157</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIVirtualizedItemProvider(unk *IUnKnown) *IVirtualizedItemProvider {</code><br><small>provider.go:2165</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IVirtualizedItemProvider) Realize() error {</code><br><small>provider.go:2168</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IWindowProvider struct {</code><br><small>provider.go:2179</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IWindowProviderVtbl struct {</code><br><small>provider.go:2182</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIWindowProvider(unk *IUnKnown) *IWindowProvider {</code><br><small>provider.go:2198</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IWindowProvider) Close() error {</code><br><small>provider.go:2201</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IWindowProvider) Get_CanMaximize() int32 {</code><br><small>provider.go:2211</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IWindowProvider) Get_CanMinimize() int32 {</code><br><small>provider.go:2220</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IWindowProvider) Get_IsModal() int32 {</code><br><small>provider.go:2229</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IWindowProvider) Get_IsTopmost() int32 {</code><br><small>provider.go:2238</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IWindowProvider) Get_WindowInteractionState() *WindowInteractionState {</code><br><small>provider.go:2247</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IWindowProvider) Get_WindowVisualState() *WindowVisualState {</code><br><small>provider.go:2256</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IWindowProvider) SetVisualState(in WindowVisualState) error {</code><br><small>provider.go:2265</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IWindowProvider) WaitForInputIdle(in int32) (int32, error) {</code><br><small>provider.go:2276</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationPropertyChangedEventHandler struct {</code><br><small>provider.go:2290</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationPropertyChangedEventHandlerVtbl struct {</code><br><small>provider.go:2293</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomationPropertyChangedEventHandler(unk *IUnKnown) *IUIAutomationPropertyChangedEventHandler {</code><br><small>provider.go:2301</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationPropertyChangedEventHandler) HandlePropertyChangedEvent(in *IUIAutomationElement, in2 PropertyId, in3 VARIANT) error {</code><br><small>provider.go:2305</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr></table><h3>MSAA / IAccessible</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>type IAccessible struct {</code><br><small>accessible.go:8</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IAccessibleVtbl struct {</code><br><small>accessible.go:12</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Release() uint32 {</code><br><small>accessible.go:38</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIAccessible(unk *IDispatch) *IAccessible {</code><br><small>accessible.go:45</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) AccDoDefaultAction(in *VARIANT) error {</code><br><small>accessible.go:48</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) AccHitTest(in, in2 int32) (*VARIANT, error) {</code><br><small>accessible.go:59</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) AccLocation(in, in2, in3, in4 int32) (*VARIANT, error) {</code><br><small>accessible.go:73</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) AccNavigate(in int32, in2 *VARIANT) (*VARIANT, error) {</code><br><small>accessible.go:89</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) AccSelect(in int32, in2 *VARIANT) error {</code><br><small>accessible.go:103</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accChild(in *VARIANT) (*IDispatch, error) {</code><br><small>accessible.go:115</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accChildCount() (int32, error) {</code><br><small>accessible.go:128</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accDefaultAction(in *VARIANT) (string, error) {</code><br><small>accessible.go:140</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accDescription(in *VARIANT) (string, error) {</code><br><small>accessible.go:159</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accFocus() (*VARIANT, error) {</code><br><small>accessible.go:178</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accHelp(in *VARIANT) (string, error) {</code><br><small>accessible.go:190</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accHelpTopic(in *VARIANT, in2 int32) (string, error) {</code><br><small>accessible.go:209</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accKeyboardShortcut(in *VARIANT) (string, error) {</code><br><small>accessible.go:229</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accName(in *VARIANT) (string, error) {</code><br><small>accessible.go:248</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accParent() (*IDispatch, error) {</code><br><small>accessible.go:267</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accRole(in *VARIANT) (*VARIANT, error) {</code><br><small>accessible.go:279</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accSelection() (*VARIANT, error) {</code><br><small>accessible.go:292</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accState(in *VARIANT) (*VARIANT, error) {</code><br><small>accessible.go:304</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Get_accValue(in *VARIANT) (string, error) {</code><br><small>accessible.go:317</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Put_accName(in *VARIANT, in2 string) error {</code><br><small>accessible.go:336</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IAccessible) Put_accValue(in *VARIANT, in2 string) error {</code><br><small>accessible.go:349</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationLegacyIAccessiblePattern struct {</code><br><small>accessible.go:366</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IUIAutomationLegacyIAccessiblePatternVtbl struct {</code><br><small>accessible.go:369</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Release() uint32 {</code><br><small>accessible.go:397</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIUIAutomationLegacyIAccessiblePattern(unk *IDispatch) *IUIAutomationLegacyIAccessiblePattern {</code><br><small>accessible.go:404</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) DoDefaultAction() error {</code><br><small>accessible.go:407</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CachedChildId() int32 {</code><br><small>accessible.go:417</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CachedDefaultAction() (string, error) {</code><br><small>accessible.go:426</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CachedDescription() (string, error) {</code><br><small>accessible.go:441</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CachedHelp() (string, error) {</code><br><small>accessible.go:456</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CachedKeyboardShortcut() (string, error) {</code><br><small>accessible.go:471</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CachedName() (string, error) {</code><br><small>accessible.go:486</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CachedRole() uint32 {</code><br><small>accessible.go:501</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CachedState() uint32 {</code><br><small>accessible.go:510</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CachedValue() (string, error) {</code><br><small>accessible.go:519</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CurrentChildId() int32 {</code><br><small>accessible.go:534</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CurrentDefaultAction() (string, error) {</code><br><small>accessible.go:543</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CurrentDescription() (string, error) {</code><br><small>accessible.go:558</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CurrentHelp() (string, error) {</code><br><small>accessible.go:573</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CurrentKeyboardShortcut() (string, error) {</code><br><small>accessible.go:588</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CurrentName() (string, error) {</code><br><small>accessible.go:603</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CurrentRole() uint32 {</code><br><small>accessible.go:618</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CurrentState() uint32 {</code><br><small>accessible.go:627</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Get_CurrentValue() (string, error) {</code><br><small>accessible.go:636</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) GetCachedSelection() (*IUIAutomationElementArray, error) {</code><br><small>accessible.go:651</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) GetCurrentSelection() (*IUIAutomationElementArray, error) {</code><br><small>accessible.go:663</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) GetIAccessible() (*IAccessible, error) {</code><br><small>accessible.go:675</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) Select(in SelFlag) error {</code><br><small>accessible.go:687</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IUIAutomationLegacyIAccessiblePattern) SetValue(in string) error {</code><br><small>accessible.go:698</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr></table><h3>IDispatch / TypeInfo / TypeLib</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>type IDispatch struct {</code><br><small>dispatch.go:8</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IDispatch) Release() uint32 {</code><br><small>dispatch.go:12</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IDispatchVtbl struct {</code><br><small>dispatch.go:16</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func GetIDsOfNames(v *IDispatch, in *syscall.GUID, in2 uint16, in3, in4 uint32) (int32, error) {</code><br><small>dispatch.go:24</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func GetTypeInfo(v *IDispatch, in, in2 uint32) (*ITypeInfo, error) {</code><br><small>dispatch.go:41</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func GetTypeInfoCount(v *IDispatch) (uint32, error) {</code><br><small>dispatch.go:56</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type InvokeReq struct {</code><br><small>dispatch.go:69</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type InvokeResp struct {</code><br><small>dispatch.go:76</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func Invoke(v *IDispatch, opt *InvokeReq) (*InvokeResp, error) {</code><br><small>dispatch.go:83</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITypeInfo struct {</code><br><small>dispatch.go:107</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) Release() uint32 {</code><br><small>dispatch.go:111</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITypeInfoVtbl struct {</code><br><small>dispatch.go:115</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITypeInfo(unk *IUnKnown) *ITypeInfo {</code><br><small>dispatch.go:142</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) AddressOfMember(in int32, in2 TagInvokeKind) (unsafe.Pointer, error) {</code><br><small>dispatch.go:145</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) CreateInstance(in *IUnKnown, in2 *syscall.GUID) (unsafe.Pointer, error) {</code><br><small>dispatch.go:159</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetContainingTypeLib() (*ITypeLib, int32, error) {</code><br><small>dispatch.go:173</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetDllEntry(in int32, in2 TagInvokeKind) (string, string, uint16, error) {</code><br><small>dispatch.go:187</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetDocumentation(in int32) (string, string, uint32, string, error) {</code><br><small>dispatch.go:215</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetFuncDesc(in uint32) (*TagFuncDesc, error) {</code><br><small>dispatch.go:249</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetIDsOfNames() error {</code><br><small>dispatch.go:262</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetImplTypeFlags(in uint32) (int32, error) {</code><br><small>dispatch.go:265</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetMops(in int32) (string, error) {</code><br><small>dispatch.go:278</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetNames(in int32, in2 uint32) (string, uint32, error) {</code><br><small>dispatch.go:296</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetRefTypeInfo() error {</code><br><small>dispatch.go:318</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetRefTypeOfImplType() error {</code><br><small>dispatch.go:321</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetTypeAttr() error {</code><br><small>dispatch.go:324</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetTypeComp() error {</code><br><small>dispatch.go:327</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetVarDesc() error {</code><br><small>dispatch.go:330</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) Invoke() error {</code><br><small>dispatch.go:333</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) ReleaseFuncDesc() error {</code><br><small>dispatch.go:336</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) ReleaseTypeAttr() error {</code><br><small>dispatch.go:339</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeInfo) ReleaseVarDesc() error {</code><br><small>dispatch.go:342</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITypeLib struct {</code><br><small>dispatch.go:346</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeLib) Release() uint32 {</code><br><small>dispatch.go:350</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITypeLibVtbl struct {</code><br><small>dispatch.go:354</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITypeLib(unk *IUnKnown) *ITypeLib {</code><br><small>dispatch.go:362</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeLib) FindName() error {</code><br><small>dispatch.go:365</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeLib) GetDocumentation() error {</code><br><small>dispatch.go:368</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeLib) GetLibAttr() error {</code><br><small>dispatch.go:371</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeLib) GetTypeComp() error {</code><br><small>dispatch.go:374</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeLib) GetTypeInfo() error {</code><br><small>dispatch.go:377</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeLib) GetTypeInfoCount() error {</code><br><small>dispatch.go:380</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeLib) GetTypeInfoOfGuid() error {</code><br><small>dispatch.go:383</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeLib) GetTypeInfoType() error {</code><br><small>dispatch.go:386</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeLib) IsName() error {</code><br><small>dispatch.go:389</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITypeLib) ReleaseTLibAttr() error {</code><br><small>dispatch.go:392</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr></table><h3>TextServices / RichEdit / DropTarget</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>type IDropTarget struct {</code><br><small>drop.go:5</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IDropTargetVtbl struct {</code><br><small>drop.go:10</small></td><td>TODO:: IDropTarget method</td></tr>
+<tr><td><code>func NewIDropTarget(unk *IUnKnown) *IDropTarget {</code><br><small>drop.go:21</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IDropTarget) DragEnter() error {</code><br><small>drop.go:24</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IDropTarget) DragLeave() error {</code><br><small>drop.go:27</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IDropTarget) DragOver() error {</code><br><small>drop.go:30</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IDropTarget) Drop() error {</code><br><small>drop.go:33</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func CreateTextServices(unk *IUnKnown, thost *ITextHost) (*IUnKnown, error) {</code><br><small>textserv.go:14</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func ShutdownTextServices(unk *IUnKnown) error {</code><br><small>textserv.go:18</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IRichEditUiaInformation struct {</code><br><small>textserv.go:43</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IRichEditUiaInformationVtbl struct {</code><br><small>textserv.go:46</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIRichEditUiaInformation(unk *IUnKnown) *IRichEditUiaInformation {</code><br><small>textserv.go:55</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IRichEditUiaInformation) GetBoundaryRectangle() (*UiaRect, error) {</code><br><small>textserv.go:58</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IRichEditUiaInformation) IsVisible() bool {</code><br><small>textserv.go:70</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IRicheditUiaOverrides struct {</code><br><small>textserv.go:78</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IRicheditUiaOverridesVtbl struct {</code><br><small>textserv.go:81</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIRicheditUiaOverrides(unk *IUnKnown) *IRicheditUiaOverrides {</code><br><small>textserv.go:90</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IRicheditUiaOverrides) GetPropertyOverrideValue() error {</code><br><small>textserv.go:93</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IRicheditWindowlessAccessibility struct {</code><br><small>textserv.go:97</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type IRicheditWindowlessAccessibilityVtbl struct {</code><br><small>textserv.go:100</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewIRicheditWindowlessAccessibility(unk *IUnKnown) *IRicheditWindowlessAccessibility {</code><br><small>textserv.go:109</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *IRicheditWindowlessAccessibility) CreateProvider() error {</code><br><small>textserv.go:112</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextHost struct {</code><br><small>textserv.go:116</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextHostVtbl struct {</code><br><small>textserv.go:119</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITextHost(unk *IUnKnown) *ITextHost {</code><br><small>textserv.go:165</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxSetFocus() {</code><br><small>textserv.go:170</small></td><td>TODO:: ITextHost method</td></tr>
+<tr><td><code>func (v *ITextHost) TxViewChange(in int32) {</code><br><small>textserv.go:176</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) OnTxCharFormatChange() error {</code><br><small>textserv.go:183</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) OnTxParaFormatChange() error {</code><br><small>textserv.go:186</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxActivate() error {</code><br><small>textserv.go:189</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxClientToScreen() error {</code><br><small>textserv.go:192</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxCreateCaret() error {</code><br><small>textserv.go:195</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxDeactivate() error {</code><br><small>textserv.go:199</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxEnableScrollBar() error {</code><br><small>textserv.go:202</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetAcceleratorPos() error {</code><br><small>textserv.go:205</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetBackStyle() error {</code><br><small>textserv.go:208</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetCharFormat() error {</code><br><small>textserv.go:211</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetClientRect() error {</code><br><small>textserv.go:214</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetDC() error {</code><br><small>textserv.go:217</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetExtent() error {</code><br><small>textserv.go:220</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetMaxLength() error {</code><br><small>textserv.go:223</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetParaFormat() error {</code><br><small>textserv.go:226</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetPasswordChar() error {</code><br><small>textserv.go:229</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetPropertyBits() error {</code><br><small>textserv.go:232</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetScrollBars() error {</code><br><small>textserv.go:235</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetSelectionBarWidth() error {</code><br><small>textserv.go:238</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetSysColor() error {</code><br><small>textserv.go:241</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxGetViewInset() error {</code><br><small>textserv.go:244</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxImmGetContext() error {</code><br><small>textserv.go:247</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxImmReleaseContext() error {</code><br><small>textserv.go:250</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxInvalidateRect() error {</code><br><small>textserv.go:253</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxKillTimer() error {</code><br><small>textserv.go:256</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxNotify() error {</code><br><small>textserv.go:259</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxReleaseDC() error {</code><br><small>textserv.go:262</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxScreenToClient() error {</code><br><small>textserv.go:265</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxScrollWindowEx() error {</code><br><small>textserv.go:268</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxSetCapture() error {</code><br><small>textserv.go:271</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxSetCaretPos() error {</code><br><small>textserv.go:274</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxSetCursor() error {</code><br><small>textserv.go:277</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxSetScrollPos() error {</code><br><small>textserv.go:280</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxSetScrollRange() error {</code><br><small>textserv.go:283</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxSetTimer() error {</code><br><small>textserv.go:286</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxShowCaret() error {</code><br><small>textserv.go:289</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost) TxShowScrollBar() error {</code><br><small>textserv.go:292</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextHost2 struct {</code><br><small>textserv.go:296</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextHost2Vtbl struct {</code><br><small>textserv.go:299</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITextHost2(unk *IUnKnown) *ITextHost2 {</code><br><small>textserv.go:318</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost2) TxDestroyCaret() error {</code><br><small>textserv.go:321</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost2) TxFreeTextServicesNotification() error {</code><br><small>textserv.go:324</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost2) TxGetEastAsianFlags() error {</code><br><small>textserv.go:327</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost2) TxGetEditStyle() error {</code><br><small>textserv.go:330</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost2) TxGetHorzExtent() error {</code><br><small>textserv.go:333</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost2) TxGetPalette() error {</code><br><small>textserv.go:336</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost2) TxGetWindow() error {</code><br><small>textserv.go:339</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost2) TxGetWindowStyles() error {</code><br><small>textserv.go:342</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost2) TxIsDoubleClickPending() error {</code><br><small>textserv.go:345</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost2) TxSetCursor2() error {</code><br><small>textserv.go:348</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost2) TxSetForegroundWindow() error {</code><br><small>textserv.go:351</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextHost2) TxShowDropCaret() error {</code><br><small>textserv.go:354</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextServices struct {</code><br><small>textserv.go:358</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextServicesVtbl struct {</code><br><small>textserv.go:362</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITextServices(unk *IUnKnown) *ITextServices {</code><br><small>textserv.go:387</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) OnTxInPlaceActivate(in *TagRect) error {</code><br><small>textserv.go:390</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) OnTxInPlaceDeactivate(in *TagRect) error {</code><br><small>textserv.go:401</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) OnTxPropertyBitsChange(in, in2 uint32) error {</code><br><small>textserv.go:411</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TextCursor struct {</code><br><small>textserv.go:424</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) OnTxSetCursor(opt *TextCursor) error {</code><br><small>textserv.go:436</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) OnTxUIActivate() error {</code><br><small>textserv.go:455</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) OnTxUIDeactivate() error {</code><br><small>textserv.go:465</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TextDraw struct {</code><br><small>textserv.go:476</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) TxDraw(opt *TextDraw) error {</code><br><small>textserv.go:491</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) TxGetBaseLinePos() (int32, error) {</code><br><small>textserv.go:513</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) TxGetCachedSize(in, in2 uint32) error {</code><br><small>textserv.go:525</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) TxGetCurTargetX() (int32, error) {</code><br><small>textserv.go:537</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) TxGetDropTarget() (*IDropTarget, error) {</code><br><small>textserv.go:549</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TextHScroll struct {</code><br><small>textserv.go:562</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) TxGetHScroll() (*TextHScroll, error) {</code><br><small>textserv.go:570</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TextNaturalSize struct {</code><br><small>textserv.go:587</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) TxGetNaturalSize(opt *TextNaturalSize) (int32, int32, error) {</code><br><small>textserv.go:598</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) TxGetText() (string, error) {</code><br><small>textserv.go:616</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TextVScroll struct {</code><br><small>textserv.go:635</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) TxGetVScroll() (*TextHScroll, error) {</code><br><small>textserv.go:643</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type QueryHitPoint struct {</code><br><small>textserv.go:660</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) TxQueryHitPoint(opt *QueryHitPoint) (TxtHitResult, error) {</code><br><small>textserv.go:672</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type TextSendMessage struct {</code><br><small>textserv.go:694</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) TxSendMessage(opt *TextSendMessage) error {</code><br><small>textserv.go:701</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices) TxSetText(in string) error {</code><br><small>textserv.go:716</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextServices2 struct {</code><br><small>textserv.go:732</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>type ITextServices2Vtbl struct {</code><br><small>textserv.go:736</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func NewITextServices2(unk *IUnKnown) *ITextServices2 {</code><br><small>textserv.go:746</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices2) TxDrawD2D() error {</code><br><small>textserv.go:749</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr>
+<tr><td><code>func (v *ITextServices2) TxGetNaturalSize2() error {</code><br><small>textserv.go:752</small></td><td>公开 API；源码无额外注释，需结合 Microsoft UI Automation 文档理解。</td></tr></table><h3>常量重点</h3><ul><li><strong>CLSID/IID：</strong><code>CLSID_CUIAutomation</code>、<code>IID_IUIAutomation</code>、各 UIA Pattern/Provider IID。</li><li><strong>PropertyId：</strong><code>UIA_NamePropertyId</code>、<code>UIA_AutomationIdPropertyId</code>、<code>UIA_ClassNamePropertyId</code>、<code>UIA_ControlTypePropertyId</code> 等。</li><li><strong>PatternId：</strong><code>UIA_InvokePatternId</code>、<code>UIA_ValuePatternId</code>、<code>UIA_TogglePatternId</code>、<code>UIA_ExpandCollapsePatternId</code>、<code>UIA_SelectionItemPatternId</code> 等。</li><li><strong>ControlTypeId：</strong><code>UIA_ButtonControlTypeId</code>、<code>UIA_EditControlTypeId</code>、<code>UIA_DocumentControlTypeId</code>、<code>UIA_WindowControlTypeId</code> 等。</li><li><strong>TreeScope：</strong><code>TreeScope_Element</code>、<code>TreeScope_Children</code>、<code>TreeScope_Descendants</code>、<code>TreeScope_Subtree</code>。</li></ul></section>
+
+<section id="refs"><h2>15. 参考链接</h2><ul><li>GitHub：<a href="https://github.com/auuunya/go-element">https://github.com/auuunya/go-element</a></li><li>pkg.go.dev：<a href="https://pkg.go.dev/github.com/auuunya/go-element">https://pkg.go.dev/github.com/auuunya/go-element</a></li><li>Microsoft UI Automation：<a href="https://learn.microsoft.com/windows/win32/winauto/entry-uiauto-win32">Windows UI Automation 文档</a></li><li>本资料基于源码 HEAD <code>739a4370550504e0b2d5dddc1ae7b03cef65faa7</code>，最新 tag <code>v1.0.1</code>。</li></ul></section>
+</main></div><script>const links=[...document.querySelectorAll('nav a')];const secs=links.map(a=>document.querySelector(a.getAttribute('href')));function f(){let i=0;secs.forEach((s,n)=>{if(s&&s.getBoundingClientRect().top<130)i=n});links.forEach((a,n)=>a.classList.toggle('active',n===i))}document.addEventListener('scroll',f,{passive:true});f();</script></body></html>

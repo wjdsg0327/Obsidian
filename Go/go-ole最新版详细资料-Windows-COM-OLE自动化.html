@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>go-ole 最新版详细资料：Windows COM/OLE 自动化</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC",Arial,sans-serif;line-height:1.75;color:#263142;background:#f6f8fb}.wrap{display:flex;min-height:100vh}nav{position:fixed;left:0;top:0;bottom:0;width:310px;background:#fff;border-right:1px solid #e5e9f2;padding:26px 20px;overflow:auto}nav h1{font-size:19px;line-height:1.3;margin:0 0 8px}nav .sub{font-size:12px;color:#718096;border-bottom:2px solid #2b6ff3;padding-bottom:14px;margin-bottom:14px}nav a{display:block;color:#536071;text-decoration:none;padding:8px 10px;border-radius:8px;font-size:14px}nav a:hover,nav a.active{background:#eaf2ff;color:#1f63d8}main{margin-left:310px;max-width:1120px;padding:42px 54px}.hero{background:linear-gradient(135deg,#172554,#2563eb 60%,#38bdf8);color:white;border-radius:18px;padding:34px;margin-bottom:28px;box-shadow:0 18px 44px rgba(37,99,235,.18)}.hero h2{font-size:32px;margin:0 0 12px}.pill{display:inline-block;margin:6px 6px 0 0;padding:4px 10px;border:1px solid rgba(255,255,255,.35);border-radius:999px;background:rgba(255,255,255,.16);font-size:13px}section{background:#fff;border:1px solid #e5e9f2;border-radius:14px;padding:26px;margin:0 0 24px;scroll-margin-top:20px}h2{font-size:25px;margin:0 0 16px;padding-bottom:10px;border-bottom:1px solid #edf1f7;color:#111827}h3{font-size:18px;margin:22px 0 8px;color:#1f2937}p{margin:10px 0}ul,ol{padding-left:24px}li{margin:6px 0}code{background:#eef2f7;border:1px solid #dce3ee;border-radius:5px;padding:1px 5px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.92em}pre{background:#0f172a;color:#dbeafe;border-radius:12px;padding:15px;overflow:auto;font-size:13px;line-height:1.6}pre code{background:transparent;border:0;color:inherit;padding:0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{background:#fbfdff;border:1px solid #e5e9f2;border-radius:12px;padding:14px}.tip{border-left:4px solid #f59e0b;background:#fffbeb;padding:12px 14px;border-radius:8px;margin:14px 0}.warn{border-left:4px solid #ef4444;background:#fef2f2;padding:12px 14px;border-radius:8px;margin:14px 0}.ok{border-left:4px solid #22c55e;background:#ecfdf5;padding:12px 14px;border-radius:8px;margin:14px 0}table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}th,td{border:1px solid #e5e9f2;padding:9px 10px;text-align:left;vertical-align:top}th{background:#f8fafc}small{color:#64748b}svg{max-width:100%;height:auto}.viz{text-align:center;background:#fbfdff;border:1px solid #e8eef8;border-radius:12px;padding:14px;margin:16px 0}@media(max-width:860px){.wrap{display:block}nav{position:relative;width:100%;height:auto}main{margin-left:0;padding:22px}.grid{grid-template-columns:1fr}}
+</style></head><body><div class="wrap"><nav><h1>go-ole 最新版详细资料</h1><div class="sub">Windows COM/OLE 自动化<br>整理时间：2026-08-03</div>
+<a href="#intro">1. 项目定位</a><a href="#com">2. COM/OLE 基础模型</a><a href="#install">3. 安装、平台与线程</a><a href="#flow">4. 标准调用流程</a><a href="#oleutil">5. oleutil 高层 API</a><a href="#dispatch">6. IDispatch 与动态调用</a><a href="#variant">7. VARIANT 类型系统</a><a href="#safearray">8. SafeArray 数组</a><a href="#unknown">9. IUnknown / GUID / 错误</a><a href="#events">10. 事件连接点</a><a href="#winrt">11. WinRT 支持</a><a href="#examples">12. 典型示例</a><a href="#pitfalls">13. 常见坑与最佳实践</a><a href="#api">14. API 详细速查</a><a href="#refs">15. 参考链接</a></nav><main>
+<div class="hero"><h2>go-ole：Go 调用 Windows COM/OLE 的实用手册</h2><p><code>github.com/go-ole/go-ole</code> 是 Go 生态里常用的 Windows COM 绑定库，不依赖 cgo，而是通过 Windows 共享库/系统调用访问 COM。它适合自动化 Excel、Outlook、IE、Windows Media Player、MSXML、WMI、第三方 COM Server，以及处理 IDispatch、VARIANT、SafeArray、连接点事件和部分 WinRT 场景。</p><span class="pill">最新 master：6867ec158e36</span><span class="pill">提交时间：2025-03-05T10:22:26-06:00</span><span class="pill">最新 tag：v1.3.0</span><span class="pill">module：github.com/go-ole/go-ole</span><span class="pill">go.mod：go 1.12</span></div>
+
+<section id="intro"><h2>1. 项目定位</h2><p>go-ole 解决的是“Go 程序如何和 Windows COM 对象说话”。COM 对象通常由 Windows、Office、浏览器控件、企业软件或 .NET/VC++ 组件提供，Go 程序通过 ProgID/CLSID 创建对象，再用 <code>IDispatch</code> 读取属性、设置属性、调用方法。</p><div class="viz"><svg width="760" height="190" viewBox="0 0 760 190"><defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#2563eb"/></marker></defs><rect x="40" y="55" width="145" height="75" rx="12" fill="#eaf2ff" stroke="#93c5fd"/><text x="112" y="88" text-anchor="middle">Go 程序</text><text x="112" y="112" text-anchor="middle" font-size="12">业务逻辑</text><rect x="300" y="45" width="160" height="95" rx="12" fill="#fff7ed" stroke="#fdba74"/><text x="380" y="82" text-anchor="middle">go-ole</text><text x="380" y="108" text-anchor="middle" font-size="12">COM 绑定/VARIANT 转换</text><rect x="580" y="35" width="145" height="115" rx="12" fill="#ecfdf5" stroke="#86efac"/><text x="652" y="78" text-anchor="middle">COM Server</text><text x="652" y="104" text-anchor="middle" font-size="12">Excel / Outlook / WMI</text><line x1="185" y1="93" x2="292" y2="93" stroke="#2563eb" stroke-width="3" marker-end="url(#a)"/><line x1="460" y1="93" x2="572" y2="93" stroke="#2563eb" stroke-width="3" marker-end="url(#a)"/></svg></div><div class="ok"><strong>适合：</strong>Windows 桌面/Office 自动化、企业 COM SDK、WMI/系统管理、COM 事件回调、旧系统集成。</div><div class="warn"><strong>不适合：</strong>跨平台业务逻辑、现代 Web API 调用、浏览器 DOM 自动化。非 Windows 平台可编译，但 COM 调用基本是 NOOP/不可用。</div></section>
+
+<section id="com"><h2>2. COM/OLE 基础模型</h2><p>COM 的核心概念有四个：<code>CLSID/ProgID</code> 用来找到类，<code>IUnknown</code> 管生命周期和接口查询，<code>IDispatch</code> 提供动态调用，<code>VARIANT</code> 承载跨语言参数和返回值。</p><div class="grid"><div class="card"><h3>ProgID / CLSID</h3><p><code>Excel.Application</code> 是 ProgID；<code>{000...}</code> 形式是 CLSID/IID。go-ole 可互相转换。</p></div><div class="card"><h3>IUnknown</h3><p>COM 根接口，提供 <code>QueryInterface</code>、<code>AddRef</code>、<code>Release</code>。</p></div><div class="card"><h3>IDispatch</h3><p>自动化接口，先把方法/属性名转 DISPID，再 <code>Invoke</code>。</p></div><div class="card"><h3>VARIANT / SafeArray</h3><p>统一包装 string、int、bool、BSTR、IDispatch、数组等 COM 类型。</p></div></div></section>
+
+<section id="install"><h2>3. 安装、平台与线程</h2><pre><code>go get github.com/go-ole/go-ole</code></pre>
+<p>README 明确：库可以在 Go 支持的平台上构建；但 COM API 是 Windows 专属，非 Windows 主要用于保证 <code>go get</code>/交叉构建不炸，运行时调用没有真实 COM 能力。</p><h3>线程规则非常重要</h3><p>COM 初始化是“线程相关”的。每个调用了 <code>CoInitialize</code>/<code>CoInitializeEx</code> 的 OS 线程，都必须在同一线程调用 <code>CoUninitialize</code>。Go goroutine 会迁移 OS 线程，所以复杂自动化建议锁线程。</p><pre><code>runtime.LockOSThread()
+defer runtime.UnlockOSThread()
+
+if err := ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
+    panic(err)
+}
+defer ole.CoUninitialize()</code></pre>
+<div class="tip"><strong>STA/MTA：</strong>Office 自动化通常用 <code>COINIT_APARTMENTTHREADED</code>。并发 COM 调用不要随便多 goroutine 共享同一个 COM 对象，必要时用专门的 COM worker goroutine。</div></section>
+
+<section id="flow"><h2>4. 标准调用流程</h2><p>最常见流程：初始化 COM → 创建/获取对象 → QueryInterface 到 IDispatch → 调属性/方法 → Release → CoUninitialize。</p><div class="viz"><svg width="820" height="180" viewBox="0 0 820 180"><defs><marker id="b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#2563eb"/></marker></defs><rect x="30" y="60" width="120" height="55" rx="10" fill="#eff6ff" stroke="#93c5fd"/><text x="90" y="93" text-anchor="middle" font-size="13">CoInitialize</text><rect x="185" y="60" width="120" height="55" rx="10" fill="#eff6ff" stroke="#93c5fd"/><text x="245" y="93" text-anchor="middle" font-size="13">CreateObject</text><rect x="340" y="60" width="120" height="55" rx="10" fill="#eff6ff" stroke="#93c5fd"/><text x="400" y="93" text-anchor="middle" font-size="13">IDispatch</text><rect x="495" y="60" width="120" height="55" rx="10" fill="#eff6ff" stroke="#93c5fd"/><text x="555" y="93" text-anchor="middle" font-size="13">Invoke</text><rect x="650" y="60" width="120" height="55" rx="10" fill="#eff6ff" stroke="#93c5fd"/><text x="710" y="93" text-anchor="middle" font-size="13">Release</text><line x1="150" y1="88" x2="182" y2="88" stroke="#2563eb" stroke-width="3" marker-end="url(#b)"/><line x1="305" y1="88" x2="337" y2="88" stroke="#2563eb" stroke-width="3" marker-end="url(#b)"/><line x1="460" y1="88" x2="492" y2="88" stroke="#2563eb" stroke-width="3" marker-end="url(#b)"/><line x1="615" y1="88" x2="647" y2="88" stroke="#2563eb" stroke-width="3" marker-end="url(#b)"/></svg></div><pre><code>package main
+
+import (
+    &quot;runtime&quot;
+    ole &quot;github.com/go-ole/go-ole&quot;
+    &quot;github.com/go-ole/go-ole/oleutil&quot;
+)
+
+func main() {
+    runtime.LockOSThread()
+    defer runtime.UnlockOSThread()
+
+    ole.CoInitialize(0)
+    defer ole.CoUninitialize()
+
+    unknown, err := oleutil.CreateObject(&quot;Excel.Application&quot;)
+    if err != nil { panic(err) }
+    defer unknown.Release()
+
+    excel, err := unknown.QueryInterface(ole.IID_IDispatch)
+    if err != nil { panic(err) }
+    defer excel.Release()
+
+    oleutil.MustPutProperty(excel, &quot;Visible&quot;, true)
+    workbooks := oleutil.MustGetProperty(excel, &quot;Workbooks&quot;).ToIDispatch()
+    defer workbooks.Release()
+    workbook := oleutil.MustCallMethod(workbooks, &quot;Add&quot;).ToIDispatch()
+    defer workbook.Release()
+}</code></pre></section>
+
+<section id="oleutil"><h2>5. oleutil 高层 API</h2><p><code>oleutil</code> 是日常最推荐入口，封装了 ProgID 创建、属性读写、方法调用、枚举遍历等常用模式。</p><table><tr><th>API</th><th>用途</th></tr><tr><td><code>ClassIDFrom(programID)</code></td><td>ProgID 或 CLSID 字符串转 GUID。</td></tr><tr><td><code>CreateObject(programID)</code></td><td>创建 COM 对象，返回 IUnknown。</td></tr><tr><td><code>GetActiveObject(programID)</code></td><td>获取已运行对象，例如已打开的 Excel。</td></tr><tr><td><code>CallMethod / MustCallMethod</code></td><td>调用方法；Must 版本遇错 panic，适合示例，不适合生产主流程。</td></tr><tr><td><code>GetProperty / MustGetProperty</code></td><td>读取属性或索引属性，如 <code>Worksheets, 1</code>。</td></tr><tr><td><code>PutProperty / PutPropertyRef</code></td><td>设置属性或引用属性。</td></tr><tr><td><code>ForEach</code></td><td>通过 <code>_NewEnum</code>/<code>IEnumVARIANT</code> 遍历集合。</td></tr><tr><td><code>ConnectObject</code></td><td>连接 COM 事件源和 Go 实现的 sink。</td></tr></table><pre><code>unknown, _ := oleutil.CreateObject(&quot;Excel.Application&quot;)
+excel, _ := unknown.QueryInterface(ole.IID_IDispatch)
+oleutil.PutProperty(excel, &quot;Visible&quot;, true)
+
+workbooks := oleutil.MustGetProperty(excel, &quot;Workbooks&quot;).ToIDispatch()
+workbook := oleutil.MustCallMethod(workbooks, &quot;Add&quot;).ToIDispatch()
+worksheet := oleutil.MustGetProperty(workbook, &quot;Worksheets&quot;, 1).ToIDispatch()
+cell := oleutil.MustGetProperty(worksheet, &quot;Cells&quot;, 1, 1).ToIDispatch()
+oleutil.PutProperty(cell, &quot;Value&quot;, &quot;Hello from Go&quot;)</code></pre></section>
+
+<section id="dispatch"><h2>6. IDispatch 与动态调用</h2><p><code>IDispatch</code> 是 OLE Automation 的核心。go-ole 支持两种层级：直接用 <code>IDispatch</code> 方法，或者通过 <code>oleutil</code> 包装。</p><ul><li><code>GetIDsOfName</code>：把方法/属性名转成 DISPID。</li><li><code>Invoke</code>：传 DISPID、调用类型和 VARIANT 参数数组。</li><li><code>CallMethod</code>：等价于 <code>Invoke(..., DISPATCH_METHOD)</code>。</li><li><code>GetProperty</code>：等价于 <code>Invoke(..., DISPATCH_PROPERTYGET)</code>。</li><li><code>PutProperty</code>：等价于 <code>Invoke(..., DISPATCH_PROPERTYPUT)</code>。</li></ul><div class="tip">COM 参数顺序底层通常是反向压栈；go-ole 的 <code>invoke</code> 已处理这一点，正常按自然顺序传 Go 参数即可。</div><pre><code>ids, err := excel.GetIDsOfName([]string{&quot;Visible&quot;})
+if err != nil { panic(err) }
+_, err = excel.Invoke(ids[0], ole.DISPATCH_PROPERTYPUT, true)</code></pre></section>
+
+<section id="variant"><h2>7. VARIANT 类型系统</h2><p><code>VARIANT</code> 是 COM 里的“动态类型盒子”。go-ole 用 <code>VT</code> 枚举记录类型，用 <code>Val</code> 保存值/指针。日常使用尽量通过 <code>Value()</code>、<code>ToString()</code>、<code>ToIDispatch()</code>、<code>ToArray()</code> 转成 Go 类型。</p><table><tr><th>VT</th><th>含义</th><th>常见 Go 映射</th></tr><tr><td><code>VT_EMPTY</code> / <code>VT_NULL</code></td><td>空值/null</td><td><code>ole.EMPTY</code>、<code>ole.NULL</code>、<code>nil</code></td></tr><tr><td><code>VT_I1/I2/I4/I8</code></td><td>有符号整数</td><td><code>int8/int16/int32/int64/int</code></td></tr><tr><td><code>VT_UI1/UI2/UI4/UI8</code></td><td>无符号整数</td><td><code>uint8/uint16/uint32/uint64/uint</code></td></tr><tr><td><code>VT_R4/R8</code></td><td>浮点</td><td><code>float32/float64</code></td></tr><tr><td><code>VT_BOOL</code></td><td>COM bool</td><td><code>true</code> 通常为 <code>0xffff</code></td></tr><tr><td><code>VT_BSTR</code></td><td>COM 字符串</td><td><code>string</code></td></tr><tr><td><code>VT_DISPATCH</code></td><td>IDispatch 指针</td><td><code>*ole.IDispatch</code></td></tr><tr><td><code>VT_ARRAY|...</code></td><td>SafeArray</td><td><code>[]byte</code>、<code>[]string</code>、<code>ToArray()</code></td></tr><tr><td><code>VT_BYREF</code></td><td>引用参数</td><td><code>*int32</code>、<code>*string</code>、<code>*VARIANT</code> 等</td></tr></table><pre><code>v := oleutil.MustGetProperty(cell, &quot;Value&quot;)
+defer v.Clear()
+
+fmt.Println(v.Value())
+fmt.Println(v.ToString())
+
+obj := oleutil.MustGetProperty(excel, &quot;Workbooks&quot;).ToIDispatch()
+defer obj.Release()</code></pre></section>
+
+<section id="safearray"><h2>8. SafeArray 数组</h2><p>很多 COM 方法返回集合或二进制数据时会用 SafeArray。go-ole 公开了 <code>SafeArray</code>、<code>SafeArrayBound</code>、<code>SafeArrayConversion</code>，常用转换有：</p><ul><li><code>VARIANT.ToArray()</code>：把 VARIANT 转成 SafeArrayConversion。</li><li><code>ToStringArray()</code>：转字符串数组。</li><li><code>ToByteArray()</code>：转字节数组。</li><li><code>ToValueArray()</code>：按 VARIANT 元素转 <code>[]interface{}</code>。</li><li><code>GetType()</code>、<code>GetDimensions()</code>、<code>GetSize()</code>、<code>TotalElements()</code>：读取数组元信息。</li><li><code>Release()</code>：释放 SafeArray 内存。</li></ul><pre><code>variant := oleutil.MustCallMethod(winsock, &quot;GetData&quot;)
+arr := variant.ToArray()
+defer arr.Release()
+bytes := arr.ToByteArray()</code></pre></section>
+
+<section id="unknown"><h2>9. IUnknown / GUID / 错误</h2><h3>GUID</h3><p><code>NewGUID</code> 支持多种字符串形式，并格式化为 <code>{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}</code>。常用预定义 IID 包括 <code>IID_IUnknown</code>、<code>IID_IDispatch</code>、<code>IID_IEnumVariant</code>、<code>IID_IConnectionPointContainer</code>、<code>IID_IConnectionPoint</code>、<code>IID_IInspectable</code>、<code>IID_IProvideClassInfo</code>。</p><h3>IUnknown 生命周期</h3><p>COM 使用引用计数。每次拿到新的 COM 接口指针，通常都要在不用时 <code>Release()</code>。go-ole 不会替你自动管理所有 COM 对象生命周期。</p><h3>OleError</h3><p><code>OleError</code> 包装 HRESULT，提供 <code>Code()</code>、<code>Description()</code>、<code>SubError()</code>、<code>Unwrap()</code>。IDispatch 调用失败时，可能带 <code>EXCEPINFO</code> 子错误描述。</p></section>
+
+<section id="events"><h2>10. 事件连接点</h2><p>COM 事件通常通过 Connection Point 机制实现。go-ole 提供 <code>IConnectionPointContainer</code>、<code>IConnectionPoint</code> 与 <code>oleutil.ConnectObject</code>。你需要在 Go 里构造一个满足 COM vtable 形状的事件接收对象，并实现 <code>QueryInterface</code>、<code>AddRef</code>、<code>Release</code>、<code>Invoke</code> 等回调。</p><div class="warn">事件回调属于高级用法，涉及 <code>unsafe</code>、<code>syscall.NewCallback</code>、引用计数和消息循环。生产代码要非常小心生命周期。</div><pre><code>// 伪代码：核心结构
+iid, _ := ole.CLSIDFromString(&quot;{事件接口IID}&quot;)
+sink := (*ole.IUnknown)(unsafe.Pointer(myReceiver))
+cookie, err := oleutil.ConnectObject(sourceDispatch, iid, sink)
+_ = cookie
+_ = err
+
+var msg ole.Msg
+for running {
+    ole.GetMessage(&amp;msg, 0, 0, 0)
+    ole.DispatchMessage(&amp;msg)
+}</code></pre></section>
+
+<section id="winrt"><h2>11. WinRT 支持</h2><p>仓库还包含部分 WinRT 辅助函数：<code>RoInitialize</code>、<code>RoUninitialize</code>、<code>RoActivateInstance</code>、<code>RoGetActivationFactory</code>、<code>HString</code>、<code>NewHString</code>、<code>DeleteHString</code>。这部分面向 Windows Runtime，不是传统 OLE Automation 的日常入口。</p><pre><code>if err := ole.RoInitialize(1); err != nil {
+    panic(err)
+}
+defer ole.RoUninitialize()
+
+h, _ := ole.NewHString(&quot;Windows.Foundation.Uri&quot;)
+fmt.Println(h.String())
+ole.DeleteHString(h)</code></pre></section>
+
+<section id="examples"><h2>12. 典型示例</h2><h3>Excel 写入单元格并退出</h3><pre><code>ole.CoInitialize(0)
+defer ole.CoUninitialize()
+
+unknown, err := oleutil.CreateObject(&quot;Excel.Application&quot;)
+if err != nil { panic(err) }
+defer unknown.Release()
+
+excel, err := unknown.QueryInterface(ole.IID_IDispatch)
+if err != nil { panic(err) }
+defer excel.Release()
+
+oleutil.PutProperty(excel, &quot;Visible&quot;, true)
+workbooks := oleutil.MustGetProperty(excel, &quot;Workbooks&quot;).ToIDispatch()
+defer workbooks.Release()
+workbook := oleutil.MustCallMethod(workbooks, &quot;Add&quot;, nil).ToIDispatch()
+defer workbook.Release()
+worksheet := oleutil.MustGetProperty(workbook, &quot;Worksheets&quot;, 1).ToIDispatch()
+defer worksheet.Release()
+cell := oleutil.MustGetProperty(worksheet, &quot;Cells&quot;, 1, 1).ToIDispatch()
+defer cell.Release()
+oleutil.PutProperty(cell, &quot;Value&quot;, 12345)
+
+oleutil.PutProperty(workbook, &quot;Saved&quot;, true)
+oleutil.CallMethod(workbook, &quot;Close&quot;, false)
+oleutil.CallMethod(excel, &quot;Quit&quot;)</code></pre>
+<h3>获取已打开的 Excel</h3><pre><code>unknown, err := oleutil.GetActiveObject(&quot;Excel.Application&quot;)
+if err != nil {
+    // 没有运行中的 Excel，或对象没有注册到 ROT
+    panic(err)
+}
+defer unknown.Release()
+excel := unknown.MustQueryInterface(ole.IID_IDispatch)
+defer excel.Release()
+fmt.Println(oleutil.MustGetProperty(excel, &quot;Version&quot;).ToString())</code></pre>
+<h3>Outlook 联系人遍历</h3><pre><code>unknown, _ := oleutil.CreateObject(&quot;Outlook.Application&quot;)
+outlook, _ := unknown.QueryInterface(ole.IID_IDispatch)
+ns := oleutil.MustCallMethod(outlook, &quot;GetNamespace&quot;, &quot;MAPI&quot;).ToIDispatch()
+folder := oleutil.MustCallMethod(ns, &quot;GetDefaultFolder&quot;, 10).ToIDispatch()
+contacts := oleutil.MustCallMethod(folder, &quot;Items&quot;).ToIDispatch()
+count := int(oleutil.MustGetProperty(contacts, &quot;Count&quot;).Value().(int32))
+for i := 1; i &lt;= count; i++ {
+    item, err := oleutil.GetProperty(contacts, &quot;Item&quot;, i)
+    if err == nil &amp;&amp; item.VT == ole.VT_DISPATCH {
+        name := oleutil.MustGetProperty(item.ToIDispatch(), &quot;FullName&quot;)
+        fmt.Println(name.Value())
+    }
+}</code></pre></section>
+
+<section id="pitfalls"><h2>13. 常见坑与最佳实践</h2><div class="grid"><div class="card"><h3>线程初始化不匹配</h3><p>每个 <code>CoInitialize</code> 必须对应同线程 <code>CoUninitialize</code>。建议 <code>runtime.LockOSThread</code>。</p></div><div class="card"><h3>忘记 Release</h3><p><code>IUnknown</code>、<code>IDispatch</code>、集合、单元格等接口对象用完释放；否则 Excel 等进程容易残留。</p></div><div class="card"><h3>Must 系列滥用</h3><p>示例里方便，但生产代码最好用返回 error 的版本，并记录 ProgID、属性名、参数。</p></div><div class="card"><h3>32/64 位不匹配</h3><p>COM Server、Office、Go 程序架构不一致时可能创建失败。检查 Office 位数和 COM 注册表。</p></div><div class="card"><h3>Office 弹窗阻塞</h3><p>保存/关闭前设置 <code>DisplayAlerts=false</code> 或 <code>Saved=true</code>，否则后台自动化会卡住。</p></div><div class="card"><h3>VARIANT 类型断言错误</h3><p><code>Value()</code> 支持类型有限，复杂对象先看 <code>VT</code>，再 <code>ToIDispatch</code>/<code>ToArray</code>/<code>ToString</code>。</p></div></div><div class="tip"><strong>推荐封装：</strong>把 Excel/Outlook/WMI 等业务对象再包一层 Go 结构体，统一处理 Release、错误、类型转换和日志，不要在业务代码里散落大量 <code>oleutil.Must...</code>。</div></section>
+
+<section id="api"><h2>14. API 详细速查</h2><p>以下按源码导出的公开 API 汇总，尽量覆盖完整。Windows 文件和非 Windows stub 文件可能有同名函数，实际构建由 build tag 决定。</p><h3>COM 初始化、对象创建、BSTR、消息循环：com.go / com_func.go</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>func CoInitialize(p uintptr) (err error) {</code><br><small>com.go:115</small></td><td>CoInitialize initializes COM library on current thread.  MSDN documentation suggests that this function should not be called. Call CoInitializeEx() instead. The reason has to do with threading and this function is only for single-threaded apartments.  That said, most users of the library have gotten away with just this function. If you are experiencing threading issues, then use CoInitializeEx().</td></tr>
+<tr><td><code>func CoInitializeEx(p uintptr, coinit uint32) (err error) {</code><br><small>com.go:123</small></td><td>CoInitializeEx initializes COM library with concurrency model.</td></tr>
+<tr><td><code>func CoUninitialize() {</code><br><small>com.go:130</small></td><td>CoUninitialize uninitializes COM Library.</td></tr>
+<tr><td><code>func CoInitializeSecurity(cAuthSvc int32,</code><br><small>com.go:136</small></td><td>CoInitializeSecurity: Registers security and sets the default security values for the process.</td></tr>
+<tr><td><code>func CoTaskMemFree(memptr uintptr) {</code><br><small>com.go:144</small></td><td>CoTaskMemFree frees memory pointer.</td></tr>
+<tr><td><code>func CLSIDFromProgID(progId string) (clsid *GUID, err error) {</code><br><small>com.go:161</small></td><td>CLSIDFromProgID retrieves Class Identifier with the given Program Identifier.  The Programmatic Identifier must be registered, because it will be looked up in the Windows Registry. The registry entry has the following keys: CLSID, Insertable, Protocol and Shell (https://msdn.microsoft.com/en-us/library/dd542719(v=vs.85).aspx).  programID identifies the class id with less precision and is not guaranteed to be unique. These are usually found in the registry under HKEY_LOCAL_MACHINE\SOFTWARE\Classes, usually with the format of &quot;Program.Component.Version&quot; with version being optional.  CLSIDFromProgID in Windows API.</td></tr>
+<tr><td><code>func CLSIDFromString(str string) (clsid *GUID, err error) {</code><br><small>com.go:178</small></td><td>CLSIDFromString retrieves Class ID from string representation.  This is technically the string version of the GUID and will convert the string to object.  CLSIDFromString in Windows API.</td></tr>
+<tr><td><code>func StringFromCLSID(clsid *GUID) (str string, err error) {</code><br><small>com.go:190</small></td><td>StringFromCLSID returns GUID formated string from GUID object.</td></tr>
+<tr><td><code>func IIDFromString(progId string) (clsid *GUID, err error) {</code><br><small>com.go:201</small></td><td>IIDFromString returns GUID from program ID.</td></tr>
+<tr><td><code>func StringFromIID(iid *GUID) (str string, err error) {</code><br><small>com.go:213</small></td><td>StringFromIID returns GUID formatted string from GUID object.</td></tr>
+<tr><td><code>func CreateInstance(clsid *GUID, iid *GUID) (unk *IUnknown, err error) {</code><br><small>com.go:224</small></td><td>CreateInstance of single uninitialized object with GUID.</td></tr>
+<tr><td><code>func GetActiveObject(clsid *GUID, iid *GUID) (unk *IUnknown, err error) {</code><br><small>com.go:241</small></td><td>GetActiveObject retrieves pointer to active object.</td></tr>
+<tr><td><code>type BindOpts struct {</code><br><small>com.go:255</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func GetObject(programID string, bindOpts *BindOpts, iid *GUID) (unk *IUnknown, err error) {</code><br><small>com.go:263</small></td><td>GetObject retrieves pointer to active object.</td></tr>
+<tr><td><code>func VariantInit(v *VARIANT) (err error) {</code><br><small>com.go:282</small></td><td>VariantInit initializes variant.</td></tr>
+<tr><td><code>func VariantClear(v *VARIANT) (err error) {</code><br><small>com.go:291</small></td><td>VariantClear clears value in Variant settings to VT_EMPTY.</td></tr>
+<tr><td><code>func SysAllocString(v string) (ss *int16) {</code><br><small>com.go:300</small></td><td>SysAllocString allocates memory for string and copies string into memory.</td></tr>
+<tr><td><code>func SysAllocStringLen(v string) (ss *int16) {</code><br><small>com.go:307</small></td><td>SysAllocStringLen copies up to length of given string returning pointer.</td></tr>
+<tr><td><code>func SysFreeString(v *int16) (err error) {</code><br><small>com.go:317</small></td><td>SysFreeString frees string system memory. This must be called with SysAllocString.</td></tr>
+<tr><td><code>func SysStringLen(v *int16) uint32 {</code><br><small>com.go:326</small></td><td>SysStringLen is the length of the system allocated string.</td></tr>
+<tr><td><code>func CreateStdDispatch(unk *IUnknown, v uintptr, ptinfo *IUnknown) (disp *IDispatch, err error) {</code><br><small>com.go:336</small></td><td>CreateStdDispatch provides default IDispatch implementation for IUnknown.  This handles default IDispatch implementation for objects. It haves a few limitations with only supporting one language. It will also only return default exception codes.</td></tr>
+<tr><td><code>func CreateDispTypeInfo(idata *INTERFACEDATA) (pptinfo *IUnknown, err error) {</code><br><small>com.go:351</small></td><td>CreateDispTypeInfo provides default ITypeInfo implementation for IDispatch.  This will not handle the full implementation of the interface.</td></tr>
+<tr><td><code>func GetUserDefaultLCID() (lcid uint32) {</code><br><small>com.go:368</small></td><td>GetUserDefaultLCID retrieves current user default locale.</td></tr>
+<tr><td><code>func GetMessage(msg *Msg, hwnd uint32, MsgFilterMin uint32, MsgFilterMax uint32) (ret int32, err error) {</code><br><small>com.go:377</small></td><td>GetMessage in message queue from runtime.  This function appears to block. PeekMessage does not block.</td></tr>
+<tr><td><code>func DispatchMessage(msg *Msg) (ret int32) {</code><br><small>com.go:384</small></td><td>DispatchMessage to window procedure.</td></tr>
+<tr><td><code>func CoInitialize(p uintptr) error {</code><br><small>com_func.go:37</small></td><td>CoInitialize initializes COM library on current thread.  MSDN documentation suggests that this function should not be called. Call CoInitializeEx() instead. The reason has to do with threading and this function is only for single-threaded apartments.  That said, most users of the library have gotten away with just this function. If you are experiencing threading issues, then use CoInitializeEx().</td></tr>
+<tr><td><code>func CoInitializeEx(p uintptr, coinit uint32) error {</code><br><small>com_func.go:42</small></td><td>CoInitializeEx initializes COM library with concurrency model.</td></tr>
+<tr><td><code>func CoUninitialize() {}</code><br><small>com_func.go:47</small></td><td>CoUninitialize uninitializes COM Library.</td></tr>
+<tr><td><code>func CoTaskMemFree(memptr uintptr) {}</code><br><small>com_func.go:50</small></td><td>CoTaskMemFree frees memory pointer.</td></tr>
+<tr><td><code>func CLSIDFromProgID(progId string) (*GUID, error) {</code><br><small>com_func.go:65</small></td><td>CLSIDFromProgID retrieves Class Identifier with the given Program Identifier.  The Programmatic Identifier must be registered, because it will be looked up in the Windows Registry. The registry entry has the following keys: CLSID, Insertable, Protocol and Shell (https://msdn.microsoft.com/en-us/library/dd542719(v=vs.85).aspx).  programID identifies the class id with less precision and is not guaranteed to be unique. These are usually found in the registry under HKEY_LOCAL_MACHINE\SOFTWARE\Classes, usually with the format of &quot;Program.Component.Version&quot; with version being optional.  CLSIDFromProgID in Windows API.</td></tr>
+<tr><td><code>func CLSIDFromString(str string) (*GUID, error) {</code><br><small>com_func.go:75</small></td><td>CLSIDFromString retrieves Class ID from string representation.  This is technically the string version of the GUID and will convert the string to object.  CLSIDFromString in Windows API.</td></tr>
+<tr><td><code>func StringFromCLSID(clsid *GUID) (string, error) {</code><br><small>com_func.go:80</small></td><td>StringFromCLSID returns GUID formated string from GUID object.</td></tr>
+<tr><td><code>func IIDFromString(progId string) (*GUID, error) {</code><br><small>com_func.go:85</small></td><td>IIDFromString returns GUID from program ID.</td></tr>
+<tr><td><code>func StringFromIID(iid *GUID) (string, error) {</code><br><small>com_func.go:90</small></td><td>StringFromIID returns GUID formatted string from GUID object.</td></tr>
+<tr><td><code>func CreateInstance(clsid *GUID, iid *GUID) (*IUnknown, error) {</code><br><small>com_func.go:95</small></td><td>CreateInstance of single uninitialized object with GUID.</td></tr>
+<tr><td><code>func GetActiveObject(clsid *GUID, iid *GUID) (*IUnknown, error) {</code><br><small>com_func.go:100</small></td><td>GetActiveObject retrieves pointer to active object.</td></tr>
+<tr><td><code>func VariantInit(v *VARIANT) error {</code><br><small>com_func.go:105</small></td><td>VariantInit initializes variant.</td></tr>
+<tr><td><code>func VariantClear(v *VARIANT) error {</code><br><small>com_func.go:110</small></td><td>VariantClear clears value in Variant settings to VT_EMPTY.</td></tr>
+<tr><td><code>func SysAllocString(v string) *int16 {</code><br><small>com_func.go:115</small></td><td>SysAllocString allocates memory for string and copies string into memory.</td></tr>
+<tr><td><code>func SysAllocStringLen(v string) *int16 {</code><br><small>com_func.go:121</small></td><td>SysAllocStringLen copies up to length of given string returning pointer.</td></tr>
+<tr><td><code>func SysFreeString(v *int16) error {</code><br><small>com_func.go:127</small></td><td>SysFreeString frees string system memory. This must be called with SysAllocString.</td></tr>
+<tr><td><code>func SysStringLen(v *int16) uint32 {</code><br><small>com_func.go:132</small></td><td>SysStringLen is the length of the system allocated string.</td></tr>
+<tr><td><code>func CreateStdDispatch(unk *IUnknown, v uintptr, ptinfo *IUnknown) (*IDispatch, error) {</code><br><small>com_func.go:141</small></td><td>CreateStdDispatch provides default IDispatch implementation for IUnknown.  This handles default IDispatch implementation for objects. It haves a few limitations with only supporting one language. It will also only return default exception codes.</td></tr>
+<tr><td><code>func CreateDispTypeInfo(idata *INTERFACEDATA) (*IUnknown, error) {</code><br><small>com_func.go:148</small></td><td>CreateDispTypeInfo provides default ITypeInfo implementation for IDispatch.  This will not handle the full implementation of the interface.</td></tr>
+<tr><td><code>func GetUserDefaultLCID() uint32 {</code><br><small>com_func.go:156</small></td><td>GetUserDefaultLCID retrieves current user default locale.</td></tr>
+<tr><td><code>func GetMessage(msg *Msg, hwnd uint32, MsgFilterMin uint32, MsgFilterMax uint32) (int32, error) {</code><br><small>com_func.go:163</small></td><td>GetMessage in message queue from runtime.  This function appears to block. PeekMessage does not block.</td></tr>
+<tr><td><code>func DispatchMessage(msg *Msg) int32 {</code><br><small>com_func.go:168</small></td><td>DispatchMessage to window procedure.</td></tr>
+<tr><td><code>func GetVariantDate(value uint64) (time.Time, error) {</code><br><small>com_func.go:172</small></td><td>源码导出的公开成员；无额外注释。</td></tr></table><h3>oleutil：高层自动化工具</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>func ClassIDFrom(programID string) (classID *ole.GUID, err error) {</code><br><small>oleutil/oleutil.go:6</small></td><td>ClassIDFrom retrieves class ID whether given is program ID or application string.</td></tr>
+<tr><td><code>func CreateObject(programID string) (unknown *ole.IUnknown, err error) {</code><br><small>oleutil/oleutil.go:15</small></td><td>CreateObject creates object from programID based on interface type.  Only supports IUnknown.  Program ID can be either program ID or application string.</td></tr>
+<tr><td><code>func GetActiveObject(programID string) (unknown *ole.IUnknown, err error) {</code><br><small>oleutil/oleutil.go:35</small></td><td>GetActiveObject retrieves active object for program ID and interface ID based on interface type.  Only supports IUnknown.  Program ID can be either program ID or application string.</td></tr>
+<tr><td><code>func CallMethod(disp *ole.IDispatch, name string, params ...interface{}) (result *ole.VARIANT, err error) {</code><br><small>oleutil/oleutil.go:50</small></td><td>CallMethod calls method on IDispatch with parameters.</td></tr>
+<tr><td><code>func MustCallMethod(disp *ole.IDispatch, name string, params ...interface{}) (result *ole.VARIANT) {</code><br><small>oleutil/oleutil.go:55</small></td><td>MustCallMethod calls method on IDispatch with parameters or panics.</td></tr>
+<tr><td><code>func GetProperty(disp *ole.IDispatch, name string, params ...interface{}) (result *ole.VARIANT, err error) {</code><br><small>oleutil/oleutil.go:64</small></td><td>GetProperty retrieves property from IDispatch.</td></tr>
+<tr><td><code>func MustGetProperty(disp *ole.IDispatch, name string, params ...interface{}) (result *ole.VARIANT) {</code><br><small>oleutil/oleutil.go:69</small></td><td>MustGetProperty retrieves property from IDispatch or panics.</td></tr>
+<tr><td><code>func PutProperty(disp *ole.IDispatch, name string, params ...interface{}) (result *ole.VARIANT, err error) {</code><br><small>oleutil/oleutil.go:78</small></td><td>PutProperty mutates property.</td></tr>
+<tr><td><code>func MustPutProperty(disp *ole.IDispatch, name string, params ...interface{}) (result *ole.VARIANT) {</code><br><small>oleutil/oleutil.go:83</small></td><td>MustPutProperty mutates property or panics.</td></tr>
+<tr><td><code>func PutPropertyRef(disp *ole.IDispatch, name string, params ...interface{}) (result *ole.VARIANT, err error) {</code><br><small>oleutil/oleutil.go:92</small></td><td>PutPropertyRef mutates property reference.</td></tr>
+<tr><td><code>func MustPutPropertyRef(disp *ole.IDispatch, name string, params ...interface{}) (result *ole.VARIANT) {</code><br><small>oleutil/oleutil.go:97</small></td><td>MustPutPropertyRef mutates property reference or panics.</td></tr>
+<tr><td><code>func ForEach(disp *ole.IDispatch, f func(v *ole.VARIANT) error) error {</code><br><small>oleutil/oleutil.go:105</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func ConnectObject(disp *ole.IDispatch, iid *ole.GUID, idisp interface{}) (uint32, error) {</code><br><small>oleutil/connection_func.go:8</small></td><td>ConnectObject creates a connection point between two services for communication.</td></tr>
+<tr><td><code>func ConnectObject(disp *ole.IDispatch, iid *ole.GUID, idisp interface{}) (cookie uint32, err error) {</code><br><small>oleutil/connection_windows.go:14</small></td><td>ConnectObject creates a connection point between two services for communication.</td></tr></table><h3>IDispatch 动态调用</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>type IDispatch struct {</code><br><small>idispatch.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type IDispatchVtbl struct {</code><br><small>idispatch.go:9</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IDispatch) VTable() *IDispatchVtbl {</code><br><small>idispatch.go:17</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IDispatch) GetIDsOfName(names []string) (dispid []int32, err error) {</code><br><small>idispatch.go:21</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IDispatch) Invoke(dispid int32, dispatch int16, params ...interface{}) (result *VARIANT, err error) {</code><br><small>idispatch.go:26</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IDispatch) GetTypeInfoCount() (c uint32, err error) {</code><br><small>idispatch.go:31</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IDispatch) GetTypeInfo() (tinfo *ITypeInfo, err error) {</code><br><small>idispatch.go:36</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IDispatch) GetSingleIDOfName(name string) (displayID int32, err error) {</code><br><small>idispatch.go:45</small></td><td>GetSingleIDOfName is a helper that returns single display ID for IDispatch name.  This replaces the common pattern of attempting to get a single name from the list of available IDs. It gives the first ID, if it is available.</td></tr>
+<tr><td><code>func (v *IDispatch) InvokeWithOptionalArgs(name string, dispatch int16, params []interface{}) (result *VARIANT, err error) {</code><br><small>idispatch.go:62</small></td><td>InvokeWithOptionalArgs accepts arguments as an array, works like Invoke.  Accepts name and will attempt to retrieve Display ID to pass to Invoke.  Passing params as an array is a workaround that could be fixed in later versions of Go that prevent passing empty params. During testing it was discovered that this is an acceptable way of getting around not being able to pass params normally.</td></tr>
+<tr><td><code>func (v *IDispatch) CallMethod(name string, params ...interface{}) (*VARIANT, error) {</code><br><small>idispatch.go:78</small></td><td>CallMethod invokes named function with arguments on object.</td></tr>
+<tr><td><code>func (v *IDispatch) GetProperty(name string, params ...interface{}) (*VARIANT, error) {</code><br><small>idispatch.go:87</small></td><td>GetProperty retrieves the property with the name with the ability to pass arguments.  Most of the time you will not need to pass arguments as most objects do not allow for this feature. Or at least, should not allow for this feature. Some servers don&#x27;t follow best practices and this is provided for those edge cases.</td></tr>
+<tr><td><code>func (v *IDispatch) PutProperty(name string, params ...interface{}) (*VARIANT, error) {</code><br><small>idispatch.go:92</small></td><td>PutProperty attempts to mutate a property in the object.</td></tr></table><h3>IUnknown / IEnumVARIANT / TypeInfo / ClassInfo / Inspectable</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>type IUnknown struct {</code><br><small>iunknown.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type IUnknownVtbl struct {</code><br><small>iunknown.go:9</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type UnknownLike interface {</code><br><small>iunknown.go:15</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IUnknown) VTable() *IUnknownVtbl {</code><br><small>iunknown.go:21</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IUnknown) PutQueryInterface(interfaceID *GUID, obj interface{}) error {</code><br><small>iunknown.go:25</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IUnknown) IDispatch(interfaceID *GUID) (dispatch *IDispatch, err error) {</code><br><small>iunknown.go:29</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IUnknown) IEnumVARIANT(interfaceID *GUID) (enum *IEnumVARIANT, err error) {</code><br><small>iunknown.go:34</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IUnknown) QueryInterface(iid *GUID) (*IDispatch, error) {</code><br><small>iunknown.go:39</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IUnknown) MustQueryInterface(iid *GUID) (disp *IDispatch) {</code><br><small>iunknown.go:43</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IUnknown) AddRef() int32 {</code><br><small>iunknown.go:51</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IUnknown) Release() int32 {</code><br><small>iunknown.go:55</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IInspectable) GetIids() (iids []*GUID, err error) {</code><br><small>iinspectable_windows.go:13</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IInspectable) GetRuntimeClassName() (s string, err error) {</code><br><small>iinspectable_windows.go:44</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IInspectable) GetTrustLevel() (level uint32, err error) {</code><br><small>iinspectable_windows.go:61</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type ITypeInfo struct {</code><br><small>itypeinfo.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type ITypeInfoVtbl struct {</code><br><small>itypeinfo.go:9</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *ITypeInfo) VTable() *ITypeInfoVtbl {</code><br><small>itypeinfo.go:32</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetTypeAttr() (*TYPEATTR, error) {</code><br><small>itypeinfo_func.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type IInspectable struct {</code><br><small>iinspectable.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type IInspectableVtbl struct {</code><br><small>iinspectable.go:9</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IInspectable) VTable() *IInspectableVtbl {</code><br><small>iinspectable.go:16</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (enum *IEnumVARIANT) Clone() (*IEnumVARIANT, error) {</code><br><small>ienumvariant_func.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (enum *IEnumVARIANT) Reset() error {</code><br><small>ienumvariant_func.go:9</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (enum *IEnumVARIANT) Skip(celt uint) error {</code><br><small>ienumvariant_func.go:13</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (enum *IEnumVARIANT) Next(celt uint) (VARIANT, uint, error) {</code><br><small>ienumvariant_func.go:17</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type IEnumVARIANT struct {</code><br><small>ienumvariant.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type IEnumVARIANTVtbl struct {</code><br><small>ienumvariant.go:9</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IEnumVARIANT) VTable() *IEnumVARIANTVtbl {</code><br><small>ienumvariant.go:17</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *ITypeInfo) GetTypeAttr() (tattr *TYPEATTR, err error) {</code><br><small>itypeinfo_windows.go:10</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type IProvideClassInfo struct {</code><br><small>iprovideclassinfo.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type IProvideClassInfoVtbl struct {</code><br><small>iprovideclassinfo.go:9</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IProvideClassInfo) VTable() *IProvideClassInfoVtbl {</code><br><small>iprovideclassinfo.go:14</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IProvideClassInfo) GetClassInfo() (cinfo *ITypeInfo, err error) {</code><br><small>iprovideclassinfo.go:18</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IInspectable) GetIids() ([]*GUID, error) {</code><br><small>iinspectable_func.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IInspectable) GetRuntimeClassName() (string, error) {</code><br><small>iinspectable_func.go:9</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IInspectable) GetTrustLevel() (uint32, error) {</code><br><small>iinspectable_func.go:13</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (enum *IEnumVARIANT) Clone() (cloned *IEnumVARIANT, err error) {</code><br><small>ienumvariant_windows.go:10</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (enum *IEnumVARIANT) Reset() (err error) {</code><br><small>ienumvariant_windows.go:23</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (enum *IEnumVARIANT) Skip(celt uint) (err error) {</code><br><small>ienumvariant_windows.go:36</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (enum *IEnumVARIANT) Next(celt uint) (array VARIANT, length uint, err error) {</code><br><small>ienumvariant_windows.go:49</small></td><td>源码导出的公开成员；无额外注释。</td></tr></table><h3>连接点事件</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>func (v *IConnectionPoint) GetConnectionInterface(piid **GUID) int32 {</code><br><small>iconnectionpoint_windows.go:10</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IConnectionPoint) Advise(unknown *IUnknown) (cookie uint32, err error) {</code><br><small>iconnectionpoint_windows.go:15</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IConnectionPoint) Unadvise(cookie uint32) (err error) {</code><br><small>iconnectionpoint_windows.go:28</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IConnectionPoint) EnumConnections(p *unsafe.Pointer) error {</code><br><small>iconnectionpoint_windows.go:41</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IConnectionPointContainer) EnumConnectionPoints(points interface{}) error {</code><br><small>iconnectionpointcontainer_windows.go:10</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IConnectionPointContainer) FindConnectionPoint(iid *GUID, point **IConnectionPoint) (err error) {</code><br><small>iconnectionpointcontainer_windows.go:14</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type IConnectionPointContainer struct {</code><br><small>iconnectionpointcontainer.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type IConnectionPointContainerVtbl struct {</code><br><small>iconnectionpointcontainer.go:9</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IConnectionPointContainer) VTable() *IConnectionPointContainerVtbl {</code><br><small>iconnectionpointcontainer.go:15</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IConnectionPoint) GetConnectionInterface(piid **GUID) int32 {</code><br><small>iconnectionpoint_func.go:7</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IConnectionPoint) Advise(unknown *IUnknown) (uint32, error) {</code><br><small>iconnectionpoint_func.go:11</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IConnectionPoint) Unadvise(cookie uint32) error {</code><br><small>iconnectionpoint_func.go:15</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IConnectionPoint) EnumConnections(p *unsafe.Pointer) (err error) {</code><br><small>iconnectionpoint_func.go:19</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IConnectionPointContainer) EnumConnectionPoints(points interface{}) error {</code><br><small>iconnectionpointcontainer_func.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IConnectionPointContainer) FindConnectionPoint(iid *GUID, point **IConnectionPoint) error {</code><br><small>iconnectionpointcontainer_func.go:9</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type IConnectionPoint struct {</code><br><small>iconnectionpoint.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type IConnectionPointVtbl struct {</code><br><small>iconnectionpoint.go:9</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (v *IConnectionPoint) VTable() *IConnectionPointVtbl {</code><br><small>iconnectionpoint.go:18</small></td><td>源码导出的公开成员；无额外注释。</td></tr></table><h3>GUID、错误、基础结构</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>func ClassIDFrom(programID string) (classID *GUID, err error) {</code><br><small>utility.go:13</small></td><td>ClassIDFrom retrieves class ID whether given is program ID or application string.  Helper that provides check against both Class ID from Program ID and Class ID from string. It is faster, if you know which you are using, to use the individual functions, but this will check against available functions for you.</td></tr>
+<tr><td><code>func BytePtrToString(p *byte) string {</code><br><small>utility.go:25</small></td><td>BytePtrToString converts byte pointer to a Go string.</td></tr>
+<tr><td><code>func UTF16PtrToString(p *uint16) string {</code><br><small>utility.go:37</small></td><td>UTF16PtrToString is alias for LpOleStrToString.  Kept for compatibility reasons.</td></tr>
+<tr><td><code>func LpOleStrToString(p *uint16) string {</code><br><small>utility.go:42</small></td><td>LpOleStrToString converts COM Unicode to Go string.</td></tr>
+<tr><td><code>func BstrToString(p *uint16) string {</code><br><small>utility.go:61</small></td><td>BstrToString converts COM binary string to Go string.</td></tr>
+<tr><td><code>type GUID struct {</code><br><small>guid.go:99</small></td><td>GUID is Windows API specific GUID type.  This exists to match Windows GUID type for direct passing for COM. Format is in xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx.</td></tr>
+<tr><td><code>func NewGUID(guid string) *GUID {</code><br><small>guid.go:116</small></td><td>NewGUID converts the given string into a globally unique identifier that is compliant with the Windows API.  The supplied string may be in any of these formats:  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX {XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}  The conversion of the supplied string is not case-sensitive.</td></tr>
+<tr><td><code>func (guid *GUID) String() string {</code><br><small>guid.go:224</small></td><td>String converts the GUID to string form. It will adhere to this pattern:  {XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}  If the GUID is nil, the string representation of an empty GUID is returned:  {00000000-0000-0000-0000-000000000000}</td></tr>
+<tr><td><code>func IsEqualGUID(guid1 *GUID, guid2 *GUID) bool {</code><br><small>guid.go:272</small></td><td>IsEqualGUID compares two GUID.  Not constant time comparison.</td></tr>
+<tr><td><code>type OleError struct {</code><br><small>error.go:4</small></td><td>OleError stores COM errors.</td></tr>
+<tr><td><code>func NewError(hr uintptr) *OleError {</code><br><small>error.go:11</small></td><td>NewError creates new error with HResult.</td></tr>
+<tr><td><code>func NewErrorWithDescription(hr uintptr, description string) *OleError {</code><br><small>error.go:16</small></td><td>NewErrorWithDescription creates new COM error with HResult and description.</td></tr>
+<tr><td><code>func NewErrorWithSubError(hr uintptr, description string, err error) *OleError {</code><br><small>error.go:21</small></td><td>NewErrorWithSubError creates new COM error with parent error.</td></tr>
+<tr><td><code>func (v *OleError) Code() uintptr {</code><br><small>error.go:26</small></td><td>Code is the HResult.</td></tr>
+<tr><td><code>func (v *OleError) String() string {</code><br><small>error.go:31</small></td><td>String description, either manually set or format message with error code.</td></tr>
+<tr><td><code>func (v *OleError) Error() string {</code><br><small>error.go:39</small></td><td>Error implements error interface.</td></tr>
+<tr><td><code>func (v *OleError) Description() string {</code><br><small>error.go:44</small></td><td>Description retrieves error summary, if there is one.</td></tr>
+<tr><td><code>func (v *OleError) SubError() error {</code><br><small>error.go:49</small></td><td>SubError returns parent error, if there is one.</td></tr>
+<tr><td><code>func (v *OleError) Unwrap() error {</code><br><small>error.go:54</small></td><td>Unwrap returns parent error, if there is one.</td></tr>
+<tr><td><code>func (i VT) String() string {</code><br><small>vt_string.go:31</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type DISPPARAMS struct {</code><br><small>ole.go:10</small></td><td>DISPPARAMS are the arguments that passed to methods or property.</td></tr>
+<tr><td><code>type EXCEPINFO struct {</code><br><small>ole.go:18</small></td><td>EXCEPINFO defines exception info.</td></tr>
+<tr><td><code>func (e *EXCEPINFO) Clear() {</code><br><small>ole.go:59</small></td><td>Clear frees BSTR strings inside an EXCEPINFO and set it to NULL.</td></tr>
+<tr><td><code>func (e EXCEPINFO) WCode() uint16 {</code><br><small>ole.go:81</small></td><td>WCode return wCode in EXCEPINFO.</td></tr>
+<tr><td><code>func (e EXCEPINFO) SCODE() uint32 {</code><br><small>ole.go:86</small></td><td>SCODE return scode in EXCEPINFO.</td></tr>
+<tr><td><code>func (e EXCEPINFO) String() string {</code><br><small>ole.go:91</small></td><td>String convert EXCEPINFO to string.</td></tr>
+<tr><td><code>func (e EXCEPINFO) Error() string {</code><br><small>ole.go:102</small></td><td>Error implements error interface and returns error string.</td></tr>
+<tr><td><code>type PARAMDATA struct {</code><br><small>ole.go:119</small></td><td>PARAMDATA defines parameter data type.</td></tr>
+<tr><td><code>type METHODDATA struct {</code><br><small>ole.go:125</small></td><td>METHODDATA defines method info.</td></tr>
+<tr><td><code>type INTERFACEDATA struct {</code><br><small>ole.go:137</small></td><td>INTERFACEDATA defines interface info.</td></tr>
+<tr><td><code>type Point struct {</code><br><small>ole.go:143</small></td><td>Point is 2D vector type.</td></tr>
+<tr><td><code>type Msg struct {</code><br><small>ole.go:149</small></td><td>Msg is message between processes.</td></tr>
+<tr><td><code>type TYPEDESC struct {</code><br><small>ole.go:159</small></td><td>TYPEDESC defines data type.</td></tr>
+<tr><td><code>type IDLDESC struct {</code><br><small>ole.go:165</small></td><td>IDLDESC defines IDL info.</td></tr>
+<tr><td><code>type TYPEATTR struct {</code><br><small>ole.go:171</small></td><td>TYPEATTR defines type info.</td></tr></table><h3>VARIANT、SafeArray、WinRT</h3><table><tr><th>签名</th><th>说明</th></tr><tr><td><code>type VARIANT struct {</code><br><small>variant_arm.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type VARIANT struct {</code><br><small>variant_ppc64le.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type VARIANT struct {</code><br><small>variant_386.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type VARIANT struct {</code><br><small>variant_loong64.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>const ONETHOUSANDMILLISECONDS = 0.0000115740740740</code><br><small>variant_date_386.go:14</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func GetVariantDate(value uint64) (time.Time, error) {</code><br><small>variant_date_386.go:17</small></td><td>GetVariantDate converts COM Variant Time value to Go time.Time.</td></tr>
+<tr><td><code>func NewVariant(vt VT, val int64) VARIANT {</code><br><small>variant.go:6</small></td><td>NewVariant returns new variant based on type and value.</td></tr>
+<tr><td><code>func (v *VARIANT) ToIUnknown() *IUnknown {</code><br><small>variant.go:11</small></td><td>ToIUnknown converts Variant to Unknown object.</td></tr>
+<tr><td><code>func (v *VARIANT) ToIDispatch() *IDispatch {</code><br><small>variant.go:19</small></td><td>ToIDispatch converts variant to dispatch object.</td></tr>
+<tr><td><code>func (v *VARIANT) ToArray() *SafeArrayConversion {</code><br><small>variant.go:27</small></td><td>ToArray converts variant to SafeArray helper.</td></tr>
+<tr><td><code>func (v *VARIANT) ToString() string {</code><br><small>variant.go:38</small></td><td>ToString converts variant to Go string.</td></tr>
+<tr><td><code>func (v *VARIANT) Clear() error {</code><br><small>variant.go:46</small></td><td>Clear the memory of variant object.</td></tr>
+<tr><td><code>func (v *VARIANT) Value() interface{} {</code><br><small>variant.go:57</small></td><td>Value returns variant value based on its type.  Currently supported types: 2- and 4-byte integers, strings, bools. Note that 64-bit integers, datetimes, and other types are stored as strings and will be returned as strings.  Needs to be further converted, because this returns an interface{}.</td></tr>
+<tr><td><code>type VARIANT struct {</code><br><small>variant_amd64.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func GetVariantDate(value uint64) (time.Time, error) {</code><br><small>variant_date_arm64.go:24</small></td><td>GetVariantDate converts a uint64 OLE DATE-like value to a Go time.Time structure</td></tr>
+<tr><td><code>func GetVariantDate(value uint64) (time.Time, error) {</code><br><small>variant_date_arm.go:13</small></td><td>GetVariantDate converts COM Variant Time value to Go time.Time.</td></tr>
+<tr><td><code>type SafeArrayConversion struct {</code><br><small>safearrayconversion.go:9</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (sac *SafeArrayConversion) ToStringArray() (strings []string) {</code><br><small>safearrayconversion.go:13</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (sac *SafeArrayConversion) ToByteArray() (bytes []byte) {</code><br><small>safearrayconversion.go:24</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (sac *SafeArrayConversion) ToValueArray() (values []interface{}) {</code><br><small>safearrayconversion.go:35</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (sac *SafeArrayConversion) GetType() (varType uint16, err error) {</code><br><small>safearrayconversion.go:102</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (sac *SafeArrayConversion) GetDimensions() (dimensions *uint32, err error) {</code><br><small>safearrayconversion.go:106</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (sac *SafeArrayConversion) GetSize() (length *uint32, err error) {</code><br><small>safearrayconversion.go:110</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (sac *SafeArrayConversion) TotalElements(index uint32) (totalElements int32, err error) {</code><br><small>safearrayconversion.go:114</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func (sac *SafeArrayConversion) Release() {</code><br><small>safearrayconversion.go:138</small></td><td>Release Safe Array memory</td></tr>
+<tr><td><code>func RoInitialize(thread_type uint32) (err error) {</code><br><small>winrt_doc.go:6</small></td><td>RoInitialize</td></tr>
+<tr><td><code>func RoActivateInstance(clsid string) (ins *IInspectable, err error) {</code><br><small>winrt_doc.go:11</small></td><td>RoActivateInstance</td></tr>
+<tr><td><code>func RoGetActivationFactory(clsid string, iid *GUID) (ins *IInspectable, err error) {</code><br><small>winrt_doc.go:16</small></td><td>RoGetActivationFactory</td></tr>
+<tr><td><code>type HString uintptr</code><br><small>winrt_doc.go:21</small></td><td>HString is handle string for pointers.</td></tr>
+<tr><td><code>func NewHString(s string) (hstring HString, err error) {</code><br><small>winrt_doc.go:24</small></td><td>NewHString returns a new HString for Go string.</td></tr>
+<tr><td><code>func DeleteHString(hstring HString) (err error) {</code><br><small>winrt_doc.go:29</small></td><td>DeleteHString deletes HString.</td></tr>
+<tr><td><code>func (h HString) String() string {</code><br><small>winrt_doc.go:34</small></td><td>String returns Go string value of HString.</td></tr>
+<tr><td><code>type VARIANT struct {</code><br><small>variant_s390x.go:5</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type VARIANT struct {</code><br><small>variant_arm64.go:6</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func RoInitialize(thread_type uint32) (err error) {</code><br><small>winrt.go:25</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func RoUninitialize() (err error) {</code><br><small>winrt.go:33</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func RoActivateInstance(clsid string) (ins *IInspectable, err error) {</code><br><small>winrt.go:41</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func RoGetActivationFactory(clsid string, iid *GUID) (ins *IInspectable, err error) {</code><br><small>winrt.go:57</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>type HString uintptr</code><br><small>winrt.go:75</small></td><td>HString is handle string for pointers.</td></tr>
+<tr><td><code>func NewHString(s string) (hstring HString, err error) {</code><br><small>winrt.go:78</small></td><td>NewHString returns a new HString for Go string.</td></tr>
+<tr><td><code>func DeleteHString(hstring HString) (err error) {</code><br><small>winrt.go:92</small></td><td>DeleteHString deletes HString.</td></tr>
+<tr><td><code>func (h HString) String() string {</code><br><small>winrt.go:101</small></td><td>String returns Go string value of HString.</td></tr>
+<tr><td><code>type SafeArrayBound struct {</code><br><small>safearray.go:6</small></td><td>SafeArrayBound defines the SafeArray boundaries.</td></tr>
+<tr><td><code>type SafeArray struct {</code><br><small>safearray.go:12</small></td><td>SafeArray is how COM handles arrays.</td></tr>
+<tr><td><code>type SAFEARRAY SafeArray</code><br><small>safearray.go:23</small></td><td>SAFEARRAY is obsolete, exists for backwards compatibility. Use SafeArray</td></tr>
+<tr><td><code>type SAFEARRAYBOUND SafeArrayBound</code><br><small>safearray.go:27</small></td><td>SAFEARRAYBOUND is obsolete, exists for backwards compatibility. Use SafeArrayBound</td></tr>
+<tr><td><code>const ONETHOUSANDMILLISECONDS = 0.0000115740740740</code><br><small>variant_date_amd64.go:14</small></td><td>源码导出的公开成员；无额外注释。</td></tr>
+<tr><td><code>func GetVariantDate(value uint64) (time.Time, error) {</code><br><small>variant_date_amd64.go:17</small></td><td>GetVariantDate converts COM Variant Time value to Go time.Time.</td></tr></table><h3>常量分组</h3><ul><li><strong>CLSCTX：</strong><code>CLSCTX_INPROC_SERVER</code>、<code>CLSCTX_LOCAL_SERVER</code>、<code>CLSCTX_REMOTE_SERVER</code>、<code>CLSCTX_ALL</code> 等。</li><li><strong>COINIT：</strong><code>COINIT_APARTMENTTHREADED</code>、<code>COINIT_MULTITHREADED</code>、<code>COINIT_DISABLE_OLE1DDE</code>、<code>COINIT_SPEED_OVER_MEMORY</code>。</li><li><strong>DISPATCH：</strong><code>DISPATCH_METHOD</code>、<code>DISPATCH_PROPERTYGET</code>、<code>DISPATCH_PROPERTYPUT</code>、<code>DISPATCH_PROPERTYPUTREF</code>。</li><li><strong>HRESULT：</strong><code>S_OK</code>、<code>E_FAIL</code>、<code>E_NOINTERFACE</code>、<code>E_ACCESSDENIED</code>、<code>CO_E_CLASSSTRING</code> 等。</li><li><strong>VT：</strong><code>VT_EMPTY</code>、<code>VT_NULL</code>、<code>VT_I4</code>、<code>VT_R8</code>、<code>VT_BSTR</code>、<code>VT_DISPATCH</code>、<code>VT_ARRAY</code>、<code>VT_BYREF</code> 等完整 VARTYPE 枚举。</li></ul></section>
+
+<section id="refs"><h2>15. 参考链接</h2><ul><li>GitHub：<a href="https://github.com/go-ole/go-ole">https://github.com/go-ole/go-ole</a></li><li>GoDoc / pkg.go.dev：<a href="https://pkg.go.dev/github.com/go-ole/go-ole">https://pkg.go.dev/github.com/go-ole/go-ole</a></li><li>测试 COM Server：<a href="https://github.com/go-ole/test-com-server">https://github.com/go-ole/test-com-server</a></li><li>源码依据：README.md、ChangeLog.md、go.mod、主包源码、oleutil 源码、_example 示例目录。</li><li>本资料基于 master 提交 <code>6867ec158e364a7bc2f6cff566763ef5ddfa3203</code>，提交说明：<code>fix: Fix alignment error.</code>；最新发布标签 <code>v1.3.0</code>。</li></ul></section>
+</main></div><script>const links=[...document.querySelectorAll('nav a')];const secs=links.map(a=>document.querySelector(a.getAttribute('href')));function f(){let i=0;secs.forEach((s,n)=>{if(s&&s.getBoundingClientRect().top<130)i=n});links.forEach((a,n)=>a.classList.toggle('active',n===i))}document.addEventListener('scroll',f,{passive:true});f();</script></body></html>
