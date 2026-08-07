@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ComfyUI 入门到工作流实战</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+      color: #222;
+      background: #f7f8fa;
+      line-height: 1.75;
+    }
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 292px;
+      position: fixed;
+      inset: 0 auto 0 0;
+      overflow-y: auto;
+      background: #ffffff;
+      border-right: 1px solid #dedfe3;
+      padding: 28px 22px;
+    }
+    .brand { margin-bottom: 22px; padding-bottom: 18px; border-bottom: 2px solid #246bfe; }
+    .brand h1 { font-size: 20px; line-height: 1.35; color: #111827; font-weight: 700; }
+    .brand p { margin-top: 8px; font-size: 13px; color: #6b7280; line-height: 1.5; }
+    .nav { list-style: none; display: grid; gap: 7px; }
+    .nav a {
+      display: block;
+      text-decoration: none;
+      color: #4b5563;
+      font-size: 14px;
+      padding: 9px 12px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+    }
+    .nav a:hover, .nav a.active { color: #1649b8; background: #edf3ff; border-color: #d8e5ff; }
+    .main { margin-left: 292px; width: min(980px, calc(100% - 292px)); padding: 46px 58px 80px; }
+    .intro {
+      padding-bottom: 28px;
+      margin-bottom: 42px;
+      border-bottom: 1px solid #dedfe3;
+    }
+    .intro h2 { font-size: 34px; line-height: 1.25; color: #111827; margin-bottom: 14px; letter-spacing: 0; }
+    .intro p { color: #4b5563; font-size: 16px; max-width: 760px; }
+    section { margin-bottom: 62px; scroll-margin-top: 24px; }
+    section h2 { font-size: 26px; line-height: 1.35; color: #111827; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid #e1e3e8; }
+    h3 { margin: 24px 0 10px; font-size: 18px; color: #1f2937; }
+    p { margin: 0 0 14px; }
+    ul, ol { margin: 14px 0 16px 24px; }
+    li { margin: 6px 0; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+      color: #8a3a00;
+      background: #fff4e8;
+      border: 1px solid #ffe1bf;
+      border-radius: 4px;
+      padding: 1px 5px;
+    }
+    pre {
+      overflow-x: auto;
+      background: #111827;
+      color: #e5e7eb;
+      padding: 16px 18px;
+      border-radius: 8px;
+      margin: 18px 0;
+      line-height: 1.55;
+    }
+    pre code { background: transparent; border: 0; color: inherit; padding: 0; }
+    .visual {
+      margin: 24px 0;
+      padding: 18px;
+      background: #fff;
+      border: 1px solid #dedfe3;
+      border-radius: 8px;
+    }
+    .caption { color: #6b7280; font-size: 13px; margin-bottom: 10px; text-align: center; }
+    svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+    .note, .warn, .task {
+      margin: 20px 0;
+      padding: 14px 16px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid #dedfe3;
+    }
+    .note { border-left: 4px solid #246bfe; }
+    .warn { border-left: 4px solid #d97706; background: #fffaf2; }
+    .task { border-left: 4px solid #168a52; background: #f2fbf6; }
+    .note strong, .warn strong, .task strong { display: block; margin-bottom: 5px; color: #111827; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 16px 0; }
+    .mini { padding: 14px; background: #fff; border: 1px solid #dedfe3; border-radius: 8px; }
+    .mini h4 { font-size: 15px; margin-bottom: 6px; color: #111827; }
+    .mini p { font-size: 14px; color: #4b5563; margin: 0; }
+    .refs { margin-top: 70px; padding-top: 28px; border-top: 2px solid #dedfe3; }
+    .refs h2 { border: 0; padding: 0; font-size: 22px; }
+    .refs a { color: #1649b8; text-decoration: none; }
+    .refs a:hover { text-decoration: underline; }
+    @media (max-width: 820px) {
+      .layout { display: block; }
+      .sidebar { position: relative; width: 100%; height: auto; border-right: 0; border-bottom: 1px solid #dedfe3; }
+      .main { margin-left: 0; width: 100%; padding: 30px 22px 60px; }
+      .intro h2 { font-size: 28px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>ComfyUI 入门到工作流实战</h1>
+        <p>从节点思维、安装部署、模型管理，到常用生图/图生图/ControlNet/LoRA/放大流程。</p>
+      </div>
+      <nav>
+        <ul class="nav">
+          <li><a href="#what">01 ComfyUI 是什么</a></li>
+          <li><a href="#setup">02 安装与运行</a></li>
+          <li><a href="#mental-model">03 节点工作流心智模型</a></li>
+          <li><a href="#first-image">04 第一张图的最小流程</a></li>
+          <li><a href="#models">05 模型文件与目录</a></li>
+          <li><a href="#daily-workflows">06 常用工作流套路</a></li>
+          <li><a href="#custom-nodes">07 插件与 Manager</a></li>
+          <li><a href="#performance">08 性能与显存优化</a></li>
+          <li><a href="#api">09 API、自动化与部署</a></li>
+          <li><a href="#troubleshooting">10 排错清单</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="intro">
+        <h2>ComfyUI：用节点搭建可复用的生成式 AI 工作流</h2>
+        <p>ComfyUI 不是“输入提示词然后点生成”的单一界面，而是一个节点式推理引擎。它适合需要可控、可复用、可调试流程的人：文本生图、图生图、局部重绘、ControlNet、LoRA、高清修复、视频、批量自动化，都可以拆成节点并保存为工作流。</p>
+      </div>
+
+      <section id="what">
+        <h2>ComfyUI 是什么</h2>
+        <p>ComfyUI 是开源的节点式生成式 AI 应用和推理引擎。核心价值不是“按钮更多”，而是把一次生成拆成可观察、可连接、可保存的步骤：加载模型、编码提示词、采样、VAE 解码、保存图片，每一步都能替换或扩展。</p>
+        <div class="visual">
+          <div class="caption">从黑盒界面到透明工作流</div>
+          <svg viewBox="0 0 820 250" role="img" aria-label="ComfyUI 与普通生图界面对比">
+            <rect x="28" y="52" width="250" height="140" rx="8" fill="#f3f4f6" stroke="#9ca3af" />
+            <text x="153" y="86" text-anchor="middle" font-size="18" font-weight="700" fill="#111827">普通生图界面</text>
+            <rect x="70" y="112" width="166" height="38" rx="6" fill="#ffffff" stroke="#9ca3af" />
+            <text x="153" y="136" text-anchor="middle" font-size="14" fill="#374151">提示词 + 参数</text>
+            <path d="M278 122 H356" stroke="#246bfe" stroke-width="3" marker-end="url(#arrow)" />
+            <text x="317" y="105" text-anchor="middle" font-size="13" fill="#4b5563">结果</text>
+
+            <rect x="386" y="38" width="392" height="166" rx="8" fill="#ffffff" stroke="#d1d5db" />
+            <text x="582" y="68" text-anchor="middle" font-size="18" font-weight="700" fill="#111827">ComfyUI 节点图</text>
+            <g font-size="13" fill="#111827">
+              <rect x="416" y="104" width="86" height="44" rx="6" fill="#dbeafe" stroke="#60a5fa" />
+              <text x="459" y="131" text-anchor="middle">模型</text>
+              <rect x="526" y="82" width="86" height="44" rx="6" fill="#dcfce7" stroke="#4ade80" />
+              <text x="569" y="109" text-anchor="middle">提示词</text>
+              <rect x="526" y="146" width="86" height="44" rx="6" fill="#fef3c7" stroke="#f59e0b" />
+              <text x="569" y="173" text-anchor="middle">采样器</text>
+              <rect x="636" y="104" width="86" height="44" rx="6" fill="#fee2e2" stroke="#f87171" />
+              <text x="679" y="131" text-anchor="middle">图片</text>
+            </g>
+            <path d="M502 126 H526" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow2)" />
+            <path d="M569 126 V146" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow2)" />
+            <path d="M612 168 C632 168 624 126 636 126" stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrow2)" />
+            <defs>
+              <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#246bfe" /></marker>
+              <marker id="arrow2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#6b7280" /></marker>
+            </defs>
+          </svg>
+        </div>
+        <h3>适合谁</h3>
+        <ul>
+          <li>想稳定复用生成流程的人，例如固定人物、固定风格、固定尺寸和高清修复链路。</li>
+          <li>想研究模型组合的人，例如 SDXL、FLUX、LoRA、ControlNet、IPAdapter、放大模型。</li>
+          <li>想把生图能力接入脚本、服务或自动化流水线的人。</li>
+        </ul>
+        <div class="warn"><strong>常见误解</strong>ComfyUI 初看复杂，不代表它比 WebUI 更难。它只是把隐藏流程全部摊开了。入门时不要从复杂工作流开始，先把“最小生图链路”跑通，再一点点加节点。</div>
+      </section>
+
+      <section id="setup">
+        <h2>安装与运行</h2>
+        <p>优先选择官方 Desktop 或官方推荐方式安装。Windows 用户如果只是使用，可以先用桌面版或便携包；Linux/服务器用户更适合 Git + Python 环境；多项目、多显卡或 Docker 部署时，要把模型目录和数据目录规划好。</p>
+        <div class="visual">
+          <div class="caption">安装路线选择</div>
+          <svg viewBox="0 0 820 260" role="img" aria-label="ComfyUI 安装路线">
+            <rect x="40" y="30" width="150" height="56" rx="8" fill="#dbeafe" stroke="#60a5fa" />
+            <text x="115" y="64" text-anchor="middle" font-size="15" font-weight="700">选择环境</text>
+            <path d="M190 58 H250" stroke="#4b5563" stroke-width="2" marker-end="url(#arr3)" />
+            <rect x="250" y="18" width="180" height="48" rx="8" fill="#ffffff" stroke="#9ca3af" />
+            <text x="340" y="48" text-anchor="middle" font-size="14">桌面/便携安装</text>
+            <rect x="250" y="86" width="180" height="48" rx="8" fill="#ffffff" stroke="#9ca3af" />
+            <text x="340" y="116" text-anchor="middle" font-size="14">Git + Python</text>
+            <rect x="250" y="154" width="180" height="48" rx="8" fill="#ffffff" stroke="#9ca3af" />
+            <text x="340" y="184" text-anchor="middle" font-size="14">Docker/服务器</text>
+            <path d="M430 42 H500" stroke="#4b5563" stroke-width="2" marker-end="url(#arr3)" />
+            <path d="M430 110 H500" stroke="#4b5563" stroke-width="2" marker-end="url(#arr3)" />
+            <path d="M430 178 H500" stroke="#4b5563" stroke-width="2" marker-end="url(#arr3)" />
+            <rect x="500" y="52" width="236" height="112" rx="8" fill="#f0fdf4" stroke="#22c55e" />
+            <text x="618" y="84" text-anchor="middle" font-size="15" font-weight="700">启动并打开浏览器</text>
+            <text x="618" y="115" text-anchor="middle" font-size="13" fill="#374151">通常是 http://127.0.0.1:8188</text>
+            <text x="618" y="142" text-anchor="middle" font-size="13" fill="#374151">看到画布即可开始搭节点</text>
+            <defs><marker id="arr3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#4b5563" /></marker></defs>
+          </svg>
+        </div>
+        <h3>手动安装的基本命令</h3>
+        <pre><code>git clone https://github.com/Comfy-Org/ComfyUI.git
+cd ComfyUI
+python -m venv venv
+# Linux/macOS
+source venv/bin/activate
+# Windows PowerShell
+# .\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python main.py</code></pre>
+        <p>官方 README 提到，Python 3.13 支持较好，Python 3.12 可作为兼容性回退；PyTorch 建议使用较新的大版本和对应 CUDA。实际选择时，以你的显卡驱动、CUDA、PyTorch 兼容矩阵为准。</p>
+        <div class="task"><strong>建议给老王的安装选择</strong>如果是在 24 小时跑 Docker 的小主机上部署，建议用 Docker Compose 或独立 Python 环境，把 `models`、`input`、`output`、`custom_nodes` 映射到持久化目录，方便备份和迁移。</div>
+      </section>
+
+      <section id="mental-model">
+        <h2>节点工作流心智模型</h2>
+        <p>ComfyUI 的工作流是有方向的数据图。节点左边是输入，右边是输出；连线传递的是有类型的数据，例如 `MODEL`、`CLIP`、`VAE`、`LATENT`、`CONDITIONING`、`IMAGE`。理解这些类型，比死记节点名字重要。</p>
+        <div class="visual">
+          <div class="caption">一次生图的核心数据流</div>
+          <svg viewBox="0 0 860 290" role="img" aria-label="ComfyUI 数据类型流转">
+            <g font-size="13" fill="#111827">
+              <rect x="30" y="54" width="135" height="58" rx="8" fill="#dbeafe" stroke="#3b82f6" />
+              <text x="97" y="79" text-anchor="middle" font-weight="700">Load Checkpoint</text>
+              <text x="97" y="99" text-anchor="middle">MODEL/CLIP/VAE</text>
+              <rect x="220" y="26" width="125" height="48" rx="8" fill="#dcfce7" stroke="#22c55e" />
+              <text x="282" y="56" text-anchor="middle">正向提示词</text>
+              <rect x="220" y="96" width="125" height="48" rx="8" fill="#fef3c7" stroke="#f59e0b" />
+              <text x="282" y="126" text-anchor="middle">反向提示词</text>
+              <rect x="220" y="172" width="125" height="48" rx="8" fill="#ede9fe" stroke="#8b5cf6" />
+              <text x="282" y="202" text-anchor="middle">Empty Latent</text>
+              <rect x="405" y="72" width="135" height="82" rx="8" fill="#fff" stroke="#9ca3af" />
+              <text x="472" y="105" text-anchor="middle" font-weight="700">KSampler</text>
+              <text x="472" y="128" text-anchor="middle">噪声到潜空间</text>
+              <rect x="600" y="88" width="110" height="52" rx="8" fill="#fee2e2" stroke="#ef4444" />
+              <text x="655" y="119" text-anchor="middle">VAE Decode</text>
+              <rect x="755" y="88" width="82" height="52" rx="8" fill="#f3f4f6" stroke="#6b7280" />
+              <text x="796" y="119" text-anchor="middle">图片</text>
+            </g>
+            <path d="M165 83 C187 83 195 50 220 50" stroke="#4b5563" stroke-width="2" fill="none" marker-end="url(#arr4)" />
+            <path d="M165 83 C187 83 195 120 220 120" stroke="#4b5563" stroke-width="2" fill="none" marker-end="url(#arr4)" />
+            <path d="M345 50 C372 50 376 86 405 96" stroke="#4b5563" stroke-width="2" fill="none" marker-end="url(#arr4)" />
+            <path d="M345 120 H405" stroke="#4b5563" stroke-width="2" marker-end="url(#arr4)" />
+            <path d="M345 196 C380 196 376 142 405 132" stroke="#4b5563" stroke-width="2" fill="none" marker-end="url(#arr4)" />
+            <path d="M540 113 H600" stroke="#4b5563" stroke-width="2" marker-end="url(#arr4)" />
+            <path d="M710 114 H755" stroke="#4b5563" stroke-width="2" marker-end="url(#arr4)" />
+            <defs><marker id="arr4" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#4b5563" /></marker></defs>
+          </svg>
+        </div>
+        <h3>三个关键概念</h3>
+        <div class="grid">
+          <div class="mini"><h4>节点</h4><p>每个节点执行一个动作，例如加载模型、编码文字、采样、解码、保存。</p></div>
+          <div class="mini"><h4>连线</h4><p>连线不是装饰，它传递类型明确的数据。类型不匹配时连不上或会报错。</p></div>
+          <div class="mini"><h4>工作流</h4><p>工作流可以保存成 JSON，也常被嵌入到 PNG 元数据里，拖进 ComfyUI 就能恢复。</p></div>
+          <div class="mini"><h4>队列</h4><p>点击 Queue Prompt 后，ComfyUI 按图执行。改参数后再入队生成新结果。</p></div>
+        </div>
+        <div class="warn"><strong>常见错误</strong>把节点当成“插件按钮”乱装。正确方式是先问：我现在缺哪一步？缺的是预处理、模型加载、条件控制、采样、后处理，还是保存输出？</div>
+      </section>
+
+      <section id="first-image">
+        <h2>第一张图的最小流程</h2>
+        <p>第一次不要追求复杂。目标是跑通：选 checkpoint、写正向提示词、写反向提示词、设置尺寸和 seed、采样、保存图片。只要这条链路通了，后面的图生图、ControlNet、LoRA 都是在它上面加节点。</p>
+        <div class="visual">
+          <div class="caption">最小文生图工作流</div>
+          <svg viewBox="0 0 820 230" role="img" aria-label="最小文生图工作流">
+            <rect x="40" y="72" width="120" height="52" rx="7" fill="#dbeafe" stroke="#3b82f6" />
+            <text x="100" y="103" text-anchor="middle" font-size="13">Checkpoint</text>
+            <rect x="210" y="42" width="120" height="52" rx="7" fill="#dcfce7" stroke="#22c55e" />
+            <text x="270" y="73" text-anchor="middle" font-size="13">正向 Prompt</text>
+            <rect x="210" y="112" width="120" height="52" rx="7" fill="#fef3c7" stroke="#f59e0b" />
+            <text x="270" y="143" text-anchor="middle" font-size="13">反向 Prompt</text>
+            <rect x="380" y="78" width="120" height="52" rx="7" fill="#ede9fe" stroke="#8b5cf6" />
+            <text x="440" y="109" text-anchor="middle" font-size="13">KSampler</text>
+            <rect x="550" y="78" width="110" height="52" rx="7" fill="#fee2e2" stroke="#ef4444" />
+            <text x="605" y="109" text-anchor="middle" font-size="13">VAE Decode</text>
+            <rect x="705" y="78" width="82" height="52" rx="7" fill="#f3f4f6" stroke="#6b7280" />
+            <text x="746" y="109" text-anchor="middle" font-size="13">Save</text>
+            <path d="M160 98 H210" stroke="#4b5563" stroke-width="2" marker-end="url(#arr5)" />
+            <path d="M330 68 C356 68 350 98 380 98" stroke="#4b5563" stroke-width="2" fill="none" marker-end="url(#arr5)" />
+            <path d="M330 138 C356 138 350 110 380 110" stroke="#4b5563" stroke-width="2" fill="none" marker-end="url(#arr5)" />
+            <path d="M500 104 H550" stroke="#4b5563" stroke-width="2" marker-end="url(#arr5)" />
+            <path d="M660 104 H705" stroke="#4b5563" stroke-width="2" marker-end="url(#arr5)" />
+            <defs><marker id="arr5" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#4b5563" /></marker></defs>
+          </svg>
+        </div>
+        <h3>推荐第一组参数</h3>
+        <ul>
+          <li>模型：先用一个你确定能跑的 SDXL 或 SD1.5 checkpoint。</li>
+          <li>尺寸：SD1.5 先用 512x512；SDXL 先用 1024x1024 或 832x1216 这类常见尺寸。</li>
+          <li>Steps：20 到 30；CFG：5 到 8；Sampler/Scheduler 先用工作流默认值。</li>
+          <li>Seed：想复现就固定 seed；想探索就随机 seed。</li>
+        </ul>
+        <div class="note"><strong>小技巧</strong>先保存一个“干净基础工作流”。以后每次做新玩法，都从基础工作流复制一份，不要在唯一文件上越改越乱。</div>
+      </section>
+
+      <section id="models">
+        <h2>模型文件与目录</h2>
+        <p>ComfyUI 的多数问题不是节点本身，而是模型放错位置、文件格式不对、工作流需要的模型与你下载的不是同一种。记住：下载模型前先看工作流说明和节点说明。</p>
+        <div class="visual">
+          <div class="caption">常见模型目录映射</div>
+          <svg viewBox="0 0 840 320" role="img" aria-label="模型目录映射">
+            <rect x="40" y="28" width="190" height="52" rx="8" fill="#dbeafe" stroke="#3b82f6" />
+            <text x="135" y="60" text-anchor="middle" font-size="14" font-weight="700">ComfyUI/models</text>
+            <g font-size="13" fill="#111827">
+              <rect x="310" y="18" width="190" height="38" rx="6" fill="#ffffff" stroke="#9ca3af" /><text x="405" y="42" text-anchor="middle">checkpoints</text>
+              <rect x="310" y="66" width="190" height="38" rx="6" fill="#ffffff" stroke="#9ca3af" /><text x="405" y="90" text-anchor="middle">loras</text>
+              <rect x="310" y="114" width="190" height="38" rx="6" fill="#ffffff" stroke="#9ca3af" /><text x="405" y="138" text-anchor="middle">vae</text>
+              <rect x="310" y="162" width="190" height="38" rx="6" fill="#ffffff" stroke="#9ca3af" /><text x="405" y="186" text-anchor="middle">controlnet</text>
+              <rect x="310" y="210" width="190" height="38" rx="6" fill="#ffffff" stroke="#9ca3af" /><text x="405" y="234" text-anchor="middle">upscale_models</text>
+              <rect x="310" y="258" width="190" height="38" rx="6" fill="#ffffff" stroke="#9ca3af" /><text x="405" y="282" text-anchor="middle">clip / text_encoders</text>
+              <rect x="570" y="18" width="220" height="38" rx="6" fill="#f8fafc" stroke="#cbd5e1" /><text x="680" y="42" text-anchor="middle">Load Checkpoint</text>
+              <rect x="570" y="66" width="220" height="38" rx="6" fill="#f8fafc" stroke="#cbd5e1" /><text x="680" y="90" text-anchor="middle">Load LoRA</text>
+              <rect x="570" y="114" width="220" height="38" rx="6" fill="#f8fafc" stroke="#cbd5e1" /><text x="680" y="138" text-anchor="middle">Load VAE</text>
+              <rect x="570" y="162" width="220" height="38" rx="6" fill="#f8fafc" stroke="#cbd5e1" /><text x="680" y="186" text-anchor="middle">Load ControlNet Model</text>
+              <rect x="570" y="210" width="220" height="38" rx="6" fill="#f8fafc" stroke="#cbd5e1" /><text x="680" y="234" text-anchor="middle">Upscale Model Loader</text>
+              <rect x="570" y="258" width="220" height="38" rx="6" fill="#f8fafc" stroke="#cbd5e1" /><text x="680" y="282" text-anchor="middle">CLIP/Text Encoder Loader</text>
+            </g>
+            <path d="M230 54 C262 54 270 37 310 37" stroke="#4b5563" fill="none" stroke-width="2" marker-end="url(#arr6)" />
+            <path d="M500 37 H570" stroke="#4b5563" stroke-width="2" marker-end="url(#arr6)" />
+            <path d="M500 85 H570" stroke="#4b5563" stroke-width="2" marker-end="url(#arr6)" />
+            <path d="M500 133 H570" stroke="#4b5563" stroke-width="2" marker-end="url(#arr6)" />
+            <path d="M500 181 H570" stroke="#4b5563" stroke-width="2" marker-end="url(#arr6)" />
+            <path d="M500 229 H570" stroke="#4b5563" stroke-width="2" marker-end="url(#arr6)" />
+            <path d="M500 277 H570" stroke="#4b5563" stroke-width="2" marker-end="url(#arr6)" />
+            <defs><marker id="arr6" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#4b5563" /></marker></defs>
+          </svg>
+        </div>
+        <h3>常见目录速查</h3>
+        <ul>
+          <li>Checkpoint：`.safetensors` 或 `.ckpt`，通常放 `models/checkpoints`。</li>
+          <li>LoRA：`.safetensors`，通常放 `models/loras`。</li>
+          <li>VAE：通常放 `models/vae`。</li>
+          <li>ControlNet：通常放 `models/controlnet`。</li>
+          <li>放大模型：`.pth` 或 `.safetensors`，通常放 `models/upscale_models`。</li>
+          <li>FLUX、SD3 系列可能涉及 `diffusion_models`、`text_encoders`、`vae` 等分离组件，必须按具体工作流说明放置。</li>
+        </ul>
+        <div class="warn"><strong>Hugging Face 下载注意</strong>一个仓库不一定等于一个 ComfyUI 模型文件。仓库里可能有 Diffusers 目录结构、配置文件、GGUF、LoRA、VAE、workflow JSON。不要看到 `.safetensors` 就随便放，先看 README 或工作流要求。</div>
+      </section>
+
+      <section id="daily-workflows">
+        <h2>常用工作流套路</h2>
+        <p>掌握基础链路后，ComfyUI 的学习路线可以按“逐步加控制”推进：先文生图，再图生图，再局部重绘，再 ControlNet，再 LoRA 和 IPAdapter，最后做高清修复、批量和视频。</p>
+        <div class="visual">
+          <div class="caption">从简单到复杂的工作流成长路线</div>
+          <svg viewBox="0 0 860 210" role="img" aria-label="工作流成长路线">
+            <g font-size="13" fill="#111827">
+              <rect x="30" y="78" width="100" height="48" rx="8" fill="#dbeafe" stroke="#3b82f6" /><text x="80" y="107" text-anchor="middle">文生图</text>
+              <rect x="160" y="78" width="100" height="48" rx="8" fill="#dcfce7" stroke="#22c55e" /><text x="210" y="107" text-anchor="middle">图生图</text>
+              <rect x="290" y="78" width="100" height="48" rx="8" fill="#fef3c7" stroke="#f59e0b" /><text x="340" y="107" text-anchor="middle">局部重绘</text>
+              <rect x="420" y="78" width="100" height="48" rx="8" fill="#ede9fe" stroke="#8b5cf6" /><text x="470" y="107" text-anchor="middle">ControlNet</text>
+              <rect x="550" y="78" width="100" height="48" rx="8" fill="#fee2e2" stroke="#ef4444" /><text x="600" y="107" text-anchor="middle">LoRA</text>
+              <rect x="680" y="78" width="135" height="48" rx="8" fill="#f3f4f6" stroke="#6b7280" /><text x="747" y="107" text-anchor="middle">高清/批量/视频</text>
+            </g>
+            <path d="M130 102 H160" stroke="#4b5563" stroke-width="2" marker-end="url(#arr7)" />
+            <path d="M260 102 H290" stroke="#4b5563" stroke-width="2" marker-end="url(#arr7)" />
+            <path d="M390 102 H420" stroke="#4b5563" stroke-width="2" marker-end="url(#arr7)" />
+            <path d="M520 102 H550" stroke="#4b5563" stroke-width="2" marker-end="url(#arr7)" />
+            <path d="M650 102 H680" stroke="#4b5563" stroke-width="2" marker-end="url(#arr7)" />
+            <defs><marker id="arr7" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#4b5563" /></marker></defs>
+          </svg>
+        </div>
+        <h3>文生图</h3>
+        <p>用文字条件生成图片。关注 checkpoint、提示词、尺寸、采样器、步数、CFG、seed。适合探索风格、构图和模型能力。</p>
+        <h3>图生图</h3>
+        <p>输入一张图，把它编码成 latent，再通过 denoise 控制变化幅度。denoise 越低越贴近原图，越高越接近重新生成。</p>
+        <h3>局部重绘</h3>
+        <p>用 mask 指定要改的区域，适合修手、换衣服、改背景、补细节。关键是 mask 边缘、denoise 和提示词要配合。</p>
+        <h3>ControlNet</h3>
+        <p>用边缘、深度、姿态、线稿等结构条件控制画面。它解决的是“我想要这个构图/姿态/轮廓”的问题。</p>
+        <h3>LoRA</h3>
+        <p>LoRA 用来注入人物、画风、服装、物体或特定概念。通常接在 checkpoint 后面，权重不宜盲目拉满，0.6 到 1.0 是常见探索区间。</p>
+        <div class="note"><strong>实践顺序</strong>先固定 seed，单次只改一个变量。否则你不知道结果变化来自提示词、模型、采样器、LoRA 权重，还是随机种子。</div>
+      </section>
+
+      <section id="custom-nodes">
+        <h2>插件与 Manager</h2>
+        <p>ComfyUI 的生态主要靠 custom nodes 扩展。官方文档推荐优先用 ComfyUI Manager 管理插件；也可以手动把 Git 仓库 clone 到 `custom_nodes`，再安装依赖并重启。</p>
+        <div class="visual">
+          <div class="caption">加载别人工作流时的处理流程</div>
+          <svg viewBox="0 0 860 250" role="img" aria-label="缺失节点处理流程">
+            <rect x="42" y="86" width="120" height="52" rx="8" fill="#dbeafe" stroke="#3b82f6" />
+            <text x="102" y="117" text-anchor="middle" font-size="13">拖入工作流</text>
+            <path d="M162 112 H220" stroke="#4b5563" stroke-width="2" marker-end="url(#arr8)" />
+            <rect x="220" y="86" width="130" height="52" rx="8" fill="#fff7ed" stroke="#f97316" />
+            <text x="285" y="108" text-anchor="middle" font-size="13">红色缺失节点</text>
+            <text x="285" y="128" text-anchor="middle" font-size="12" fill="#6b7280">或模型找不到</text>
+            <path d="M350 112 H412" stroke="#4b5563" stroke-width="2" marker-end="url(#arr8)" />
+            <rect x="412" y="86" width="148" height="52" rx="8" fill="#dcfce7" stroke="#22c55e" />
+            <text x="486" y="108" text-anchor="middle" font-size="13">Manager</text>
+            <text x="486" y="128" text-anchor="middle" font-size="12" fill="#374151">Install Missing</text>
+            <path d="M560 112 H625" stroke="#4b5563" stroke-width="2" marker-end="url(#arr8)" />
+            <rect x="625" y="86" width="160" height="52" rx="8" fill="#f3f4f6" stroke="#6b7280" />
+            <text x="705" y="108" text-anchor="middle" font-size="13">重启并看日志</text>
+            <text x="705" y="128" text-anchor="middle" font-size="12" fill="#6b7280">确认无 import failed</text>
+            <defs><marker id="arr8" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#4b5563" /></marker></defs>
+          </svg>
+        </div>
+        <h3>Manager 常用功能</h3>
+        <ul>
+          <li>安装、禁用、卸载、更新 custom nodes。</li>
+          <li>打开别人工作流后，安装缺失节点。</li>
+          <li>下载部分模型，例如 checkpoint、LoRA、ControlNet、VAE。</li>
+          <li>更新 ComfyUI 和插件，部分版本支持快照与恢复。</li>
+        </ul>
+        <h3>手动安装插件的基本方法</h3>
+        <pre><code>cd ComfyUI/custom_nodes
+git clone 插件仓库地址
+cd 插件目录
+pip install -r requirements.txt
+# 然后重启 ComfyUI</code></pre>
+        <div class="warn"><strong>安全提醒</strong>custom node 本质上是 Python 代码，能执行本机操作。不要随便安装来源不明的节点；更新前最好做快照或备份，尤其是生产环境。</div>
+      </section>
+
+      <section id="performance">
+        <h2>性能与显存优化</h2>
+        <p>ComfyUI 的性能瓶颈通常在显存、模型大小、分辨率、采样步数和额外控制节点。显存不够时，不要只盯着换模型，也要看尺寸、batch、VAE、ControlNet、放大流程和是否启用了不必要节点。</p>
+        <div class="visual">
+          <div class="caption">影响显存的主要因素</div>
+          <svg viewBox="0 0 820 260" role="img" aria-label="显存影响因素">
+            <circle cx="410" cy="130" r="58" fill="#dbeafe" stroke="#3b82f6" />
+            <text x="410" y="126" text-anchor="middle" font-size="17" font-weight="700">显存</text>
+            <text x="410" y="149" text-anchor="middle" font-size="13">VRAM</text>
+            <g font-size="13" fill="#111827">
+              <rect x="70" y="46" width="130" height="42" rx="7" fill="#ffffff" stroke="#9ca3af" /><text x="135" y="72" text-anchor="middle">模型大小</text>
+              <rect x="70" y="172" width="130" height="42" rx="7" fill="#ffffff" stroke="#9ca3af" /><text x="135" y="198" text-anchor="middle">分辨率</text>
+              <rect x="610" y="46" width="130" height="42" rx="7" fill="#ffffff" stroke="#9ca3af" /><text x="675" y="72" text-anchor="middle">ControlNet</text>
+              <rect x="610" y="172" width="130" height="42" rx="7" fill="#ffffff" stroke="#9ca3af" /><text x="675" y="198" text-anchor="middle">Batch/放大</text>
+            </g>
+            <path d="M200 67 L353 111" stroke="#4b5563" stroke-width="2" marker-end="url(#arr9)" />
+            <path d="M200 193 L353 149" stroke="#4b5563" stroke-width="2" marker-end="url(#arr9)" />
+            <path d="M610 67 L467 111" stroke="#4b5563" stroke-width="2" marker-end="url(#arr9)" />
+            <path d="M610 193 L467 149" stroke="#4b5563" stroke-width="2" marker-end="url(#arr9)" />
+            <defs><marker id="arr9" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#4b5563" /></marker></defs>
+          </svg>
+        </div>
+        <h3>优化顺序</h3>
+        <ol>
+          <li>先降低分辨率或 batch，不要一开始就高清修复。</li>
+          <li>减少 ControlNet、IPAdapter、多个 LoRA 叠加带来的额外开销。</li>
+          <li>使用适合显存的模型版本，例如 fp16、量化模型或更小基座。</li>
+          <li>把高清放大拆成后处理，不要在第一阶段就生成超大图。</li>
+          <li>长期部署时固定环境版本，避免今天更新插件、明天工作流不可复现。</li>
+        </ol>
+        <div class="note"><strong>判断思路</strong>如果是 CUDA out of memory，先看尺寸和 batch；如果是节点 import failed，看 Python 依赖；如果是模型不显示，优先检查目录和文件格式。</div>
+      </section>
+
+      <section id="api">
+        <h2>API、自动化与部署</h2>
+        <p>ComfyUI 可以通过本地服务接口集成到脚本和业务系统里。常见用法是保存工作流 JSON，把可变参数替换掉，然后通过 API 提交队列，最后读取输出图片。这样可以做批量出图、封装成内部工具，或接入 Web 服务。</p>
+        <div class="visual">
+          <div class="caption">自动化调用链路</div>
+          <svg viewBox="0 0 840 230" role="img" aria-label="ComfyUI API 自动化链路">
+            <rect x="45" y="80" width="120" height="52" rx="8" fill="#dbeafe" stroke="#3b82f6" />
+            <text x="105" y="111" text-anchor="middle" font-size="13">业务脚本</text>
+            <rect x="225" y="80" width="140" height="52" rx="8" fill="#dcfce7" stroke="#22c55e" />
+            <text x="295" y="103" text-anchor="middle" font-size="13">修改 workflow</text>
+            <text x="295" y="123" text-anchor="middle" font-size="12" fill="#374151">prompt/seed/图片</text>
+            <rect x="425" y="80" width="130" height="52" rx="8" fill="#fef3c7" stroke="#f59e0b" />
+            <text x="490" y="111" text-anchor="middle" font-size="13">提交队列</text>
+            <rect x="615" y="80" width="150" height="52" rx="8" fill="#fee2e2" stroke="#ef4444" />
+            <text x="690" y="103" text-anchor="middle" font-size="13">读取结果</text>
+            <text x="690" y="123" text-anchor="middle" font-size="12" fill="#374151">output / history</text>
+            <path d="M165 106 H225" stroke="#4b5563" stroke-width="2" marker-end="url(#arr10)" />
+            <path d="M365 106 H425" stroke="#4b5563" stroke-width="2" marker-end="url(#arr10)" />
+            <path d="M555 106 H615" stroke="#4b5563" stroke-width="2" marker-end="url(#arr10)" />
+            <defs><marker id="arr10" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#4b5563" /></marker></defs>
+          </svg>
+        </div>
+        <h3>部署建议</h3>
+        <ul>
+          <li>个人使用：本机 `127.0.0.1:8188` 即可，避免无认证暴露到公网。</li>
+          <li>局域网使用：绑定局域网地址前，确认网络可信，最好加反向代理认证。</li>
+          <li>服务器使用：使用 Docker 或 systemd 管理进程，持久化 `models`、`custom_nodes`、`input`、`output`。</li>
+          <li>对外提供服务：不要把原生 ComfyUI 直接裸露公网，应做鉴权、限流、队列隔离和文件清理。</li>
+        </ul>
+        <div class="warn"><strong>安全边界</strong>ComfyUI、插件和模型下载都可能接触本地文件和 Python 环境。公网部署必须按服务端应用对待，而不是当作普通网页。</div>
+      </section>
+
+      <section id="troubleshooting">
+        <h2>排错清单</h2>
+        <p>ComfyUI 报错时先看终端日志，再看红色节点和浏览器提示。大多数问题能按“节点、模型、依赖、显存、版本”五类定位。</p>
+        <div class="visual">
+          <div class="caption">排错决策树</div>
+          <svg viewBox="0 0 860 330" role="img" aria-label="ComfyUI 排错决策树">
+            <rect x="335" y="24" width="170" height="46" rx="8" fill="#dbeafe" stroke="#3b82f6" />
+            <text x="420" y="53" text-anchor="middle" font-size="14" font-weight="700">生成失败</text>
+            <path d="M420 70 V100" stroke="#4b5563" stroke-width="2" marker-end="url(#arr11)" />
+            <rect x="300" y="100" width="240" height="46" rx="8" fill="#ffffff" stroke="#9ca3af" />
+            <text x="420" y="129" text-anchor="middle" font-size="14">先看终端日志</text>
+            <path d="M420 146 V176" stroke="#4b5563" stroke-width="2" marker-end="url(#arr11)" />
+            <g font-size="13" fill="#111827">
+              <rect x="36" y="204" width="145" height="62" rx="8" fill="#fff7ed" stroke="#f97316" />
+              <text x="108" y="230" text-anchor="middle">红色节点</text>
+              <text x="108" y="250" text-anchor="middle" fill="#6b7280">缺 custom node</text>
+              <rect x="204" y="204" width="145" height="62" rx="8" fill="#fef3c7" stroke="#f59e0b" />
+              <text x="276" y="230" text-anchor="middle">模型不显示</text>
+              <text x="276" y="250" text-anchor="middle" fill="#6b7280">目录/格式错误</text>
+              <rect x="372" y="204" width="145" height="62" rx="8" fill="#fee2e2" stroke="#ef4444" />
+              <text x="444" y="230" text-anchor="middle">OOM</text>
+              <text x="444" y="250" text-anchor="middle" fill="#6b7280">显存不足</text>
+              <rect x="540" y="204" width="145" height="62" rx="8" fill="#ede9fe" stroke="#8b5cf6" />
+              <text x="612" y="230" text-anchor="middle">Import failed</text>
+              <text x="612" y="250" text-anchor="middle" fill="#6b7280">依赖冲突</text>
+              <rect x="708" y="204" width="120" height="62" rx="8" fill="#f3f4f6" stroke="#6b7280" />
+              <text x="768" y="230" text-anchor="middle">结果怪</text>
+              <text x="768" y="250" text-anchor="middle" fill="#6b7280">参数/模型</text>
+            </g>
+            <path d="M420 176 C335 176 236 192 108 204" stroke="#4b5563" stroke-width="2" fill="none" marker-end="url(#arr11)" />
+            <path d="M420 176 C366 184 326 192 276 204" stroke="#4b5563" stroke-width="2" fill="none" marker-end="url(#arr11)" />
+            <path d="M420 176 L444 204" stroke="#4b5563" stroke-width="2" marker-end="url(#arr11)" />
+            <path d="M420 176 C488 184 548 192 612 204" stroke="#4b5563" stroke-width="2" fill="none" marker-end="url(#arr11)" />
+            <path d="M420 176 C548 178 665 192 768 204" stroke="#4b5563" stroke-width="2" fill="none" marker-end="url(#arr11)" />
+            <defs><marker id="arr11" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#4b5563" /></marker></defs>
+          </svg>
+        </div>
+        <h3>快速定位</h3>
+        <ul>
+          <li>红色节点：安装缺失 custom nodes，重启后看日志。</li>
+          <li>模型列表没有文件：检查目录、扩展名、是否需要刷新或重启。</li>
+          <li>`CUDA out of memory`：降分辨率、batch、ControlNet 数量、高清放大倍率。</li>
+          <li>`ModuleNotFoundError` 或 `ImportError`：进入对应插件目录安装 `requirements.txt`，或检查 Python 版本。</li>
+          <li>工作流能跑但图很差：先固定 seed，再逐项调整提示词、CFG、steps、采样器、LoRA 权重。</li>
+          <li>更新后坏了：用 Manager 快照恢复，或回退 custom node Git 版本。</li>
+        </ul>
+        <div class="task"><strong>建议保留的目录结构</strong>把常用工作流单独建文件夹，例如 `workflows/basic`、`workflows/controlnet`、`workflows/loras`、`workflows/upscale`。每个工作流旁边放一个说明 Markdown，记录需要的模型和插件。</div>
+      </section>
+
+      <section class="refs">
+        <h2>参考资料</h2>
+        <ul>
+          <li><a href="https://docs.comfy.org">ComfyUI Official Documentation</a></li>
+          <li><a href="https://github.com/Comfy-Org/ComfyUI">ComfyUI GitHub Repository</a></li>
+          <li><a href="https://github.com/comfy-org/ComfyUI-Manager">ComfyUI Manager GitHub Repository</a></li>
+          <li><a href="https://docs.comfy.org/installation/install_custom_node">ComfyUI 官方 Custom Nodes 安装文档</a></li>
+        </ul>
+        <p>整理时间：2026-08-07。资料侧重本地使用和工作流实践；具体模型目录、节点名称和插件安装方式可能随版本变化，部署前以官方文档和插件 README 为准。</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const links = Array.from(document.querySelectorAll('.nav a'));
+    const sections = links.map(link => document.querySelector(link.getAttribute('href'))).filter(Boolean);
+    const setActive = () => {
+      let current = sections[0];
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= 120) current = section;
+      }
+      links.forEach(link => link.classList.toggle('active', link.getAttribute('href') === '#' + current.id));
+    };
+    document.addEventListener('scroll', setActive, { passive: true });
+    setActive();
+  </script>
+</body>
+</html>
