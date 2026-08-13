@@ -3799,6 +3799,311 @@
 	transform: scale(1.15);
 }
 
+/* ===== Sidebar Calendar Widget ===== */
+.dashboard-sidebar-calendar {
+	position: relative;
+	overflow: hidden;
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar-content {
+	padding: 0;
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar-nav {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	margin-bottom: 6px;
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar-nav-label {
+	flex: 1;
+	text-align: center;
+	font-size: 0.85em;
+	font-weight: 600;
+	color: var(--db-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar-nav-btn {
+	flex-shrink: 0;
+	width: 22px;
+	height: 22px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	border-radius: var(--db-radius-sm, 6px);
+	color: var(--db-text-muted);
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar-nav-btn:hover {
+	background: var(--db-bg-hover);
+	color: var(--db-text);
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar-nav-btn svg {
+	width: 14px;
+	height: 14px;
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar-today-btn {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	border-radius: var(--db-radius-sm, 6px);
+	color: var(--db-text-muted);
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar-today-btn:hover {
+	background: var(--db-bg-hover);
+	color: var(--db-accent);
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar-today-btn svg {
+	width: 14px;
+	height: 14px;
+}
+
+/* Compact the segmented month/week toggle for the narrow sidebar */
+.dashboard-sidebar-calendar .dashboard-calendar-view-toggle {
+	flex-shrink: 0;
+}
+
+.dashboard-sidebar-calendar .dashboard-library-view-btn {
+	padding: 3px 5px;
+}
+
+.dashboard-sidebar-calendar .dashboard-library-view-btn svg {
+	width: 13px;
+	height: 13px;
+}
+
+/* Dot-mode month grid: equal square-ish cells, number + a single accent dot */
+.dashboard-sidebar-calendar .dashboard-calendar.is-compact .dashboard-calendar-body {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 2px;
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar.is-compact .dashboard-calendar-cell {
+	aspect-ratio: 1 / 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	padding: 0;
+	min-height: 0;
+	border-radius: var(--db-radius-sm, 6px);
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar.is-compact .dashboard-calendar-cell-num {
+	font-size: 0.78em;
+	line-height: 1;
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar.is-compact .dashboard-calendar-cell.is-clickable {
+	cursor: pointer;
+	transition: background 0.12s ease;
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar.is-compact .dashboard-calendar-cell.is-clickable:hover {
+	background: var(--db-bg-hover);
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar.is-compact .dashboard-calendar-cell.is-today {
+	background: color-mix(in srgb, var(--db-accent) 22%, transparent);
+	color: var(--db-text);
+	font-weight: 700;
+}
+
+.dashboard-sidebar-calendar .dashboard-calendar.is-compact .dashboard-calendar-cell.is-outside {
+	opacity: 0.4;
+}
+
+/* The dot shown under the day number when the day has tasks (dotMode only) */
+.dashboard-calendar-cell-dot {
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: var(--db-accent);
+	flex-shrink: 0;
+}
+
+/* ===== Hover day preview (dotMode only) =====
+   Lives on document.body, positioned by JS next to the hovered cell. High
+   z-index so it floats over the sidebar and kanban; no backdrop-filter to stay
+   safe on mobile/iOS crash-prone contexts (the popup only ever shows on desktop). */
+.dashboard-calendar-day-preview {
+	position: fixed;
+	z-index: 9000;
+	min-width: 180px;
+	max-width: 320px;
+	max-height: min(60vh, 420px);
+	display: flex;
+	flex-direction: column;
+	/* Guaranteed-opaque surface. --db-bg-card is translucent on most themes
+	   (cards float over a bg image) and color-mix with it still let the dashboard
+	   bg bleed through, making the text unreadable. --background-primary is
+	   Obsidian's own opaque editor surface, so it stays solid regardless of theme
+	   or user background image. We avoid backdrop-filter here (crash-prone on iOS,
+	   and this popup is desktop-only anyway). */
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--db-radius-md);
+	box-shadow: 0 10px 32px rgba(0, 0, 0, 0.38);
+	color: var(--text-normal);
+	font-size: 1em;
+	line-height: 1.45;
+	overflow: hidden;
+	pointer-events: none;
+	animation: dashboard-day-preview-in 0.12s ease;
+}
+
+@keyframes dashboard-day-preview-in {
+	from { opacity: 0; transform: translateY(2px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-calendar-day-preview-list {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	padding: 8px;
+	overflow-y: auto;
+	scrollbar-width: thin;
+}
+
+/* Reuse the calendar event-row look inside the preview. */
+.dashboard-calendar-day-preview-list .dashboard-calendar-event {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 5px 7px;
+	border-radius: var(--db-radius-sm, 6px);
+	border-left: 3px solid transparent;
+}
+
+.dashboard-calendar-day-preview-list .dashboard-calendar-event.prio-high { border-left-color: var(--db-prio-high, #ef4444); }
+.dashboard-calendar-day-preview-list .dashboard-calendar-event.prio-medium { border-left-color: var(--db-prio-medium, #f59e0b); }
+.dashboard-calendar-day-preview-list .dashboard-calendar-event.prio-low { border-left-color: var(--db-prio-low, #3b82f6); }
+
+.dashboard-calendar-day-preview-list .dashboard-calendar-event.is-overdue {
+	background: color-mix(in srgb, var(--db-prio-high, #ef4444) 16%, transparent);
+}
+
+.dashboard-calendar-day-preview-list .dashboard-calendar-event.is-done .dashboard-calendar-event-text {
+	text-decoration: line-through;
+	opacity: 0.6;
+}
+
+.dashboard-calendar-day-preview-list .dashboard-calendar-event-time {
+	font-size: 0.92em;
+	font-weight: 600;
+	color: var(--text-muted);
+	flex-shrink: 0;
+	font-variant-numeric: tabular-nums;
+}
+
+.dashboard-calendar-day-preview-list .dashboard-calendar-event-text {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.dashboard-calendar-day-preview-more {
+	padding: 4px 6px 2px;
+	font-size: 0.85em;
+	color: var(--text-muted);
+	text-align: center;
+}
+
+.dashboard-calendar.is-compact .dashboard-calendar-cell-list,
+.dashboard-sidebar-calendar .dashboard-calendar.is-compact .dashboard-calendar-more {
+	display: none;
+}
+
+/* Settings panel: excluded-folder chips + add row (shared, lightweight) */
+.dashboard-settings-folder-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	align-items: center;
+	margin-top: 6px;
+}
+
+.dashboard-settings-folder-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 3px 6px 3px 8px;
+	background: var(--db-bg-input, rgba(255, 255, 255, 0.05));
+	border: 1px solid var(--db-border-card);
+	border-radius: 999px;
+	font-size: var(--font-ui-smaller);
+}
+
+.dashboard-settings-folder-chip-remove {
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-muted);
+	padding: 0;
+	border-radius: 50%;
+}
+
+.dashboard-settings-folder-chip-remove:hover {
+	color: var(--text-normal);
+}
+
+.dashboard-settings-folder-chip-remove svg {
+	width: 12px;
+	height: 12px;
+}
+
+.dashboard-settings-folder-add {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	width: 100%;
+	margin-top: 4px;
+}
+
+.dashboard-settings-folder-input {
+	flex: 1;
+	min-width: 0;
+}
+
+.dashboard-settings-folder-browse,
+.dashboard-settings-folder-add-btn {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.dashboard-settings-folder-browse svg {
+	width: 14px;
+	height: 14px;
+}
+
 /* ===== Fortune Stick Modal — Traditional Parchment ===== */
 .fortune-overlay {
 	position: fixed;
@@ -5093,6 +5398,9 @@
 	align-items: center;
 	justify-content: center;
 	padding: 12px;
+	/* At least 1.5x the button height of breathing room below, so the button
+	   lifts clear of the Obsidian mobile native bottom bar when scrolled to the end. */
+	margin-bottom: 60px;
 	background: var(--db-bg-add-section);
 	border: 2px dashed var(--db-border-add-section);
 	border-radius: var(--db-radius-lg);
@@ -5105,6 +5413,56 @@
 .dashboard-add-section:hover {
 	background: var(--db-bg-hover-strong);
 	border-color: var(--db-accent);
+}
+
+/* ===== Scroll-to-top floating button ===== */
+/* position:fixed anchors to the viewport. Kept below the mobile drawer/modal
+   stacks (z-index 100/9999) so overlays correctly cover it. The .apex-dashboard-root
+   has isolation:isolate, so this sits in the view's own stacking context. */
+.dashboard-scroll-top {
+	position: fixed;
+	right: 20px;
+	bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+	z-index: 50;
+	width: 36px;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border: 1px solid color-mix(in srgb, var(--db-accent) 45%, transparent);
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--db-accent) 45%, transparent);
+	color: var(--db-text);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+	cursor: pointer;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(8px) scale(0.9);
+	pointer-events: none;
+	transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s, background 0.15s ease;
+}
+
+.dashboard-scroll-top--visible {
+	opacity: 0.82;
+	visibility: visible;
+	transform: translateY(0) scale(1);
+	pointer-events: auto;
+	transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s, background 0.15s ease;
+}
+
+.dashboard-scroll-top:hover {
+	opacity: 1;
+	background: color-mix(in srgb, var(--db-accent) 70%, transparent);
+}
+
+.dashboard-scroll-top:active {
+	transform: translateY(1px) scale(0.96);
+}
+
+.dashboard-scroll-top svg {
+	width: 16px;
+	height: 16px;
 }
 
 /* Add-section modal type picker (icon+label grid, mobile-friendly) */
@@ -5377,6 +5735,13 @@
 
 .dashboard-task-item--child {
 	border-left: 2px solid var(--db-border-card);
+}
+
+/* Direct DOM hide for collapsed descendants — avoids a full re-render on
+   every chevron toggle. The renderer toggles this class in place. */
+.dashboard-task-item--hidden,
+.dashboard-project-doc-item--hidden {
+	display: none !important;
 }
 
 .dashboard-task-item {
@@ -8377,10 +8742,18 @@
 		border-radius: var(--db-radius-md) var(--db-radius-md) 0 0;
 	}
 
-	/* Add section: compact */
+	/* Add section: compact + extra bottom clearance for the native bottom bar */
 	.dashboard-add-section {
 		padding: 10px;
 		flex-shrink: 0;
+		margin-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+	}
+
+	/* Scroll-to-top: lift clear of the Obsidian mobile bottom action bar */
+	.dashboard-scroll-top {
+		bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+		width: 38px;
+		height: 38px;
 	}
 
 	/* Memo textarea: compact */
@@ -13398,3 +13771,356 @@
 	color: var(--text-normal);
 }
 .dashboard-modal-stats-checkbox input { margin: 0; }
+
+/* =========================================================================
+   Dataview Section — DQL query results (TABLE / LIST / TASK / CALENDAR).
+   Reuses the library-section table & list tokens for visual consistency.
+   ========================================================================= */
+
+.dashboard-dataview-content {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 4px 0;
+}
+
+/* Result count header */
+.dashboard-dataview-count {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 11px;
+	color: var(--db-text-muted, var(--text-muted));
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	padding: 0 2px;
+}
+.dashboard-dataview-capped {
+	text-transform: none;
+	letter-spacing: 0;
+	opacity: 0.7;
+}
+
+/* TABLE — extends the library table look. Allow wrapping in cells since DQL
+   values can be long strings or lists. */
+.dashboard-dataview-table td {
+	white-space: normal;
+	max-width: none;
+	vertical-align: top;
+	line-height: 1.5;
+}
+.dashboard-dataview-table th {
+	cursor: default;
+}
+.dashboard-dataview-table tr:not(.is-clickable) {
+	cursor: default;
+}
+.dashboard-dataview-null {
+	color: var(--db-text-muted, var(--text-muted));
+	opacity: 0.4;
+}
+.dashboard-dataview-group-key {
+	font-weight: 600;
+	color: var(--db-accent, var(--interactive-accent));
+}
+.dashboard-dataview-group-member {
+	padding: 1px 0;
+}
+
+/* LIST */
+.dashboard-dataview-list {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+.dashboard-dataview-list-item {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	padding: 5px 8px;
+	border-radius: var(--db-radius-sm, 6px);
+	color: var(--db-text, var(--text-normal));
+	font-size: 13px;
+	transition: background 0.1s ease;
+}
+.dashboard-dataview-list-item:hover {
+	background: var(--db-bg-card-hover, rgba(255, 255, 255, 0.06));
+}
+.dashboard-dataview-list-group {
+	font-weight: 600;
+	color: var(--db-accent, var(--interactive-accent));
+	margin-bottom: 2px;
+}
+.dashboard-dataview-list-members {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding-left: 12px;
+}
+.dashboard-dataview-list-member {
+	color: var(--db-text, var(--text-normal));
+	opacity: 0.9;
+}
+
+/* TASK (Phase 3 — read-only for now) */
+.dashboard-dataview-tasklist {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+.dashboard-dataview-task {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	padding: 4px 8px;
+	border-radius: var(--db-radius-sm, 6px);
+}
+.dashboard-dataview-task:hover {
+	background: var(--db-bg-card-hover, rgba(255, 255, 255, 0.06));
+}
+.dashboard-dataview-task-checkbox {
+	margin: 0;
+	flex-shrink: 0;
+	transform: translateY(1px);
+}
+.dashboard-dataview-task-text {
+	font-size: 13px;
+	color: var(--db-text, var(--text-normal));
+}
+
+/* Empty + error + scanning states */
+.dashboard-dataview-empty,
+.dashboard-dataview-error,
+.dashboard-dataview-scanning {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 28px 16px;
+	text-align: center;
+	color: var(--db-text-muted, var(--text-muted));
+	font-size: 13px;
+}
+.dashboard-dataview-empty-icon {
+	width: 32px;
+	height: 32px;
+	opacity: 0.3;
+	background: currentColor;
+	-webkit-mask: var(--icon-search) center / contain no-repeat;
+	mask: var(--icon-search) center / contain no-repeat;
+}
+.dashboard-dataview-empty-hint {
+	font-size: 11px;
+	opacity: 0.7;
+}
+.dashboard-dataview-error {
+	color: var(--text-error, #e06c75);
+}
+.dashboard-dataview-error-icon svg {
+	width: 22px;
+	height: 22px;
+}
+.dashboard-dataview-error-text {
+	max-width: 360px;
+	word-break: break-word;
+}
+.dashboard-dataview-spinner {
+	animation: dashboard-dataview-spin 0.9s linear infinite;
+}
+.dashboard-dataview-spinner svg {
+	width: 18px;
+	height: 18px;
+}
+@keyframes dashboard-dataview-spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
+}
+
+/* External (http) links rendered from field values */
+.dashboard-dataview-extlink {
+	color: var(--db-accent, var(--text-accent));
+	text-decoration: underline;
+}
+
+/* Config modal */
+.dashboard-dataview-query-input {
+	width: 100%;
+	min-height: 140px;
+	padding: 10px 12px;
+	border-radius: var(--db-radius-sm, 6px);
+	border: 1px solid var(--db-border-card, var(--background-modifier-border));
+	background: var(--db-bg, var(--background-secondary));
+	color: var(--db-text, var(--text-normal));
+	font-family: var(--font-monospace, ui-monospace, monospace);
+	font-size: 12.5px;
+	line-height: 1.6;
+	resize: vertical;
+	box-sizing: border-box;
+}
+.dashboard-dataview-query-input:focus {
+	outline: none;
+	border-color: var(--db-accent, var(--interactive-accent));
+}
+.dashboard-dataview-validation {
+	min-height: 18px;
+	font-size: 11.5px;
+}
+.dashboard-dataview-validation.is-error {
+	color: var(--text-error, #e06c75);
+}
+.dashboard-dataview-validation-ok {
+	color: var(--color-green, #4caf50);
+}
+.dashboard-dataview-sample-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+.dashboard-dataview-sample-chip {
+	padding: 4px 10px;
+	border-radius: 12px;
+	font-size: 11.5px;
+	cursor: pointer;
+	color: var(--db-text, var(--text-normal));
+	background: var(--db-bg-card, var(--background-modifier-hover));
+	border: 1px solid var(--db-border-card, var(--background-modifier-border));
+	transition: background 0.12s ease, border-color 0.12s ease;
+}
+.dashboard-dataview-sample-chip:hover {
+	background: var(--db-accent, var(--interactive-accent));
+	color: var(--db-bg, var(--text-on-accent));
+	border-color: transparent;
+}
+
+/* Dataview TASK: done state + calendar grid */
+.dashboard-dataview-task.is-done .dashboard-dataview-task-text {
+	text-decoration: line-through;
+	opacity: 0.55;
+}
+
+/* CALENDAR query — month grid */
+.dashboard-dataview-calendar {
+	padding: 4px 2px;
+}
+.dashboard-dataview-calendar-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 8px;
+}
+.dashboard-dataview-calendar-nav {
+	background: transparent;
+	border: none;
+	color: var(--db-text-muted, var(--text-muted));
+	cursor: pointer;
+	padding: 4px;
+	display: flex;
+	align-items: center;
+}
+.dashboard-dataview-calendar-nav:hover {
+	color: var(--db-accent, var(--interactive-accent));
+}
+.dashboard-dataview-calendar-title {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--db-text, var(--text-normal));
+}
+.dashboard-dataview-calendar-weekdays {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 2px;
+	margin-bottom: 4px;
+}
+.dashboard-dataview-calendar-wd {
+	text-align: center;
+	font-size: 10px;
+	font-weight: 600;
+	color: var(--db-text-muted, var(--text-muted));
+	text-transform: uppercase;
+}
+.dashboard-dataview-calendar-cells {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 2px;
+}
+.dashboard-dataview-calendar-cell {
+	min-height: 36px;
+	padding: 3px 4px;
+	border-radius: var(--db-radius-sm, 6px);
+	border: 1px solid var(--db-border-card, rgba(255,255,255,0.04));
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
+	gap: 2px;
+}
+.dashboard-dataview-calendar-cell.is-blank {
+	border-color: transparent;
+}
+.dashboard-dataview-calendar-cell.has-dots {
+	cursor: pointer;
+	background: var(--db-bg-card, rgba(255,255,255,0.04));
+}
+.dashboard-dataview-calendar-cell.has-dots:hover {
+	background: var(--db-bg-card-hover, rgba(255,255,255,0.10));
+}
+.dashboard-dataview-calendar-day {
+	font-size: 10px;
+	color: var(--db-text-muted, var(--text-muted));
+}
+.dashboard-dataview-calendar-cell.has-dots .dashboard-dataview-calendar-day {
+	color: var(--db-text, var(--text-normal));
+	font-weight: 600;
+}
+.dashboard-dataview-calendar-dots {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+.dashboard-dataview-calendar-dot {
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: var(--db-accent, var(--interactive-accent));
+}
+.dashboard-dataview-calendar-more {
+	font-size: 9px;
+	color: var(--db-text-muted, var(--text-muted));
+}
+
+/* Mobile GPU safety override.
+   Keep this near the end of the stylesheet so later feature/theme blocks cannot
+   re-enable expensive blur/filter layers on iOS/Android WebView. Obsidian
+   reloads plugins after a renderer crash, so these effects can look like
+   repeated plugin loads on phones. Desktop/tablet-wide layouts keep the full
+   glass treatment. */
+@media (max-width: 640px) {
+	.is-mobile .apex-dashboard-root,
+	.is-mobile .apex-dashboard-root *,
+	.is-mobile .dashboard-modal,
+	.is-mobile [data-theme] .dashboard-modal,
+	.is-mobile .theme-light [data-theme] .dashboard-modal,
+	.is-mobile .theme-dark [data-theme] .dashboard-modal,
+	.is-mobile .modal--dashboard,
+	.is-mobile .modal-bg--dashboard,
+	.is-mobile .dashboard-banner--stats::before,
+	.is-mobile .dashboard-heatmap-stats-popup,
+	.is-mobile .dashboard-pomodoro-stats-overlay,
+	.is-mobile .dashboard-confirm-overlay,
+	.is-mobile .file-suggest-container,
+	.is-mobile .suggestion-container {
+		backdrop-filter: none !important;
+		-webkit-backdrop-filter: none !important;
+		filter: none !important;
+	}
+
+	.is-mobile .apex-dashboard-root {
+		--db-backdrop-blur: none !important;
+	}
+
+	.is-mobile .apex-dashboard-bg {
+		filter: none !important;
+		transform: none !important;
+	}
+}
